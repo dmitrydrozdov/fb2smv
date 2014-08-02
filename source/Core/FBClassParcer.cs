@@ -121,12 +121,12 @@ namespace FB2SMV
                 foreach (var inputVar in interfaceList.InputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(inputVar.Name, inputVar.Comment, fbTypeName,
-                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type)));
+                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, CmSmv.DataTypes.GetType(inputVar.Type)));
                 }
                 foreach (var outputVar in interfaceList.OutputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(outputVar.Name, outputVar.Comment, fbTypeName,
-                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type)));
+                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, CmSmv.DataTypes.GetType(outputVar.Type)));
                 }
             }
 
@@ -159,7 +159,7 @@ namespace FB2SMV
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(internalVar.Name, internalVar.Comment,
                         fbTypeName, Direction.Internal, internalVar.Type, internalVar.ArraySize,
-                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type)));
+                        internalVar.InitialValue, CmSmv.DataTypes.GetType(internalVar.Type)));
                 }
                 foreach (var ecState in basicFb.ECC.ECState)
                 {

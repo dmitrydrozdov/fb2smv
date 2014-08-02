@@ -40,9 +40,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CM_SMV.cs" />
+    <Compile Include="CmSmv.cs" />
+    <Compile Include="ISmv.cs" />
+    <Compile Include="SmvCodeGenerator.cs" />
+    <Compile Include="CyclicDispatcher.cs" />
     <Compile Include="FBClassParcer.cs" />
     <Compile Include="Graph.cs" />
+    <Compile Include="IDispatcher.cs" />
     <Compile Include="Multimap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structures.cs" />

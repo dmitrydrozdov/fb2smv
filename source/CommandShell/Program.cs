@@ -17,7 +17,7 @@ namespace FB_to_nuSMV
 
             FBClassParcer parcer = new FBClassParcer();
             parcer.ParseRecursive(filename);
-            CM_SMV translator = new CM_SMV(parcer.Storage);
+            SmvCodeGenerator translator = new SmvCodeGenerator(parcer.Storage);
 
             string outFileName = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + ".smv");
             StreamWriter wr = new StreamWriter(outFileName);

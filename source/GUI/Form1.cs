@@ -188,7 +188,7 @@ namespace GUI
 
         private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CM_SMV translator = new CM_SMV(_parcer.Storage);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage);
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
