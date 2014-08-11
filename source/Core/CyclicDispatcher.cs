@@ -8,12 +8,51 @@ namespace FB2SMV
 {
     namespace Core
     {
-        class CyclicDispatcher : IDispatcher
+
+        public class PriorityInstance : IPriorityInstance
         {
-            public CyclicDispatcher(IEnumerable<FBInstance> instances, bool solveDispatchingProblem)
+            private int _priority;
+            private FBInstance _instance;
+
+            public PriorityInstance(int priority, FBInstance instance)
             {
-                _instances = instances;
+                _priority = priority;
+                _instance = instance;
+            }
+
+            public int Priority
+            {
+                set { _priority = value; }
+                get { return _priority; }
+            }
+
+            public FBInstance Instance
+            {
+                get { return _instance; }
+            }
+
+            public override string ToString()
+            {
+                return String.Format("{0} - {1}", _priority, _instance.Name);
+            }
+        }
+
+        public class CyclicDispatcher : IDispatcher
+        {
+            public CyclicDispatcher(string fbTypeName, IEnumerable<FBInstance> instances, bool solveDispatchingProblem)
+            {
+                FBTypeName = fbTypeName;
+                int basicPriority = 0;
+                foreach (FBInstance fbInstance in instances)
+                {
+                    _instances.Add(new PriorityInstance(basicPriority++, fbInstance));
+                }
                 _solveDispatchingProblem = solveDispatchingProblem;
+            }
+
+            int intCompareLess(int a, int b)
+            {
+                return a == b ? 0 : (a > b ? 1 : -1);
             }
             public string GetSmvCode()
             {
@@ -22,10 +61,11 @@ namespace FB2SMV
                 //string prevAlpha = null;
                 string prevBeta = Smv.Alpha;
                 bool firstBlock = true;
-                foreach (FBInstance instance in _instances)
+                SortInstances();
+                foreach (PriorityInstance priorityInstance in _instances)
                 {
-                    string alphaVar = instance.Name + "_" + Smv.Alpha;
-                    string betaVar = instance.Name + "_" + Smv.Beta;
+                    string alphaVar = priorityInstance.Instance.Name + "_" + Smv.Alpha;
+                    string betaVar = priorityInstance.Instance.Name + "_" + Smv.Beta;
 
                     if (_solveDispatchingProblem){
                         smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + (firstBlock ? Smv.And + Smv.Not + Smv.ExistsInputEvent : "") + " : " + Smv.True + ";\n");
@@ -44,7 +84,19 @@ namespace FB2SMV
                 return smvDispatcher;
             }
 
-            private IEnumerable<FBInstance> _instances;
+            public string FBTypeName { get; private set; }
+
+            public void SortInstances()
+            {
+                _instances.Sort((a, b) => intCompareLess(a.Priority, b.Priority));
+            }
+
+            public IEnumerable<IPriorityInstance> Instances
+            {
+                get { return _instances; }
+            }
+
+            private List<PriorityInstance> _instances = new List<PriorityInstance>();
             private bool _solveDispatchingProblem;
         }
     }

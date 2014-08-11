@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
@@ -25,6 +26,8 @@ namespace GUI
         private Variable _selectedVariable = null;
         private IEnumerable<Variable> _connectedVars;
         private VarDependencyGraph varDependencyGraph;
+        private List<IDispatcher> _dispatchers = null;
+        private IDispatcher _currentDisp = null;
 
         public Form1()
         {
@@ -66,8 +69,24 @@ namespace GUI
                 t.Construct(_parcer.Storage);
                 varDependencyGraph = new VarDependencyGraph(_parcer.Storage);
                 varDependencyGraph.Construct();
+                var compositeBlocks = _parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
+                bool solveDispatchingProblem = true;
+                _createDispatchers(compositeBlocks, solveDispatchingProblem);
 
                 fbTypesView.Nodes.Add(t.TreeViewRoot());
+            }
+        }
+
+        private void _createDispatchers(IEnumerable<FBType> compositeBlocks, bool solveDispatchingProblem)
+        {
+            if (compositeBlocks.Any())
+            {
+                _dispatchers = new List<IDispatcher>();
+                foreach (FBType compositeBlock in compositeBlocks)
+                {
+                    IEnumerable<FBInstance> instances = _parcer.Storage.Instances.Where((inst) => inst.FBType == compositeBlock.Name);
+                    _dispatchers.Add(new CyclicDispatcher(compositeBlock.Name, instances, solveDispatchingProblem));
+                }
             }
         }
 
@@ -134,6 +153,33 @@ namespace GUI
             groupBox1.Text = _selectedFbType;
             IEnumerable<Variable> vars = _parcer.Storage.Variables.Where(v => v.FBType == _selectedFbType);
             fillVarTreeView(vars);
+
+            FBType selectedFb = _parcer.Storage.Types.FirstOrDefault((fbType) => fbType.Name==_selectedFbType);
+            groupBox2.Text = _selectedFbType;
+
+            if (selectedFb.Type == FBClass.Composite)
+            {
+                groupBox2.Enabled = true;
+                cyclicDispatcherRadioButton.Select();
+                _currentDisp = _dispatchers.FirstOrDefault((disp) => disp.FBTypeName == _selectedFbType);
+                _fillInstanceList();
+            }
+            else
+            {
+                instancePriorityListBox.Items.Clear();
+                _currentDisp = null;
+                groupBox2.Enabled = false;
+            }
+            
+        }
+
+        private void _fillInstanceList()
+        {
+            instancePriorityListBox.Items.Clear();
+            foreach (IPriorityInstance priorityInstance in _currentDisp.Instances)
+            {
+                instancePriorityListBox.Items.Add(priorityInstance);
+            }
         }
 
         private void variablesTreeView_AfterSelect(object sender, TreeViewEventArgs e)
@@ -188,7 +234,7 @@ namespace GUI
 
         private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _dispatchers);
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
@@ -225,6 +271,34 @@ namespace GUI
                 StreamWriter wr = new StreamWriter(saveFileDialogSMV.FileName);
                 wr.Write(smvCodeRichTextBox.Text);
                 wr.Close();
+            }
+        }
+
+        private void instancePriorityUp_Click(object sender, EventArgs e)
+        {
+            IPriorityInstance currentInstance = (IPriorityInstance)instancePriorityListBox.SelectedItem;
+            if (currentInstance != null && currentInstance.Priority > 0)
+            {
+                IPriorityInstance higherPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority - 1);
+                currentInstance.Priority--;
+                higherPriorityInstance.Priority++;
+                _currentDisp.SortInstances();
+                _fillInstanceList();
+                instancePriorityListBox.SetSelected(currentInstance.Priority, true);
+            }
+        }
+
+        private void instancePriorityDown_Click(object sender, EventArgs e)
+        {
+            IPriorityInstance currentInstance = (IPriorityInstance)instancePriorityListBox.SelectedItem;
+            if (currentInstance != null && currentInstance.Priority < _currentDisp.Instances.Max((inst)=>inst.Priority))
+            {
+                IPriorityInstance lowerPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority + 1);
+                currentInstance.Priority++;
+                lowerPriorityInstance.Priority--;
+                _currentDisp.SortInstances();
+                _fillInstanceList();
+                instancePriorityListBox.SetSelected(currentInstance.Priority, true);
             }
         }
     }

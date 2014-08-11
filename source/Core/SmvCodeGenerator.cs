@@ -19,9 +19,10 @@ namespace FB2SMV
         
         public class SmvCodeGenerator
         {
-            public SmvCodeGenerator(Storage storage)
+            public SmvCodeGenerator(Storage storage, IEnumerable<IDispatcher> dispatchers)
             {
                 _storage = storage;
+                _dispatchers = dispatchers;
             }
 
             public int fbTypeCompare(FBType a, FBType b)
@@ -58,8 +59,7 @@ namespace FB2SMV
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var internalBuffers = _storage.Connections.Where(conn => conn.FBType == fbType.Name);
 
-                bool solveDispatchingProblem = true;
-                IDispatcher dispatcher = new CyclicDispatcher(instances, solveDispatchingProblem);
+                IDispatcher dispatcher = _dispatchers.FirstOrDefault((disp) => disp.FBTypeName == fbType.Name);
 
                 //smvModule += _moduleHeader(events, variables, fbType.Name) + "\n";
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbType.Name);
@@ -142,6 +142,7 @@ namespace FB2SMV
 
             public List<string> BasicBlocks = new List<string>();
             private Storage _storage;
+            private IEnumerable<IDispatcher> _dispatchers;
         }
         internal class FbSmvCommon
         {
