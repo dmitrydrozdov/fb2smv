@@ -27,6 +27,7 @@ namespace GUI
         private IEnumerable<Variable> _connectedVars;
         private VarDependencyGraph varDependencyGraph;
         private List<IDispatcher> _dispatchers = null;
+        private List<ExecutionModel> _executionModels = null;
         private IDispatcher _currentDisp = null;
 
         public Form1()
@@ -71,54 +72,27 @@ namespace GUI
                 varDependencyGraph.Construct();
                 var compositeBlocks = _parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
                 bool solveDispatchingProblem = true;
-                _createDispatchers(compositeBlocks, solveDispatchingProblem);
+                _dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
+
+                _executionModels = new List<ExecutionModel>();
+                foreach (FBType fbType in _parcer.Storage.Types)
+                {
+                    ExecutionModel em = new ExecutionModel(fbType.Name);
+                    int basicPriority = 0;
+                    foreach (Event ev in _parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
+                    {
+                        em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
+                    }
+                    _executionModels.Add(em);
+                }
 
                 fbTypesView.Nodes.Add(t.TreeViewRoot());
             }
         }
 
-        private void _createDispatchers(IEnumerable<FBType> compositeBlocks, bool solveDispatchingProblem)
-        {
-            if (compositeBlocks.Any())
-            {
-                _dispatchers = new List<IDispatcher>();
-                foreach (FBType compositeBlock in compositeBlocks)
-                {
-                    IEnumerable<FBInstance> instances = _parcer.Storage.Instances.Where((inst) => inst.FBType == compositeBlock.Name);
-                    _dispatchers.Add(new CyclicDispatcher(compositeBlock.Name, instances, solveDispatchingProblem));
-                }
-            }
-        }
-
-        private void fillTreeView()
-        {
-            var rootFbType = _parcer.Storage.Types.FirstOrDefault(t => t.IsRoot);
-            if (rootFbType != null)
-            {
-                fbTypesView.Nodes.Add(rootFbType.Name, rootFbType.Name);
-                foreach (FBInstance fbInstance in _parcer.Storage.Instances)
-                {
-                    TreeNode[] curNodes = fbTypesView.Nodes.Find(fbInstance.FBType, true);
-                    //TreeNode curNode = fbTypesView.Nodes[fbInstance.FBType];
-                    if (curNodes.Count() != 0)
-                    {
-                        curNodes[0].Nodes.Add(fbInstance.InstanceType, fbInstance.InstanceType);
-                    }
-                    else
-                    {
-                        fbTypesView.Nodes.Add(fbInstance.FBType, fbInstance.FBType);
-                        curNodes = fbTypesView.Nodes.Find(fbInstance.FBType, true);
-                        if (curNodes.Count() != 0)
-                        {
-                            curNodes[0].Nodes.Add(fbInstance.InstanceType, fbInstance.InstanceType);
-                        }
-                    }
-                }
-            }
-        }
-
         private void fillVarTreeView(IEnumerable<Variable> vars)
         {
+            variablesTreeView.Nodes.Clear();
             TreeNode inputVars = new TreeNode("InputVars");
             TreeNode outputVars = new TreeNode("OutputVars");
             TreeNode internalVars = new TreeNode("InternalVars");
@@ -146,29 +120,71 @@ namespace GUI
             }
         }
 
+        private void fillEventsTreeView(IEnumerable<Event> events)
+        {
+            eventsTreeView.Nodes.Clear();
+            TreeNode inputEvents = new TreeNode("InputVars");
+            TreeNode outputEvents = new TreeNode("OutputVars");
+            foreach (Event ev in events)
+            {
+                if (ev.Direction == Direction.Input) inputEvents.Nodes.Add(ev.Name, ev.Name);
+                else if (ev.Direction == Direction.Output) outputEvents.Nodes.Add(ev.Name, ev.Name);
+            }
+            if (inputEvents.Nodes.Count > 0)
+            {
+                eventsTreeView.Nodes.Add(inputEvents);
+                inputEvents.Expand();
+            }
+            if (outputEvents.Nodes.Count > 0)
+            {
+                eventsTreeView.Nodes.Add(outputEvents);
+                outputEvents.Expand();
+            }
+        }
+
+        private void fillEventsPriorityList()
+        {
+            eventsPriorityListBox.Items.Clear();
+            ExecutionModel em = _executionModels.FirstOrDefault(model => model.FBTypeName == _selectedFbType);
+            foreach (PriorityEvent pe in em.InputEventsPriorities)
+            {
+                eventsPriorityListBox.Items.Add(pe);
+            }
+        }
+
         private void fbTypesView_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            variablesTreeView.Nodes.Clear();
             _selectedFbType = fbTypesView.SelectedNode.Text;
             groupBox1.Text = _selectedFbType;
             IEnumerable<Variable> vars = _parcer.Storage.Variables.Where(v => v.FBType == _selectedFbType);
+            IEnumerable<Event> events = _parcer.Storage.Events.Where(ev => ev.FBType == _selectedFbType);
             fillVarTreeView(vars);
+            fillEventsTreeView(events);
 
             FBType selectedFb = _parcer.Storage.Types.FirstOrDefault((fbType) => fbType.Name==_selectedFbType);
             groupBox2.Text = _selectedFbType;
 
             if (selectedFb.Type == FBClass.Composite)
             {
+                //Instance order
                 groupBox2.Enabled = true;
                 cyclicDispatcherRadioButton.Select();
                 _currentDisp = _dispatchers.FirstOrDefault((disp) => disp.FBTypeName == _selectedFbType);
                 _fillInstanceList();
+
+                //Events priority
+                groupBox4.Enabled = false;
             }
             else
             {
+                //Instance order
                 instancePriorityListBox.Items.Clear();
                 _currentDisp = null;
                 groupBox2.Enabled = false;
+
+                //Events priority
+                groupBox4.Enabled = true;
+                fillEventsPriorityList();
             }
             
         }
@@ -176,7 +192,7 @@ namespace GUI
         private void _fillInstanceList()
         {
             instancePriorityListBox.Items.Clear();
-            foreach (IPriorityInstance priorityInstance in _currentDisp.Instances)
+            foreach (IPriorityContainer priorityInstance in _currentDisp.Instances)
             {
                 instancePriorityListBox.Items.Add(priorityInstance);
             }
@@ -234,7 +250,7 @@ namespace GUI
 
         private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _dispatchers);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, _dispatchers);
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
@@ -276,10 +292,10 @@ namespace GUI
 
         private void instancePriorityUp_Click(object sender, EventArgs e)
         {
-            IPriorityInstance currentInstance = (IPriorityInstance)instancePriorityListBox.SelectedItem;
+            IPriorityContainer currentInstance = (IPriorityContainer)instancePriorityListBox.SelectedItem;
             if (currentInstance != null && currentInstance.Priority > 0)
             {
-                IPriorityInstance higherPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority - 1);
+                IPriorityContainer higherPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority - 1);
                 currentInstance.Priority--;
                 higherPriorityInstance.Priority++;
                 _currentDisp.SortInstances();
@@ -290,15 +306,45 @@ namespace GUI
 
         private void instancePriorityDown_Click(object sender, EventArgs e)
         {
-            IPriorityInstance currentInstance = (IPriorityInstance)instancePriorityListBox.SelectedItem;
+            IPriorityContainer currentInstance = (IPriorityContainer)instancePriorityListBox.SelectedItem;
             if (currentInstance != null && currentInstance.Priority < _currentDisp.Instances.Max((inst)=>inst.Priority))
             {
-                IPriorityInstance lowerPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority + 1);
+                IPriorityContainer lowerPriorityInstance = _currentDisp.Instances.FirstOrDefault((inst) => inst.Priority == currentInstance.Priority + 1);
                 currentInstance.Priority++;
                 lowerPriorityInstance.Priority--;
                 _currentDisp.SortInstances();
                 _fillInstanceList();
                 instancePriorityListBox.SetSelected(currentInstance.Priority, true);
+            }
+        }
+
+        private void eventPriorityUp_Click(object sender, EventArgs e)
+        {
+            ExecutionModel em = _executionModels.FirstOrDefault(model => model.FBTypeName == _selectedFbType);
+            IPriorityContainer selectedEvent = (IPriorityContainer)eventsPriorityListBox.SelectedItem;
+            if (selectedEvent != null && selectedEvent.Priority > 0)
+            {
+                IPriorityContainer higherPriorityEvent = em.InputEventsPriorities.FirstOrDefault(ep => ep.Priority == selectedEvent.Priority - 1);
+                selectedEvent.Priority--;
+                higherPriorityEvent.Priority++;
+                em.SortInputEvents();
+                fillEventsPriorityList();
+                eventsPriorityListBox.SetSelected(selectedEvent.Priority, true);
+            }
+        }
+
+        private void eventPriorityDown_Click(object sender, EventArgs e)
+        {
+            ExecutionModel em = _executionModels.FirstOrDefault(model => model.FBTypeName == _selectedFbType);
+            IPriorityContainer selectedEvent = (IPriorityContainer)eventsPriorityListBox.SelectedItem;
+            if (selectedEvent != null && selectedEvent.Priority < em.InputEventsPriorities.Max(ev=>ev.Priority))
+            {
+                IPriorityContainer lowerPriorityEvent = em.InputEventsPriorities.FirstOrDefault(ep => ep.Priority == selectedEvent.Priority + 1);
+                selectedEvent.Priority++;
+                lowerPriorityEvent.Priority--;
+                em.SortInputEvents();
+                fillEventsPriorityList();
+                eventsPriorityListBox.SetSelected(selectedEvent.Priority, true);
             }
         }
     }

@@ -9,31 +9,15 @@ namespace FB2SMV
     namespace Core
     {
 
-        public class PriorityInstance : IPriorityInstance
+        public class PriorityInstance : PriorityContainer<FBInstance>
         {
-            private int _priority;
-            private FBInstance _instance;
-
             public PriorityInstance(int priority, FBInstance instance)
-            {
-                _priority = priority;
-                _instance = instance;
-            }
-
-            public int Priority
-            {
-                set { _priority = value; }
-                get { return _priority; }
-            }
-
-            public FBInstance Instance
-            {
-                get { return _instance; }
-            }
+                : base(priority, instance)
+            {}
 
             public override string ToString()
             {
-                return String.Format("{0} - {1}", _priority, _instance.Name);
+                return String.Format("{0} - {1}", Priority, Value.Name);
             }
         }
 
@@ -50,10 +34,6 @@ namespace FB2SMV
                 _solveDispatchingProblem = solveDispatchingProblem;
             }
 
-            int intCompareLess(int a, int b)
-            {
-                return a == b ? 0 : (a > b ? 1 : -1);
-            }
             public string GetSmvCode()
             {
                 string smvDispatcher = "";
@@ -64,8 +44,8 @@ namespace FB2SMV
                 SortInstances();
                 foreach (PriorityInstance priorityInstance in _instances)
                 {
-                    string alphaVar = priorityInstance.Instance.Name + "_" + Smv.Alpha;
-                    string betaVar = priorityInstance.Instance.Name + "_" + Smv.Beta;
+                    string alphaVar = priorityInstance.Value.Name + "_" + Smv.Alpha;
+                    string betaVar = priorityInstance.Value.Name + "_" + Smv.Beta;
 
                     if (_solveDispatchingProblem){
                         smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + (firstBlock ? Smv.And + Smv.Not + Smv.ExistsInputEvent : "") + " : " + Smv.True + ";\n");
@@ -88,10 +68,10 @@ namespace FB2SMV
 
             public void SortInstances()
             {
-                _instances.Sort((a, b) => intCompareLess(a.Priority, b.Priority));
+                _instances.Sort((a, b) => ServiceClasses.Comparisions.IntCompareGreater(a.Priority, b.Priority));
             }
 
-            public IEnumerable<IPriorityInstance> Instances
+            public IEnumerable<IPriorityContainer> Instances
             {
                 get { return _instances; }
             }

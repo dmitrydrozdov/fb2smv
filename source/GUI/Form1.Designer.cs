@@ -53,17 +53,24 @@
             this.VariablesPage = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.eventsPage = new System.Windows.Forms.TabPage();
             this.DispatcherPage = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.instancePriorityListBox = new System.Windows.Forms.ListBox();
+            this.instancePriorityDown = new System.Windows.Forms.Button();
+            this.instancePriorityUp = new System.Windows.Forms.Button();
             this.cyclicDispatcherRadioButton = new System.Windows.Forms.RadioButton();
             this.smvCodePage = new System.Windows.Forms.TabPage();
             this.smvCodeRichTextBox = new System.Windows.Forms.RichTextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.saveFileDialogProject = new System.Windows.Forms.SaveFileDialog();
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
-            this.instancePriorityUp = new System.Windows.Forms.Button();
-            this.instancePriorityDown = new System.Windows.Forms.Button();
+            this.eventsTreeView = new System.Windows.Forms.TreeView();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.eventsPriorityListBox = new System.Windows.Forms.ListBox();
+            this.eventPriorityDown = new System.Windows.Forms.Button();
+            this.eventPriorityUp = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -72,13 +79,16 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
+            this.eventsPage.SuspendLayout();
             this.DispatcherPage.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.smvCodePage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -269,6 +279,7 @@
             // tabControl1
             // 
             this.tabControl1.Controls.Add(this.VariablesPage);
+            this.tabControl1.Controls.Add(this.eventsPage);
             this.tabControl1.Controls.Add(this.DispatcherPage);
             this.tabControl1.Controls.Add(this.smvCodePage);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -327,6 +338,17 @@
             this.splitContainer2.SplitterDistance = 172;
             this.splitContainer2.TabIndex = 3;
             // 
+            // eventsPage
+            // 
+            this.eventsPage.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.eventsPage.Controls.Add(this.groupBox4);
+            this.eventsPage.Controls.Add(this.eventsTreeView);
+            this.eventsPage.Location = new System.Drawing.Point(4, 22);
+            this.eventsPage.Name = "eventsPage";
+            this.eventsPage.Size = new System.Drawing.Size(532, 492);
+            this.eventsPage.TabIndex = 3;
+            this.eventsPage.Text = "Events";
+            // 
             // DispatcherPage
             // 
             this.DispatcherPage.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -339,9 +361,7 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.instancePriorityDown);
-            this.groupBox2.Controls.Add(this.instancePriorityUp);
-            this.groupBox2.Controls.Add(this.instancePriorityListBox);
+            this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Controls.Add(this.cyclicDispatcherRadioButton);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(0, 0);
@@ -351,14 +371,46 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "groupBox2";
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.instancePriorityListBox);
+            this.groupBox3.Controls.Add(this.instancePriorityDown);
+            this.groupBox3.Controls.Add(this.instancePriorityUp);
+            this.groupBox3.Location = new System.Drawing.Point(143, 19);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(254, 241);
+            this.groupBox3.TabIndex = 7;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Execution Order";
+            // 
             // instancePriorityListBox
             // 
             this.instancePriorityListBox.AllowDrop = true;
             this.instancePriorityListBox.FormattingEnabled = true;
-            this.instancePriorityListBox.Location = new System.Drawing.Point(150, 19);
+            this.instancePriorityListBox.Location = new System.Drawing.Point(10, 19);
             this.instancePriorityListBox.Name = "instancePriorityListBox";
             this.instancePriorityListBox.Size = new System.Drawing.Size(184, 199);
             this.instancePriorityListBox.TabIndex = 4;
+            // 
+            // instancePriorityDown
+            // 
+            this.instancePriorityDown.Location = new System.Drawing.Point(200, 48);
+            this.instancePriorityDown.Name = "instancePriorityDown";
+            this.instancePriorityDown.Size = new System.Drawing.Size(45, 23);
+            this.instancePriorityDown.TabIndex = 6;
+            this.instancePriorityDown.Text = "Down";
+            this.instancePriorityDown.UseVisualStyleBackColor = true;
+            this.instancePriorityDown.Click += new System.EventHandler(this.instancePriorityDown_Click);
+            // 
+            // instancePriorityUp
+            // 
+            this.instancePriorityUp.Location = new System.Drawing.Point(200, 19);
+            this.instancePriorityUp.Name = "instancePriorityUp";
+            this.instancePriorityUp.Size = new System.Drawing.Size(46, 23);
+            this.instancePriorityUp.TabIndex = 5;
+            this.instancePriorityUp.Text = "Up";
+            this.instancePriorityUp.UseVisualStyleBackColor = true;
+            this.instancePriorityUp.Click += new System.EventHandler(this.instancePriorityUp_Click);
             // 
             // cyclicDispatcherRadioButton
             // 
@@ -412,25 +464,54 @@
             // 
             this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
             // 
-            // instancePriorityUp
+            // eventsTreeView
             // 
-            this.instancePriorityUp.Location = new System.Drawing.Point(340, 19);
-            this.instancePriorityUp.Name = "instancePriorityUp";
-            this.instancePriorityUp.Size = new System.Drawing.Size(46, 23);
-            this.instancePriorityUp.TabIndex = 5;
-            this.instancePriorityUp.Text = "Up";
-            this.instancePriorityUp.UseVisualStyleBackColor = true;
-            this.instancePriorityUp.Click += new System.EventHandler(this.instancePriorityUp_Click);
+            this.eventsTreeView.Dock = System.Windows.Forms.DockStyle.Left;
+            this.eventsTreeView.Location = new System.Drawing.Point(0, 0);
+            this.eventsTreeView.Name = "eventsTreeView";
+            this.eventsTreeView.Size = new System.Drawing.Size(166, 492);
+            this.eventsTreeView.TabIndex = 0;
             // 
-            // instancePriorityDown
+            // groupBox4
             // 
-            this.instancePriorityDown.Location = new System.Drawing.Point(341, 49);
-            this.instancePriorityDown.Name = "instancePriorityDown";
-            this.instancePriorityDown.Size = new System.Drawing.Size(45, 23);
-            this.instancePriorityDown.TabIndex = 6;
-            this.instancePriorityDown.Text = "Down";
-            this.instancePriorityDown.UseVisualStyleBackColor = true;
-            this.instancePriorityDown.Click += new System.EventHandler(this.instancePriorityDown_Click);
+            this.groupBox4.Controls.Add(this.eventsPriorityListBox);
+            this.groupBox4.Controls.Add(this.eventPriorityDown);
+            this.groupBox4.Controls.Add(this.eventPriorityUp);
+            this.groupBox4.Location = new System.Drawing.Point(172, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(254, 241);
+            this.groupBox4.TabIndex = 8;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Input events proirity";
+            // 
+            // eventsPriorityListBox
+            // 
+            this.eventsPriorityListBox.AllowDrop = true;
+            this.eventsPriorityListBox.FormattingEnabled = true;
+            this.eventsPriorityListBox.Location = new System.Drawing.Point(10, 19);
+            this.eventsPriorityListBox.Name = "eventsPriorityListBox";
+            this.eventsPriorityListBox.Size = new System.Drawing.Size(184, 212);
+            this.eventsPriorityListBox.TabIndex = 4;
+            // 
+            // eventPriorityDown
+            // 
+            this.eventPriorityDown.Location = new System.Drawing.Point(200, 48);
+            this.eventPriorityDown.Name = "eventPriorityDown";
+            this.eventPriorityDown.Size = new System.Drawing.Size(45, 23);
+            this.eventPriorityDown.TabIndex = 6;
+            this.eventPriorityDown.Text = "Down";
+            this.eventPriorityDown.UseVisualStyleBackColor = true;
+            this.eventPriorityDown.Click += new System.EventHandler(this.eventPriorityDown_Click);
+            // 
+            // eventPriorityUp
+            // 
+            this.eventPriorityUp.Location = new System.Drawing.Point(200, 19);
+            this.eventPriorityUp.Name = "eventPriorityUp";
+            this.eventPriorityUp.Size = new System.Drawing.Size(46, 23);
+            this.eventPriorityUp.TabIndex = 5;
+            this.eventPriorityUp.Text = "Up";
+            this.eventPriorityUp.UseVisualStyleBackColor = true;
+            this.eventPriorityUp.Click += new System.EventHandler(this.eventPriorityUp_Click);
             // 
             // Form1
             // 
@@ -452,14 +533,17 @@
             this.splitContainer2.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
+            this.eventsPage.ResumeLayout(false);
             this.DispatcherPage.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
             this.smvCodePage.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -503,6 +587,13 @@
         private System.Windows.Forms.ListBox instancePriorityListBox;
         private System.Windows.Forms.Button instancePriorityDown;
         private System.Windows.Forms.Button instancePriorityUp;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.TabPage eventsPage;
+        private System.Windows.Forms.TreeView eventsTreeView;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.ListBox eventsPriorityListBox;
+        private System.Windows.Forms.Button eventPriorityDown;
+        private System.Windows.Forms.Button eventPriorityUp;
     }
 }
 

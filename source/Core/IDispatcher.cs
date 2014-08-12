@@ -7,10 +7,6 @@ namespace FB2SMV
 {
     namespace Core
     {
-        public interface IPriorityInstance
-        {
-            int Priority { set; get; }
-        }
         public interface IDispatcher
         {
             string GetSmvCode();
@@ -18,7 +14,7 @@ namespace FB2SMV
 
             void SortInstances();
 
-            IEnumerable<IPriorityInstance> Instances { get; }
+            IEnumerable<IPriorityContainer> Instances { get; }
         }
     }
 }
