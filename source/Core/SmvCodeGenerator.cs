@@ -19,10 +19,9 @@ namespace FB2SMV
         
         public class SmvCodeGenerator
         {
-            public SmvCodeGenerator(Storage storage, IEnumerable<ExecutionModel> executionModels, IEnumerable<IDispatcher> dispatchers)
+            public SmvCodeGenerator(Storage storage, IEnumerable<ExecutionModel> executionModels)
             {
                 _storage = storage;
-                _dispatchers = dispatchers;
                 _executionModels = executionModels;
             }
 
@@ -60,7 +59,7 @@ namespace FB2SMV
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var internalBuffers = _storage.Connections.Where(conn => conn.FBType == fbType.Name);
 
-                IDispatcher dispatcher = _dispatchers.FirstOrDefault((disp) => disp.FBTypeName == fbType.Name);
+                IDispatcher dispatcher = executionModel.Dispatcher;
 
                 //smvModule += _moduleHeader(events, variables, fbType.Name) + "\n";
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbType.Name);
@@ -144,7 +143,6 @@ namespace FB2SMV
 
             public List<string> BasicBlocks = new List<string>();
             private Storage _storage;
-            private IEnumerable<IDispatcher> _dispatchers;
             private IEnumerable<ExecutionModel> _executionModels;
         }
         internal class FbSmvCommon

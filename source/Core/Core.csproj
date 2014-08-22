@@ -42,7 +42,6 @@
   <ItemGroup>
     <Compile Include="CmSmvPattern.cs" />
     <Compile Include="Comparisions.cs" />
-    <Compile Include="DispatchersCreator.cs" />
     <Compile Include="ExecutionModel.cs" />
     <Compile Include="ISmvPattern.cs" />
     <Compile Include="PriorityContainer.cs" />

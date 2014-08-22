@@ -26,7 +26,7 @@ namespace GUI
         private Variable _selectedVariable = null;
         private IEnumerable<Variable> _connectedVars;
         private VarDependencyGraph varDependencyGraph;
-        private List<IDispatcher> _dispatchers = null;
+        //private List<IDispatcher> _dispatchers = null;
         private List<ExecutionModel> _executionModels = null;
         private IDispatcher _currentDisp = null;
 
@@ -72,7 +72,7 @@ namespace GUI
                 varDependencyGraph.Construct();
                 var compositeBlocks = _parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
                 bool solveDispatchingProblem = true;
-                _dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
+                //_dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
 
                 _executionModels = new List<ExecutionModel>();
                 foreach (FBType fbType in _parcer.Storage.Types)
@@ -83,6 +83,13 @@ namespace GUI
                     {
                         em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
                     }
+                    if (fbType.Type == FBClass.Composite)
+                    {
+                        //create dispatcher
+                        IEnumerable<FBInstance> curFbInstances = _parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
+                        em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
+                    }
+
                     _executionModels.Add(em);
                 }
 
@@ -169,7 +176,7 @@ namespace GUI
                 //Instance order
                 groupBox2.Enabled = true;
                 cyclicDispatcherRadioButton.Select();
-                _currentDisp = _dispatchers.FirstOrDefault((disp) => disp.FBTypeName == _selectedFbType);
+                _currentDisp = _executionModels.FirstOrDefault((em) => em.FBTypeName == _selectedFbType).Dispatcher;
                 _fillInstanceList();
 
                 //Events priority
@@ -250,7 +257,7 @@ namespace GUI
 
         private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, _dispatchers);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels);
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
