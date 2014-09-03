@@ -13,6 +13,7 @@ namespace FB2SMV
 {
     namespace Core
     {
+        [Serializable]
         public class ExecutionModel
         {
             public ExecutionModel(string fbTypeName)
@@ -37,6 +38,7 @@ namespace FB2SMV
                 _inputEventsPriorities.Add(ev);
             }
         }
+        [Serializable]
         public class PriorityEvent : PriorityContainer<Event>
         {
             public PriorityEvent(int priority, Event ev)

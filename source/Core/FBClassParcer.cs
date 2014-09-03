@@ -18,6 +18,15 @@ namespace FB2SMV
 
             public FBClassParcer()
             {
+                Storage = new FB2SMV.FBCollections.Storage();
+                _newTypes = new Queue<string>();
+                _processedTypes = new SortedSet<string>();
+            }
+            public FBClassParcer(Storage openedStorage)
+            {
+                Storage = openedStorage;
+                _newTypes = null;
+                _processedTypes = null;
             }
 
             public void ParseRecursive(string filename)
@@ -56,9 +65,9 @@ namespace FB2SMV
 
             private string NextFileName(string directory)
             {
-                if (NewTypes.Count > 0)
+                if (_newTypes.Count > 0)
                 {
-                    string fbType = NewTypes.Dequeue();
+                    string fbType = _newTypes.Dequeue();
                     foreach (var extension in fileExtensions)
                     {
                         string filename = Path.Combine(directory, fbType + extension);
@@ -92,7 +101,7 @@ namespace FB2SMV
                     PutFBNetwork(fbType.FBNetwork, fbType.Name);
                 }
 
-                ProcessedTypes.Add(fbType.Name);
+                _processedTypes.Add(fbType.Name);
             }
 
             private void PutInterfaces(FB2SMV.FBXML.InterfaceList interfaceList, string fbTypeName)
@@ -136,8 +145,8 @@ namespace FB2SMV
                 {
                     Storage.PutFBInstance(new FB2SMV.FBCollections.FBInstance(fbInstance.Name, fbInstance.Type,
                         fbInstance.Comment, fbTypeName));
-                    if (!ProcessedTypes.Contains(fbInstance.Type) && !NewTypes.Contains(fbInstance.Type))
-                        NewTypes.Enqueue(fbInstance.Type);
+                    if (!_processedTypes.Contains(fbInstance.Type) && !_newTypes.Contains(fbInstance.Type))
+                        _newTypes.Enqueue(fbInstance.Type);
 
                 }
                 foreach (var connection in fbNetwork.DataConnections)
@@ -194,9 +203,9 @@ namespace FB2SMV
                 }
             }
 
-            public readonly Storage Storage = new FB2SMV.FBCollections.Storage();
-            public Queue<string> NewTypes = new Queue<string>();
-            public SortedSet<string> ProcessedTypes = new SortedSet<string>();
+            public readonly Storage Storage;
+            private Queue<string> _newTypes;
+            private SortedSet<string> _processedTypes;
 
         }
     }

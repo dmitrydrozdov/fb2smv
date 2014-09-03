@@ -54,6 +54,11 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.eventsPage = new System.Windows.Forms.TabPage();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.eventsPriorityListBox = new System.Windows.Forms.ListBox();
+            this.eventPriorityDown = new System.Windows.Forms.Button();
+            this.eventPriorityUp = new System.Windows.Forms.Button();
+            this.eventsTreeView = new System.Windows.Forms.TreeView();
             this.DispatcherPage = new System.Windows.Forms.TabPage();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -66,11 +71,6 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.saveFileDialogProject = new System.Windows.Forms.SaveFileDialog();
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
-            this.eventsTreeView = new System.Windows.Forms.TreeView();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.eventsPriorityListBox = new System.Windows.Forms.ListBox();
-            this.eventPriorityDown = new System.Windows.Forms.Button();
-            this.eventPriorityUp = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -80,6 +80,7 @@
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
             this.eventsPage.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.DispatcherPage.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -88,7 +89,6 @@
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -122,7 +122,6 @@
             // 
             // saveProjectToolStripMenuItem
             // 
-            this.saveProjectToolStripMenuItem.Enabled = false;
             this.saveProjectToolStripMenuItem.Name = "saveProjectToolStripMenuItem";
             this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
             this.saveProjectToolStripMenuItem.Text = "Save project";
@@ -151,7 +150,8 @@
             // 
             // openFileDialog1
             // 
-            this.openFileDialog1.Filter = "FBDK File (.fbt)|*.fbt|XML File (.xml)|*.xml|All files|*.*";
+            this.openFileDialog1.Filter = "FBDK File (.fbt)|*.fbt|XML File (.xml)|*.xml|FB-to-SMV Converter project (.f2s) |" +
+    " *.f2s|All files|*.*";
             // 
             // fbTypesView
             // 
@@ -349,6 +349,55 @@
             this.eventsPage.TabIndex = 3;
             this.eventsPage.Text = "Events";
             // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.eventsPriorityListBox);
+            this.groupBox4.Controls.Add(this.eventPriorityDown);
+            this.groupBox4.Controls.Add(this.eventPriorityUp);
+            this.groupBox4.Location = new System.Drawing.Point(172, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(254, 241);
+            this.groupBox4.TabIndex = 8;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Input events proirity";
+            // 
+            // eventsPriorityListBox
+            // 
+            this.eventsPriorityListBox.AllowDrop = true;
+            this.eventsPriorityListBox.FormattingEnabled = true;
+            this.eventsPriorityListBox.Location = new System.Drawing.Point(10, 19);
+            this.eventsPriorityListBox.Name = "eventsPriorityListBox";
+            this.eventsPriorityListBox.Size = new System.Drawing.Size(184, 212);
+            this.eventsPriorityListBox.TabIndex = 4;
+            // 
+            // eventPriorityDown
+            // 
+            this.eventPriorityDown.Location = new System.Drawing.Point(200, 48);
+            this.eventPriorityDown.Name = "eventPriorityDown";
+            this.eventPriorityDown.Size = new System.Drawing.Size(45, 23);
+            this.eventPriorityDown.TabIndex = 6;
+            this.eventPriorityDown.Text = "Down";
+            this.eventPriorityDown.UseVisualStyleBackColor = true;
+            this.eventPriorityDown.Click += new System.EventHandler(this.eventPriorityDown_Click);
+            // 
+            // eventPriorityUp
+            // 
+            this.eventPriorityUp.Location = new System.Drawing.Point(200, 19);
+            this.eventPriorityUp.Name = "eventPriorityUp";
+            this.eventPriorityUp.Size = new System.Drawing.Size(46, 23);
+            this.eventPriorityUp.TabIndex = 5;
+            this.eventPriorityUp.Text = "Up";
+            this.eventPriorityUp.UseVisualStyleBackColor = true;
+            this.eventPriorityUp.Click += new System.EventHandler(this.eventPriorityUp_Click);
+            // 
+            // eventsTreeView
+            // 
+            this.eventsTreeView.Dock = System.Windows.Forms.DockStyle.Left;
+            this.eventsTreeView.Location = new System.Drawing.Point(0, 0);
+            this.eventsTreeView.Name = "eventsTreeView";
+            this.eventsTreeView.Size = new System.Drawing.Size(166, 492);
+            this.eventsTreeView.TabIndex = 0;
+            // 
             // DispatcherPage
             // 
             this.DispatcherPage.BackColor = System.Drawing.Color.WhiteSmoke;
@@ -460,58 +509,13 @@
             this.splitContainer1.SplitterDistance = 228;
             this.splitContainer1.TabIndex = 4;
             // 
+            // saveFileDialogProject
+            // 
+            this.saveFileDialogProject.Filter = "FB-to-SMV Converter project (.f2s) | *.f2s";
+            // 
             // saveFileDialogSMV
             // 
             this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
-            // 
-            // eventsTreeView
-            // 
-            this.eventsTreeView.Dock = System.Windows.Forms.DockStyle.Left;
-            this.eventsTreeView.Location = new System.Drawing.Point(0, 0);
-            this.eventsTreeView.Name = "eventsTreeView";
-            this.eventsTreeView.Size = new System.Drawing.Size(166, 492);
-            this.eventsTreeView.TabIndex = 0;
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.eventsPriorityListBox);
-            this.groupBox4.Controls.Add(this.eventPriorityDown);
-            this.groupBox4.Controls.Add(this.eventPriorityUp);
-            this.groupBox4.Location = new System.Drawing.Point(172, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(254, 241);
-            this.groupBox4.TabIndex = 8;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Input events proirity";
-            // 
-            // eventsPriorityListBox
-            // 
-            this.eventsPriorityListBox.AllowDrop = true;
-            this.eventsPriorityListBox.FormattingEnabled = true;
-            this.eventsPriorityListBox.Location = new System.Drawing.Point(10, 19);
-            this.eventsPriorityListBox.Name = "eventsPriorityListBox";
-            this.eventsPriorityListBox.Size = new System.Drawing.Size(184, 212);
-            this.eventsPriorityListBox.TabIndex = 4;
-            // 
-            // eventPriorityDown
-            // 
-            this.eventPriorityDown.Location = new System.Drawing.Point(200, 48);
-            this.eventPriorityDown.Name = "eventPriorityDown";
-            this.eventPriorityDown.Size = new System.Drawing.Size(45, 23);
-            this.eventPriorityDown.TabIndex = 6;
-            this.eventPriorityDown.Text = "Down";
-            this.eventPriorityDown.UseVisualStyleBackColor = true;
-            this.eventPriorityDown.Click += new System.EventHandler(this.eventPriorityDown_Click);
-            // 
-            // eventPriorityUp
-            // 
-            this.eventPriorityUp.Location = new System.Drawing.Point(200, 19);
-            this.eventPriorityUp.Name = "eventPriorityUp";
-            this.eventPriorityUp.Size = new System.Drawing.Size(46, 23);
-            this.eventPriorityUp.TabIndex = 5;
-            this.eventPriorityUp.Text = "Up";
-            this.eventPriorityUp.UseVisualStyleBackColor = true;
-            this.eventPriorityUp.Click += new System.EventHandler(this.eventPriorityUp_Click);
             // 
             // Form1
             // 
@@ -534,6 +538,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
             this.splitContainer2.ResumeLayout(false);
             this.eventsPage.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
             this.DispatcherPage.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
@@ -543,7 +548,6 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.groupBox4.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 

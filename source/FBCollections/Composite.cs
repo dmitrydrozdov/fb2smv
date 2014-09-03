@@ -13,6 +13,7 @@ namespace FB2SMV
             Event
         }
 
+        [Serializable]
         public class FBInstance : FBPart
         {
             public FBInstance(string name, string instanceType, string comment, string fbType)
@@ -31,6 +32,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class Connection
         {
             public Connection(string source, string destination, ConnectionType type, string fbType)

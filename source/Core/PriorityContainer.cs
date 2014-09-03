@@ -11,6 +11,7 @@ namespace FB2SMV
         {
             int Priority { set; get; }
         }
+        [Serializable]
         public class PriorityContainer<T> : IPriorityContainer
         {
             private int _priority;

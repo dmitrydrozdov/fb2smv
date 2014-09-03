@@ -7,6 +7,7 @@ namespace FB2SMV
 {
     namespace FBCollections
     {
+        [Serializable]
         public class AlgorithmLine
         {
             public readonly int NI;

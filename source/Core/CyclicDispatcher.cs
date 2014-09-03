@@ -8,7 +8,7 @@ namespace FB2SMV
 {
     namespace Core
     {
-
+        [Serializable]
         public class PriorityInstance : PriorityContainer<FBInstance>
         {
             public PriorityInstance(int priority, FBInstance instance)
@@ -21,6 +21,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class CyclicDispatcher : IDispatcher
         {
             public CyclicDispatcher(string fbTypeName, IEnumerable<FBInstance> instances, bool solveDispatchingProblem)

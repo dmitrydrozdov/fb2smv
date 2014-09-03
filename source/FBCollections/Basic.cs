@@ -12,6 +12,7 @@ namespace FB2SMV
             ST
         }
 
+        [Serializable]
         public class ECState : FBPart
         {
             public ECState(string name, string comment, string fbType, int actionsCount)
@@ -30,6 +31,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class ECTransition
         {
             public ECTransition(string fbType, string source, string destination, string condition)
@@ -51,6 +53,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class ECAction
         {
             public ECAction(string fbType, int number, string ecState, string algorithm, string output)
@@ -70,6 +73,7 @@ namespace FB2SMV
 
         }
 
+        [Serializable]
         public class Algorithm : FBPart
         {
             public Algorithm(string name, string comment, string fbType, AlgorithmLanguages language, string text)

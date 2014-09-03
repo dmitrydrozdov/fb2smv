@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Windows.Forms;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace GUI
 {
     public partial class Form1 : Form
     {
+        private static string projectFileExtension = ".f2s"; //TODO: move to resource
         FBClassParcer _parcer;
         private string _selectedFbType;
         private Variable _selectedVariable = null;
@@ -35,14 +37,14 @@ namespace GUI
             InitializeComponent();
         }
 
-        EventHandler xmlParsingFinishedHandler = XmlParsingFinishedHandler;
+        //EventHandler xmlParsingFinishedHandler = XmlParsingFinishedHandler;
 
-        private static void XmlParsingFinishedHandler(object sender, EventArgs eventArgs)
+        /*private static void XmlParsingFinishedHandler(object sender, EventArgs eventArgs)
         {
             
-        }
+        }*/
 
-        private void clear()
+        private void resetWorkspace()
         {
             _parcer = new FBClassParcer();
             _selectedFbType = null;
@@ -51,49 +53,88 @@ namespace GUI
             smvCodeRichTextBox.Text = "";
         }
 
+        private void resetWorkspace(ProjectFileStructure project)
+        {
+            _executionModels = project.ExecutionModels;
+            _parcer = new FBClassParcer(project.Storage);
+            _selectedFbType = null;
+            _selectedVariable = null;
+            fbTypesView.Nodes.Clear();
+            smvCodeRichTextBox.Text = "";
+        }
+
+        private void loadFbSystem(string filename)
+        {
+            try
+            {
+                _parcer.ParseRecursive(filename);
+            }
+            catch (Exception exception)
+            {
+                Program.ErrorMessage(exception.Message);
+                return;
+            }
+            //fillTreeView();
+
+            var compositeBlocks = _parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
+            bool solveDispatchingProblem = true;
+            //_dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
+
+            _executionModels = new List<ExecutionModel>();
+            foreach (FBType fbType in _parcer.Storage.Types)
+            {
+                ExecutionModel em = new ExecutionModel(fbType.Name);
+                int basicPriority = 0;
+                foreach (Event ev in _parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
+                {
+                    em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
+                }
+                if (fbType.Type == FBClass.Composite)
+                {
+                    //create dispatcher
+                    IEnumerable<FBInstance> curFbInstances = _parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
+                    em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
+                }
+
+                _executionModels.Add(em);
+            }
+        }
+
+        private ProjectFileStructure loadProject(string filename)
+        {
+            FileStream fs = new FileStream(filename, FileMode.Open);
+            BinaryFormatter serializer = new BinaryFormatter();
+            //ProjectFileStructure openedProject = new ProjectFileStructure();
+
+            ProjectFileStructure openedProject = (ProjectFileStructure)serializer.Deserialize(fs);
+
+            fs.Close();
+            return openedProject;
+
+        }
+
         private void loadToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                clear();
-                try
+                
+
+                if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
                 {
-                    _parcer.ParseRecursive(openFileDialog1.FileName);
-                }
-                catch (Exception exception)
+                    ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);
+                    resetWorkspace(openedProject);
+                } 
+                else
                 {
-                    Program.ErrorMessage(exception.Message);
-                    return;
+                    resetWorkspace();
+                    loadFbSystem(openFileDialog1.FileName);
                 }
-                //fillTreeView();
                 VisualizableStringTree t = new VisualizableStringTree();
                 t.Construct(_parcer.Storage);
+                fbTypesView.Nodes.Add(t.TreeViewRoot());
+
                 varDependencyGraph = new VarDependencyGraph(_parcer.Storage);
                 varDependencyGraph.Construct();
-                var compositeBlocks = _parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
-                bool solveDispatchingProblem = true;
-                //_dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
-
-                _executionModels = new List<ExecutionModel>();
-                foreach (FBType fbType in _parcer.Storage.Types)
-                {
-                    ExecutionModel em = new ExecutionModel(fbType.Name);
-                    int basicPriority = 0;
-                    foreach (Event ev in _parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
-                    {
-                        em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
-                    }
-                    if (fbType.Type == FBClass.Composite)
-                    {
-                        //create dispatcher
-                        IEnumerable<FBInstance> curFbInstances = _parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
-                        em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
-                    }
-
-                    _executionModels.Add(em);
-                }
-
-                fbTypesView.Nodes.Add(t.TreeViewRoot());
             }
         }
 
@@ -257,6 +298,7 @@ namespace GUI
 
         private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            smvCodeRichTextBox.Text = "";
             SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels);
             foreach (string fbSmv in translator.TranslateAll())
             {
@@ -268,10 +310,31 @@ namespace GUI
 
         private void saveProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            /*if (saveFileDialogProject.ShowDialog() == DialogResult.OK)
+            FBType rootFbType = _parcer.Storage.Types.FirstOrDefault(t => t.IsRoot);
+            if (rootFbType == null)
             {
+                Program.ErrorMessage(Messages.No_FB_System_Loaded_Message_);
+                return;
+            }
+            saveFileDialogProject.FileName = rootFbType.Name + projectFileExtension;
+            if (saveFileDialogProject.ShowDialog() == DialogResult.OK)
+            {
+                ProjectFileStructure s = new ProjectFileStructure();
+                s.ExecutionModels = _executionModels;
+                s.Storage = _parcer.Storage;
+
+                FileStream fs = new FileStream(saveFileDialogProject.FileName, FileMode.Create);
+                BinaryFormatter serializer = new BinaryFormatter();
+                //try
+                //{
+                serializer.Serialize(fs, s);
+                //}
+
+                /*if (saveFileDialogProject.ShowDialog() == DialogResult.OK)
+                {
                 
-            }*/
+                }*/
+            }
         }
 
         private void saveSMVCodeToolStripMenuItem_Click(object sender, EventArgs e)

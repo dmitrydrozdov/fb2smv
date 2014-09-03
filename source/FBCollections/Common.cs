@@ -24,6 +24,7 @@ namespace FB2SMV
             Internal
         }
 
+        [Serializable]
         public class FBPart
         {
             public FBPart(string name, string comment, string fbType)
@@ -41,12 +42,13 @@ namespace FB2SMV
             public string Comment;
             public string FBType;
         }
-
+        [Serializable]
         public class FBInterface : FBPart
         {
             public Direction Direction;
         }
 
+        [Serializable]
         public class FBType
         {
             public FBType(string name, string comment, FBClass type, bool isRoot = false)
@@ -72,6 +74,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class Event : FBInterface
         {
             public Event(string name, string comment, string fbType, Direction direction)
@@ -93,6 +96,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class Variable : FBInterface
         {
 
@@ -122,6 +126,7 @@ namespace FB2SMV
             }
         }
 
+        [Serializable]
         public class WithConnection
         {
             public WithConnection(string fbType, string ev, string variable)
