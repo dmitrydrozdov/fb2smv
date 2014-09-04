@@ -26,6 +26,8 @@ namespace GUI
         {
             MessageBox.Show(message, Messages.ErrorMessageBox_Caption_);
         }
+
+        public static FB2SMV.Core.Settings Settings = new FB2SMV.Core.Settings();
         /*public static TreeNode ConstructFBTypesTree(Storage storage)
         {
             

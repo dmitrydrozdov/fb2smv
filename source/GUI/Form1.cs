@@ -296,10 +296,10 @@ namespace GUI
             MessageBox.Show(aboutMessage);
         }
 
-        private void saveSMVToolStripMenuItem_Click(object sender, EventArgs e)
+        private void generateSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
             smvCodeRichTextBox.Text = "";
-            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings);
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
@@ -416,6 +416,12 @@ namespace GUI
                 fillEventsPriorityList();
                 eventsPriorityListBox.SetSelected(selectedEvent.Priority, true);
             }
+        }
+
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.ShowDialog();
         }
     }
 }

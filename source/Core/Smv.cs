@@ -174,6 +174,11 @@ namespace FB2SMV
                 return name + "_ecc";
             }
 
+            public static string ArrayIndex(int index)
+            {
+                return "[" + index + "]";
+            }
+
             public static string InitialValue(Variable variable)
             {
                 if (variable.InitialValue != null) return variable.InitialValue;
@@ -187,10 +192,15 @@ namespace FB2SMV
                 Regex rAnd = new Regex(@"((?<=\w)&(?=\w))|((?<=\W)(AND|and|And)(?=\W))");
                 Regex rOr = new Regex(@"(?<=\w)\|(?=\w)|((?<=\W)(OR|or|Or)(?=\W))");
                 Regex rNot = new Regex(@"(?<=\W)(NOT|not|Not)");
+
+                Regex rFalse = new Regex(@"((?<=\W)(false|False)(?=\W))"); //TODO: switch off case sensitive
+                Regex rTrue = new Regex(@"((?<=\W)(true|True)(?=\W))"); //TODO: switch off case sensitive
                 //cond = cond.Replace("AND", Smv.And);
                 string cleared = rAnd.Replace(cond, " " + _smvPattern.And + " ");
                 cleared = rOr.Replace(cleared, " " + _smvPattern.Or + " ");
                 cleared = rNot.Replace(cleared, " " + _smvPattern.Not);
+                cleared = rFalse.Replace(cleared, " " + _smvPattern.False);
+                cleared = rTrue.Replace(cleared, " " + _smvPattern.True);
                 return cleared;
             }
 
@@ -213,6 +223,18 @@ namespace FB2SMV
                 }
                 else throw new Exception("Unknown var name: " + name);
                 return converted;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="name"></param>
+            /// <returns>[0] - instance name or variable name; [1] - variable name</returns>
+            public static string[] SplitConnectionVariableName(string name)
+            {
+                string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
+                if (splitArr.Count() == 0) throw new Exception("No connection var name");
+                return splitArr;
             }
 
             public static class DataTypes

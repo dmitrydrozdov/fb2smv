@@ -32,9 +32,10 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveSMVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.generateSMVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveSMVCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.fbTypesView = new System.Windows.Forms.TreeView();
             this.label5 = new System.Windows.Forms.Label();
@@ -71,6 +72,7 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.saveFileDialogProject = new System.Windows.Forms.SaveFileDialog();
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -95,7 +97,9 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.aboutToolStripMenuItem});
+            this.settingsToolStripMenuItem,
+            this.aboutToolStripMenuItem,
+            this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(772, 24);
@@ -107,7 +111,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadToolStripMenuItem,
             this.saveProjectToolStripMenuItem,
-            this.saveSMVToolStripMenuItem,
+            this.generateSMVToolStripMenuItem,
             this.saveSMVCodeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
@@ -127,12 +131,12 @@
             this.saveProjectToolStripMenuItem.Text = "Save project";
             this.saveProjectToolStripMenuItem.Click += new System.EventHandler(this.saveProjectToolStripMenuItem_Click);
             // 
-            // saveSMVToolStripMenuItem
+            // generateSMVToolStripMenuItem
             // 
-            this.saveSMVToolStripMenuItem.Name = "saveSMVToolStripMenuItem";
-            this.saveSMVToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
-            this.saveSMVToolStripMenuItem.Text = "Generate SMV code";
-            this.saveSMVToolStripMenuItem.Click += new System.EventHandler(this.saveSMVToolStripMenuItem_Click);
+            this.generateSMVToolStripMenuItem.Name = "generateSMVToolStripMenuItem";
+            this.generateSMVToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.generateSMVToolStripMenuItem.Text = "Generate SMV code";
+            this.generateSMVToolStripMenuItem.Click += new System.EventHandler(this.generateSMVToolStripMenuItem_Click);
             // 
             // saveSMVCodeToolStripMenuItem
             // 
@@ -147,6 +151,11 @@
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(12, 20);
             // 
             // openFileDialog1
             // 
@@ -517,6 +526,13 @@
             // 
             this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
             // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -573,7 +589,7 @@
         private System.Windows.Forms.TextBox varArraySizeTextBox;
         private System.Windows.Forms.Button propChangeButton;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem saveSMVToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem generateSMVToolStripMenuItem;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage VariablesPage;
         private System.Windows.Forms.TabPage smvCodePage;
@@ -598,6 +614,8 @@
         private System.Windows.Forms.ListBox eventsPriorityListBox;
         private System.Windows.Forms.Button eventPriorityDown;
         private System.Windows.Forms.Button eventPriorityUp;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
     }
 }
 

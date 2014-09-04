@@ -45,6 +45,7 @@
     <Compile Include="ExecutionModel.cs" />
     <Compile Include="ISmvPattern.cs" />
     <Compile Include="PriorityContainer.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Smv.cs" />
     <Compile Include="SmvCodeGenerator.cs" />
     <Compile Include="CyclicDispatcher.cs" />
