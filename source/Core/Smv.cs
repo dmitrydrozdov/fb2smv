@@ -12,7 +12,7 @@ namespace FB2SMV
         /// <summary>
         /// SMV code generation helper. Different patterns can be used. Default is CmSmvPattern
         /// </summary>
-        internal class Smv
+        public class Smv
         {
             private static ISmvPattern _smvPattern = new CmSmvPattern();
 
@@ -239,17 +239,47 @@ namespace FB2SMV
 
             public static class DataTypes
             {
-                public static string BoolType = "boolean";
-                public static string NormalRangeType = "0..99";
+                [Serializable]
+                public class BoolSmvType : ISmvType
+                {
+                    public override string ToString()
+                    {
+                        return "boolean";
+                    }
+                }
+                [Serializable]
+                public class RangeSmvType : ISmvType
+                {
+                    public RangeSmvType(int begin, int end)
+                    {
+                        RangeBegin = begin;
+                        RangeEnd = end;
+                    }
 
-                public static string GetType(string varType)
+                    public RangeSmvType(RangeSmvType copyInstance)
+                    {
+                        RangeBegin = copyInstance.RangeBegin;
+                        RangeEnd = copyInstance.RangeEnd;
+                    }
+                    public int RangeBegin { get; private set; }
+                    public int RangeEnd { get; private set; }
+                    public override string ToString()
+                    {
+                        return RangeBegin + ".." + RangeEnd;
+                    }
+                }
+
+                public static string BoolType = "boolean";
+                //public static string NormalRangeType = "0..99";
+
+                public static ISmvType GetType(string varType)
                 {
                     if (String.Compare(varType, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return BoolType;
+                        return new BoolSmvType();
                     if (String.Compare(varType, "INT", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return NormalRangeType;
+                        return new RangeSmvType(0,99);
                     if (String.Compare(varType, "UINT", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return NormalRangeType;
+                        return new RangeSmvType(0, 99);
                     return null;
                 }
             }

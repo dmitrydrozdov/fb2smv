@@ -7,7 +7,7 @@ namespace FB2SMV
 {
     namespace Core
     {
-        interface ISmvPattern //SMV code patterns interface.
+        public interface ISmvPattern //SMV code patterns interface.
         {
             string True { get; }
             string False { get; }

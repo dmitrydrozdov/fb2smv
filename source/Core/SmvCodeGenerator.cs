@@ -122,7 +122,7 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
                 smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve) + "\n";
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
-                smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name)) + "\n";
+                smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
                 smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections) + "\n";
                 smvModule += BasicFbSmv.SetServiceSignals() + "\n";
@@ -240,14 +240,12 @@ namespace FB2SMV
                     foreach (Variable variable in instanceVariables)
                     {
                         if (variable.ArraySize == 0)
-                            buffers += String.Format(Smv.VarDeclarationBlock, instance.Name + "_" + variable.Name, Smv.DataTypes.GetType(variable.Type));
+                            buffers += String.Format(Smv.VarDeclarationBlock, instance.Name + "_" + variable.Name, variable.SmvType);
                         else
                         {
                             for (int i = 0; i < variable.ArraySize; i++)
                             {
-                                buffers += String.Format(Smv.VarDeclarationBlock,
-                                    instance.Name + "_" + variable.Name + Smv.ArrayIndex(i),
-                                    Smv.DataTypes.GetType(variable.Type));
+                                buffers += String.Format(Smv.VarDeclarationBlock, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), variable.SmvType);
                             }
                         }
                     }
@@ -469,14 +467,12 @@ namespace FB2SMV
                 foreach (var variable in variables)
                 {
                     if (variable.ArraySize == 0)
-                        outp += String.Format(Smv.VarDeclarationBlock, variable.Name,
-                            Smv.DataTypes.GetType(variable.Type));
+                        outp += String.Format(Smv.VarDeclarationBlock, variable.Name, variable.SmvType);
                     else
                     {
                         for (int i = 0; i < variable.ArraySize; i++)
                         {
-                            outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i),
-                                Smv.DataTypes.GetType(variable.Type));
+                            outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.SmvType);
                         }
                     }
                 }
@@ -656,7 +652,7 @@ namespace FB2SMV
                 }
                 return varChangeBlocks;
             }
-            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines)
+            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
                 string varChangeBlocks = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output || v.Direction == Direction.Internal))
@@ -685,7 +681,24 @@ namespace FB2SMV
                                 val = Smv.False;
                             if (String.Compare(val, "true", StringComparison.InvariantCultureIgnoreCase) == 0)
                                 val = Smv.True;
-                            rule += " : (" + val + ");\n";
+
+                            if (variable.SmvType.GetType() != typeof(Smv.DataTypes.BoolSmvType) && settings.ModularArithmetics)
+                            {
+                                //string rangeStr = variable.SmvType.Split()
+                                Smv.DataTypes.RangeSmvType varType = (Smv.DataTypes.RangeSmvType)variable.SmvType;
+
+                                int modulo = varType.RangeEnd-varType.RangeBegin;
+                                string correction;
+                                if (varType.RangeBegin > 0) correction = " + " + varType.RangeBegin;
+                                else if (varType.RangeBegin < 0) correction = " - " + (Math.Abs(varType.RangeBegin));
+                                else correction = "";
+
+                                rule += " : (" + val + ") mod " + modulo + correction +";\n";
+                            }
+                            else
+                            {
+                                rule += " : (" + val + ");\n";
+                            }
                             rules += rule;
                         }
 

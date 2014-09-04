@@ -255,7 +255,7 @@ namespace GUI
                 varNameTextBox.Text = _selectedVariable.Name;
                 varTypeTextBox.Text = _selectedVariable.Type;
                 varArraySizeTextBox.Text = Convert.ToString(_selectedVariable.ArraySize);
-                varRangeTextBox.Text = _selectedVariable.SmvType;
+                varRangeTextBox.Text = _selectedVariable.SmvType.ToString();
 
                 _connectedVars = varDependencyGraph.GetConnectedVariables(VarDependencyGraph.VariableKey(_selectedVariable));
 
@@ -268,10 +268,23 @@ namespace GUI
 
         private void propChangeButton_Click(object sender, EventArgs e)
         {
-            _selectedVariable.SmvType = varRangeTextBox.Text;
-            foreach (Variable variable in _connectedVars)
+            if (_selectedVariable.SmvType is Smv.DataTypes.BoolSmvType) { }
+
+            else
             {
-                variable.SmvType = varRangeTextBox.Text;
+                string[] separator = {".."};
+                string[] rangeSplit = varRangeTextBox.Text.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                if (rangeSplit.Count() != 2)
+                {
+                    Program.ErrorMessage("Invalid range type!");
+                    return;
+                }
+
+                _selectedVariable.SmvType = new Smv.DataTypes.RangeSmvType(Convert.ToInt32(rangeSplit[0]), Convert.ToInt32(rangeSplit[1]));
+                foreach (Variable variable in _connectedVars)
+                {
+                    variable.SmvType = new Smv.DataTypes.RangeSmvType((Smv.DataTypes.RangeSmvType)_selectedVariable.SmvType);
+                }
             }
         }
 

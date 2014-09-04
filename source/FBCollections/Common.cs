@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace FB2SMV
@@ -96,6 +97,9 @@ namespace FB2SMV
             }
         }
 
+        public interface ISmvType
+        {}
+
         [Serializable]
         public class Variable : FBInterface
         {
@@ -103,10 +107,10 @@ namespace FB2SMV
             public readonly string Type;
             public readonly string InitialValue;
             public readonly int ArraySize;
-            public string SmvType;
+            public ISmvType SmvType;
 
             public Variable(string name, string comment, string fbType, Direction direction, string type, int arrSize,
-                string initialValue, string smvType)
+                string initialValue, ISmvType smvType)
             {
                 Name = name;
                 Comment = comment;
