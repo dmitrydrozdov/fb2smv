@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -69,6 +70,11 @@ namespace FB2SMV
                 Connections.Add(connection);
             }
 
+            public void PutInstanceParameter(InstanceParameter instanceParameter)
+            {
+                InstanceParameters.Add(instanceParameter);
+            }
+
             public readonly List<FBType> Types = new List<FBType>();
             public readonly List<Event> Events = new List<Event>();
             public readonly List<Variable> Variables = new List<Variable>();
@@ -80,6 +86,7 @@ namespace FB2SMV
             public readonly List<FBInstance> Instances = new List<FBInstance>();
             public readonly List<Connection> Connections = new List<Connection>();
             public readonly List<AlgorithmLine> AlgorithmLines = new List<AlgorithmLine>();
+            public readonly List<InstanceParameter> InstanceParameters = new List<InstanceParameter>(); 
         }
     }
 }

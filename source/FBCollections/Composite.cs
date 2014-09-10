@@ -14,6 +14,26 @@ namespace FB2SMV
         }
 
         [Serializable]
+        public class InstanceParameter : FBPart
+        {
+            public InstanceParameter(string name, string value, string instanceName, string fbType, string comment)
+            {
+                Name = name;
+                Comment = comment;
+                FBType = fbType;
+                InstanceName = instanceName;
+                Value = value;
+            }
+            public readonly string InstanceName;
+            public readonly string Value;
+
+            public override string ToString()
+            {
+                return String.Format("{0}.{1}.{2} = {3}", FBType, InstanceName, Name, Value);
+            }
+        }
+
+        [Serializable]
         public class FBInstance : FBPart
         {
             public FBInstance(string name, string instanceType, string comment, string fbType)

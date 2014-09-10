@@ -59,6 +59,7 @@ namespace FB2SMV
                 var instances = _storage.Instances.Where(inst => inst.FBType == fbType.Name);
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var internalBuffers = _storage.Connections.Where(conn => conn.FBType == fbType.Name);
+                var instanceParameters = _storage.InstanceParameters.Where(p => p.FBType == fbType.Name);
 
                 IDispatcher dispatcher = executionModel.Dispatcher;
 
@@ -67,7 +68,7 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.FbInstances(instances, _storage.Events, _storage.Variables) + "\n";
                 smvModule += CompositeFbSmv.InternalBuffersDeclaration(instances, _storage.Events, _storage.Variables) + "\n";
                 smvModule += Smv.Assign;
-                smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, _storage.Events, _storage.Variables) + "\n";
+                smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, _storage.Events, _storage.Variables, instanceParameters) + "\n";
                 //smvModule += _moduleVariablesInitBlock(variables) + "\n";
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
                 smvModule += CompositeFbSmv.InternalEventConnections(internalBuffers) + "\n";
@@ -257,7 +258,7 @@ namespace FB2SMV
                 }
                 return buffers;
             }
-            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables)
+            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters)
             {
                 string buffersInit = "";
                 foreach (FBInstance instance in instances)
@@ -270,13 +271,30 @@ namespace FB2SMV
                     }
                     foreach (Variable variable in instanceVariables)
                     {
+                        InstanceParameter instanceParameter = instanceParameters.FirstOrDefault(p => p.InstanceName == instance.Name && p.Name == variable.Name);
                         if (variable.ArraySize == 0)
-                            buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name, Smv.InitialValue(variable));
+                        {
+                            string value = instanceParameter == null ? Smv.InitialValue(variable) : instanceParameter.Value;
+                            buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name, value);
+                        }
                         else
                         {
+                            string[] values;
+
+                            if (instanceParameter == null)
+                            {
+                                values = new string[variable.ArraySize];
+                                for (int i = 0; i < variable.ArraySize; i++) values[i] = Smv.InitialValue(variable);
+                            }
+                            else
+                            {
+                                char[] trimChars = {'[',']'};
+                                values = instanceParameter.Value.Trim(trimChars).Split(',');
+                                if (values.Count() != variable.ArraySize) throw new Exception("Invalid array value " + instanceParameter.Value);
+                            }
                             for (int i = 0; i < variable.ArraySize; i++)
                             {
-                                buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), Smv.InitialValue(variable));
+                                buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), values[i]);
                             }
                         }
                     }

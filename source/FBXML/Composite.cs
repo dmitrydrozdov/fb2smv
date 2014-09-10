@@ -8,9 +8,15 @@ namespace FB2SMV
 {
     namespace FBXML
     {
+        public class InstanceParameter : NamedXmlDeclaration
+        {
+            [XmlAttribute] public string Value;
+        }
+
         public class FBInstance : NamedXmlDeclaration
         {
             [XmlAttribute] public string Type;
+            [XmlElement("Parameter")] public List<InstanceParameter> Parameters;
         }
 
         public class Connection

@@ -48,7 +48,7 @@ namespace FB2SMV
                     }
                     catch (Exception e)
                     {
-                        throw new Exception(String.Format("Couldn't load file \"{0}\" \n{1}", filename, e.Message));
+                        throw new Exception(String.Format("Can not load file \"{0}\" \n{1}", filename, e.Message));
                     }
                 }
 
@@ -143,8 +143,9 @@ namespace FB2SMV
             {
                 foreach (var fbInstance in fbNetwork.FB)
                 {
-                    Storage.PutFBInstance(new FB2SMV.FBCollections.FBInstance(fbInstance.Name, fbInstance.Type,
-                        fbInstance.Comment, fbTypeName));
+                    Storage.PutFBInstance(new FB2SMV.FBCollections.FBInstance(fbInstance.Name, fbInstance.Type, fbInstance.Comment, fbTypeName));
+                    fbInstance.Parameters.ForEach(p => Storage.PutInstanceParameter(new FBCollections.InstanceParameter(p.Name, p.Value, fbInstance.Name, fbTypeName, p.Comment)));
+
                     if (!_processedTypes.Contains(fbInstance.Type) && !_newTypes.Contains(fbInstance.Type))
                         _newTypes.Enqueue(fbInstance.Type);
 
