@@ -121,12 +121,15 @@ namespace FB2SMV
                 smvModule += Smv.OsmStateChangeBlock + "\n";
                 smvModule += BasicFbSmv.EcActionsCounterChangeBlock(states) + "\n";
                 smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
-                smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve) + "\n";
+
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
-                smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections) + "\n";
                 smvModule += BasicFbSmv.SetServiceSignals() + "\n";
+
+                smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
+                smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
+
                 smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
                 smvModule += FbSmvCommon.ModuleFooter() + "\n";
                 return smvModule;
@@ -701,26 +704,34 @@ namespace FB2SMV
                 }
                 return varsInit;
             }
-            public static string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve)
+            public static string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve, bool useProcesses)
             {
                 string rules = "";
                 string commonResetRule = Smv.OsmStateVar + "=" + Smv.Osm.S1;
                 if (!eventSignalResetSolve) commonResetRule += " & " + Smv.ExistsEnabledEcTran;
                 string priorityResetRule = "";
+                const string setValue = " : {0};\n";
                 foreach (PriorityEvent ev in executionModel.InputEventsPriorities/*events.Where(ev => ev.Direction == Direction.Input)*/)
                 {
                     if (priorityResetRule == "")
-                        rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), "\t" + commonResetRule + ": " + Smv.False + ";\n");
+                    {
+                        string rule = "\t" + commonResetRule;
+                        
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Value.Name) + "_reset", rule);
+                    }
                     else
                     {
-                        string rule = String.Format("\t({0} & ({1})) | ({2}) : {3};\n", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule, Smv.False);
-                        rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule);
+                        string rule = String.Format("\t({0} & ({1})) | ({2})", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Value.Name) + "_reset", rule);
                     }
 
                     priorityResetRule += Smv.ModuleParameters.Event(ev.Value.Name) + " | ";
                 }
                 return rules;
             }
+
             public static string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
             {
 
@@ -795,27 +806,31 @@ namespace FB2SMV
                 }
                 return varChangeBlocks;
             }
-            public static string OutputEventsSettingRules(IEnumerable<Event> events, IEnumerable<ECAction> actions)
+            public static string OutputEventsSettingRules(IEnumerable<Event> events, IEnumerable<ECAction> actions, bool useProcesses)
             {
                 string eventChangeString = "";
                 foreach (Event ev in events.Where(ev => ev.Direction == Direction.Output))
                 {
-                    string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar + "=0" +
-                                  " & ({0}) : {1};\n";
+                    string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar + "=0" + " & ({0})";
+                    const string setValue = " : {0};\n";
                     string outCond = "";
                     bool eventSignalSet = false;
                     foreach (ECAction action in actions.Where(act => act.Output == ev.Name))
                     {
-                        outCond += "(" + Smv.EccStateVar + "=" + Smv.EccState(action.ECState) + " & " +
-                                   Smv.EcActionsCounterVar + "=" + action.Number + ") | ";
+                        outCond += "(" + Smv.EccStateVar + "=" + Smv.EccState(action.ECState) + " & " + Smv.EcActionsCounterVar + "=" + action.Number + ") | ";
                         eventSignalSet = true;
                     }
                     if (eventSignalSet)
                     {
-                        rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars), Smv.True);
-                        eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), rule);
+                        rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars));
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), rule + String.Format(setValue, Smv.True));
+                        else eventChangeString += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Name) + "_set", rule);
                     }
-                    else eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), "");
+                    else
+                    {
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), "");
+                        else eventChangeString += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Name) + "_set", Smv.False);
+                    }
                 }
                 return eventChangeString;
             }
