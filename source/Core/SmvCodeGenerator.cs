@@ -438,7 +438,7 @@ namespace FB2SMV
                             }
                         }
                     }
-                    /*else if (srcComponent)
+                    else if (srcComponent && !dstComponent)
                     {
                         IEnumerable<string> samplingEvents = _getSamplingEventNamesForVariable(connection.Destination, withConnections);
                         MultiMap<string> eventConnectionsMap = _getEventConnectionsMap(internalBuffers);
@@ -469,7 +469,7 @@ namespace FB2SMV
                                 dataConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + Smv.ArrayIndex(i), srcString);
                             }
                         }
-                    }*/
+                    }
                 }
                 return dataConnections;
             }
