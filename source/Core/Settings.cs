@@ -10,6 +10,7 @@ namespace FB2SMV
         public class Settings
         {
             public bool ModularArithmetics = true;
+            public bool UseProcesses = true;
         }
     }
 }

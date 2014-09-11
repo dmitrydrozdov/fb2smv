@@ -31,6 +31,7 @@
             this.saveButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.modCheckBox = new System.Windows.Forms.CheckBox();
+            this.useProcessesCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // saveButton
@@ -66,6 +67,16 @@
             this.modCheckBox.Text = "Modular arithmetics";
             this.modCheckBox.UseVisualStyleBackColor = true;
             // 
+            // useProcessesCheckBox
+            // 
+            this.useProcessesCheckBox.AutoSize = true;
+            this.useProcessesCheckBox.Location = new System.Drawing.Point(13, 37);
+            this.useProcessesCheckBox.Name = "useProcessesCheckBox";
+            this.useProcessesCheckBox.Size = new System.Drawing.Size(96, 17);
+            this.useProcessesCheckBox.TabIndex = 3;
+            this.useProcessesCheckBox.Text = "Use processes";
+            this.useProcessesCheckBox.UseVisualStyleBackColor = true;
+            // 
             // SettingsWindow
             // 
             this.AcceptButton = this.saveButton;
@@ -73,6 +84,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(302, 120);
+            this.Controls.Add(this.useProcessesCheckBox);
             this.Controls.Add(this.modCheckBox);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.saveButton);
@@ -91,5 +103,6 @@
         private System.Windows.Forms.Button saveButton;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.CheckBox modCheckBox;
+        private System.Windows.Forms.CheckBox useProcessesCheckBox;
     }
 }

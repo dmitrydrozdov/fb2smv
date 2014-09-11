@@ -34,10 +34,12 @@ namespace GUI
         private void _loadSettings()
         {
             modCheckBox.Checked = Program.Settings.ModularArithmetics;
+            useProcessesCheckBox.Checked = Program.Settings.UseProcesses;
         }
         private void _saveSettings()
         {
             Program.Settings.ModularArithmetics = modCheckBox.Checked;
+            Program.Settings.UseProcesses = useProcessesCheckBox.Checked;
         }
     }
 }
