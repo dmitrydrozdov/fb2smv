@@ -9,7 +9,7 @@ namespace FB2SMV
     {
         public interface IDispatcher
         {
-            string GetSmvCode();
+            string GetSmvCode(bool useProcesses);
             string FBTypeName { get; }
 
             void SortInstances();

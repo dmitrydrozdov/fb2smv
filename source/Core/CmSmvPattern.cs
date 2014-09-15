@@ -22,6 +22,7 @@ namespace FB2SMV
             private static string _ecActionsCounterVar = "NA";
             private static string _algStepsCounterVar = "NI";
             private static string _nextCaseBlock = "next({0}):= case\n{1}\t" + _true + " : {0};\nesac;\n";
+            private static string _emptyNextCaseBlock = "next({0}):= case\n{1}esac;\n";
             private static string _existsInputEvent = "ExistsInputEvent";
             private static string _existsEnabledEcTran = "ExistsEnabledECTran";
             private static string _absentsEnabledEcTran = "(!ExistsEnabledECTran)";
@@ -29,7 +30,6 @@ namespace FB2SMV
             private static string _beta = "beta";
             private static string _omega = "omega";
             private static string _assign = "\nASSIGN\n";
-            private static string _fairnessRunning = "FAIRNESS running\n";
 
             private static string _normalVarAssignment = "{0} := {1};\n";
             private static string _nextVarAssignment = "next({0}) := {1};\n";
@@ -38,6 +38,8 @@ namespace FB2SMV
             private static string _and = " & ";
             private static string _or = " | ";
             private static string _not = "!";
+            private static string _fairness = "FAIRNESS ({0})\n";
+            private static string _running = "running";
 
             public string True
             {
@@ -83,6 +85,10 @@ namespace FB2SMV
             {
                 get { return _nextCaseBlock; }
             }
+            public string EmptyNextCaseBlock
+            {
+                get { return _emptyNextCaseBlock; }
+            }
             public string ExistsInputEvent
             {
                 get { return _existsInputEvent; }
@@ -111,10 +117,12 @@ namespace FB2SMV
             {
                 get { return _assign; }
             }
-            public string FairnessRunning
+
+            public string Running
             {
-                get { return _fairnessRunning; }
+                get { return _running; }
             }
+
             public string NormalVarAssignment
             {
                 get { return _normalVarAssignment; }
@@ -138,6 +146,11 @@ namespace FB2SMV
             public string Not
             {
                 get { return _not; }
+            }
+
+            public string Fairness 
+            {
+                get { return _fairness; }
             }
         }
     }

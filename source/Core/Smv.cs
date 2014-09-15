@@ -94,6 +94,11 @@ namespace FB2SMV
                 get { return _smvPattern.NextCaseBlock; }
             }
 
+            public static string EmptyNextCaseBlock
+            {
+                get { return _smvPattern.EmptyNextCaseBlock; }
+            }
+
             public static string ExistsInputEvent
             {
                 get { return _smvPattern.ExistsInputEvent; }
@@ -129,9 +134,14 @@ namespace FB2SMV
                 get { return _smvPattern.Assign; }
             }
 
-            public static string FairnessRunning
+            /*public static string FairnessRunning
             {
                 get { return _smvPattern.FairnessRunning; }
+            }*/
+
+            public static string Fairness(string fairCondition)
+            {
+                return String.Format(_smvPattern.Fairness, fairCondition);
             }
 
             public static string NormalVarAssignment
@@ -162,6 +172,11 @@ namespace FB2SMV
             public static string Not
             {
                 get { return _smvPattern.Not; }
+            }
+
+            public static string Running
+            {
+                get { return _smvPattern.Running; }
             }
 
             public static string OsmState(string name)
@@ -230,7 +245,7 @@ namespace FB2SMV
             /// </summary>
             /// <param name="name"></param>
             /// <returns>[0] - instance name or variable name; [1] - variable name</returns>
-            public static string[] SplitConnectionVariableName(string name)
+            public static string[] SplitConnectionVariableName(string name) //TODO: refactoring: ConnectionNode.Instance + ConnectionNode.Name
             {
                 string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
                 if (splitArr.Count() == 0) throw new Exception("No connection var name");

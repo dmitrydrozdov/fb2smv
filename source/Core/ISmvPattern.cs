@@ -20,6 +20,7 @@ namespace FB2SMV
             string EcActionsCounterVar { get; }
             string AlgStepsCounterVar { get; }
             string NextCaseBlock { get; }
+            string EmptyNextCaseBlock { get; }
             string ExistsInputEvent { get; }
             string ExistsEnabledEcTran { get; }
             string AbsentsEnabledEcTran { get; }
@@ -27,13 +28,14 @@ namespace FB2SMV
             string Beta { get; }
             string Omega { get; }
             string Assign { get; }
-            string FairnessRunning { get; }
+            string Running { get; }
             string NormalVarAssignment { get; }
             string NextVarAssignment { get; }
             char ConnectionNameSeparator { get; }
             string And { get; }
             string Or { get; }
             string Not { get; }
+            string Fairness { get; }
         }
     }
 }
