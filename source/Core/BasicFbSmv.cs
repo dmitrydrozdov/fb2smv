@@ -1,0 +1,419 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using FB2SMV.FBCollections;
+using FB2SMV.ST;
+
+namespace FB2SMV
+{
+    namespace Core
+    {
+        internal class BasicFbSmv
+        {
+            public static string ModuleHeader(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
+            {
+                string outp = "";
+                outp += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
+                foreach (var variable in variables)
+                {
+                    if (variable.ArraySize == 0)
+                        outp += String.Format(Smv.VarDeclarationBlock, variable.Name, variable.SmvType);
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.SmvType);
+                        }
+                    }
+                }
+                return outp;
+            }
+            public static string OsmStatesDeclaration()
+            {
+                return String.Format("VAR {0} : {{{1}, {2}, {3}}};\n", Smv.OsmStateVar, Smv.Osm.S0, Smv.Osm.S1, Smv.Osm.S2);
+            }
+            public static string EccStatesDeclaration(IEnumerable<ECState> states)
+            {
+                string eccStates = "";
+                foreach (var ecState in states)
+                {
+                    eccStates += Smv.EccState(ecState.Name) + Smv.ModuleParameters.Splitter;
+                }
+                return String.Format("VAR {0} : {{{1}}};\n", Smv.EccStateVar,
+                    eccStates.TrimEnd(Smv.ModuleParameters.Splitter.ToCharArray()));
+            }
+            public static string EcActionsCounterDeclaration(IEnumerable<ECState> states)
+            {
+                return String.Format("VAR {0}: 0..{1};\n", Smv.EcActionsCounterVar, states.Max(state => state.ActionsCount));
+            }
+            public static string AlgStepsCounterDeclaration(IEnumerable<TranslatedAlg> translatedAlgorithms)
+            {
+                string output = "";
+                if (translatedAlgorithms.Any()) output += String.Format("VAR {0}: 0..{1};\n", Smv.AlgStepsCounterVar, translatedAlgorithms.Max(alg => alg.Lines.Max(line => line.NI)));
+                else output += String.Format("VAR {0}: 0..{1};\n", Smv.AlgStepsCounterVar, "1");
+                return output;
+            }
+            public static string EcStateChangeBlock(IEnumerable<ECTransition> transitions, IEnumerable<Event> events)
+            {
+                string ecTransitionsSmv = "";
+
+                foreach (var transition in transitions)
+                {
+                    ecTransitionsSmv += "\t";
+                    ecTransitionsSmv += Smv.EccStateVar + "=" + Smv.EccState(transition.Source);
+                    ecTransitionsSmv += " & ";
+                    ecTransitionsSmv += Smv.OsmStateVar + "=" + Smv.Osm.S1;
+
+                    if (transition.Condition != null && transition.Condition != "1")
+                    {
+                        ecTransitionsSmv += " & " + _translateEventNames(Smv.ClearConditionExpr(transition.Condition), events);
+                    }
+                    ecTransitionsSmv += " : ";
+                    ecTransitionsSmv += Smv.EccState(transition.Destination);
+                    ecTransitionsSmv += ";\n";
+                }
+                return String.Format("\n" + Smv.NextCaseBlock + "\n", Smv.EccStateVar, ecTransitionsSmv);
+            }
+            public static string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
+            {
+                string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
+                string rformat = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar +
+                                 "=0 & ({0}): ";
+                const string modFormatSuffix = "({1}) mod {2};\n";
+                const string normalFormatSuffix = "{1};\n";
+
+                string rule1 = "";
+                string rule2 = "";
+                foreach (ECState state in states)
+                {
+                    string add = "(";
+                    add += Smv.EccStateVar + "=" + Smv.EccState(state.Name);
+                    add += " & ";
+                    add += Smv.EcActionsCounterVar + " {0} " + (state.ActionsCount > 0 ? state.ActionsCount : 1);
+                    add += ") | ";
+                    rule1 += String.Format(add, "<");
+                    rule2 += String.Format(add, "=");
+                }
+                rules += String.Format(rformat + modFormatSuffix, rule1.TrimEnd(Smv.OrTrimChars), Smv.EcActionsCounterVar + " + 1", states.Max(state => state.ActionsCount) + 1);
+                rules += String.Format(rformat + normalFormatSuffix, rule2.TrimEnd(Smv.OrTrimChars), " 0 ");
+
+                return String.Format(Smv.NextCaseBlock, Smv.EcActionsCounterVar, rules);
+            }
+            public static string AlgStepsCounterChangeBlock(IEnumerable<ECState> states, IEnumerable<ECAction> actions, IEnumerable<TranslatedAlg> algorithms)
+            {
+                //if (!algorithms.Any()) return "";
+                string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
+                string rformat = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & ({0}):";
+                const string modFormatSuffix = "({1}) mod {2};\n";
+                const string normalFormatSuffix = "{1};\n";
+                string rule1 = "";
+                string rule2 = "";
+
+                foreach (ECState state in states)
+                {
+                    string stateName = state.Name;
+                    if (state.ActionsCount == 0)
+                    {
+                        string add = "(";
+                        add += Smv.EccStateVar + "=" + Smv.EccState(state.Name);
+                        add += " & ";
+                        add += Smv.EcActionsCounterVar + " = 1";
+                        add += " & ";
+                        add += Smv.AlgStepsCounterVar + " {0} 1";
+                        add += ") | ";
+                        rule1 += String.Format(add, "<");
+                        rule2 += String.Format(add, "=");
+                    }
+                    else
+                    {
+                        foreach (ECAction action in actions.Where(act => act.ECState == stateName))
+                        {
+                            int algsCount = 0;
+                            if (action.Algorithm != null)
+                            {
+                                var actionAlg = algorithms.FirstOrDefault(alg => alg.Name == action.Algorithm);
+                                if (actionAlg != null)
+                                {
+                                    algsCount = actionAlg.Lines.Count;
+                                }
+                            }
+                            _addCounterRules(ref rule1, ref rule2, state, algsCount, action);
+                        }
+                    }
+                }
+                int maxAlgStepsCount = algorithms.Any() ? algorithms.Max(alg => alg.Lines.Max(line => line.NI)) : 1;
+                rules += String.Format(rformat + modFormatSuffix, rule1.TrimEnd(Smv.OrTrimChars), Smv.AlgStepsCounterVar + " + 1", maxAlgStepsCount + 1);
+                rules += String.Format(rformat + normalFormatSuffix, rule2.TrimEnd(Smv.OrTrimChars), " 0 ");
+
+                return String.Format(Smv.NextCaseBlock, Smv.AlgStepsCounterVar, rules);
+            }
+            public static string ModuleVariablesInitBlock(IEnumerable<Variable> variables)
+            {
+                string varsInit = "-- _moduleVariablesInitBlock\n";
+                foreach (var variable in variables)
+                {
+                    if (variable.ArraySize == 0)
+                        varsInit += String.Format(Smv.VarInitializationBlock, variable.Name, Smv.InitialValue(variable));
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            varsInit += String.Format(Smv.VarInitializationBlock, variable.Name + Smv.ArrayIndex(i), Smv.InitialValue(variable));
+                        }
+                    }
+                }
+                return varsInit;
+            }
+            public static string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve)
+            {
+                string rules = "";
+                string commonResetRule = Smv.OsmStateVar + "=" + Smv.Osm.S1;
+                if (!eventSignalResetSolve) commonResetRule += " & " + Smv.ExistsEnabledEcTran;
+                string priorityResetRule = "";
+                foreach (PriorityEvent ev in executionModel.InputEventsPriorities/*events.Where(ev => ev.Direction == Direction.Input)*/)
+                {
+                    if (priorityResetRule == "")
+                        rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), "\t" + commonResetRule + ": " + Smv.False + ";\n");
+                    else
+                    {
+                        string rule = String.Format("\t({0} & ({1})) | ({2}) : {3};\n", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule, Smv.False);
+                        rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule);
+                    }
+
+                    priorityResetRule += Smv.ModuleParameters.Event(ev.Value.Name) + " | ";
+                }
+                return rules;
+            }
+            public static string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
+            {
+
+                string varChangeBlocks = "";
+                foreach (Variable variable in variables.Where(v => v.Direction == Direction.Input))
+                {
+                    if (variable.ArraySize == 0)
+                        varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true));
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true, i));
+                        }
+                    }
+                }
+                return varChangeBlocks;
+            }
+            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
+            {
+                string varChangeBlocks = "";
+                foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output || v.Direction == Direction.Internal))
+                {
+                    string rules = "";
+                    IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
+                    foreach (AlgorithmLine line in currrentVarLines)
+                    {
+                        foreach (ECAction action in _findActionsByAlgorithmName(actions, line.AlgorithmName))
+                        {
+                            string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2;
+                            rule += " & ";
+                            rule += Smv.EccStateVar + "=" + Smv.EccState(action.ECState);
+                            rule += " & ";
+                            rule += Smv.EcActionsCounterVar + "=" + action.Number;
+                            rule += " & ";
+                            rule += Smv.AlgStepsCounterVar + "=" + line.NI;
+                            if (line.Condition != "1")
+                            {
+                                rule += " & ";
+                                rule += "(" + Smv.ClearConditionExpr(line.Condition) + ")";
+                            }
+                            //string val = line.Value;
+                            string val = Smv.ClearConditionExpr(line.Value); //TODO: test this. It is an experiment
+                            if (String.Compare(val, "false", StringComparison.InvariantCultureIgnoreCase) == 0)
+                                val = Smv.False;
+                            if (String.Compare(val, "true", StringComparison.InvariantCultureIgnoreCase) == 0)
+                                val = Smv.True;
+
+                            if (variable.SmvType.GetType() != typeof(Smv.DataTypes.BoolSmvType) && settings.ModularArithmetics)
+                            {
+                                //string rangeStr = variable.SmvType.Split()
+                                Smv.DataTypes.RangeSmvType varType = (Smv.DataTypes.RangeSmvType)variable.SmvType;
+
+                                int modulo = varType.RangeEnd - varType.RangeBegin;
+                                string correction;
+                                if (varType.RangeBegin > 0) correction = " + " + varType.RangeBegin;
+                                else if (varType.RangeBegin < 0) correction = " - " + (Math.Abs(varType.RangeBegin));
+                                else correction = "";
+
+                                rule += " : (" + val + ") mod " + modulo + correction + ";\n";
+                            }
+                            else
+                            {
+                                rule += " : (" + val + ");\n";
+                            }
+                            rules += rule;
+                        }
+
+                    }
+                    varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, rules);
+
+                }
+                return varChangeBlocks;
+            }
+            public static string OutputEventsSettingRules(IEnumerable<Event> events, IEnumerable<ECAction> actions)
+            {
+                string eventChangeString = "";
+                foreach (Event ev in events.Where(ev => ev.Direction == Direction.Output))
+                {
+                    string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar + "=0" +
+                                  " & ({0}) : {1};\n";
+                    string outCond = "";
+                    bool eventSignalSet = false;
+                    foreach (ECAction action in actions.Where(act => act.Output == ev.Name))
+                    {
+                        outCond += "(" + Smv.EccStateVar + "=" + Smv.EccState(action.ECState) + " & " +
+                                   Smv.EcActionsCounterVar + "=" + action.Number + ") | ";
+                        eventSignalSet = true;
+                    }
+                    if (eventSignalSet)
+                    {
+                        rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars), Smv.True);
+                        eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), rule);
+                    }
+                    else eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), "");
+                }
+                return eventChangeString;
+            }
+            public static string SetOutputVarBuffers(IEnumerable<Variable> variables, IEnumerable<Event> events, IEnumerable<ECAction> actions, IEnumerable<WithConnection> withConnections)
+            {
+                string outVarsChangeString = "";
+                foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output))
+                {
+                    string rule = Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar + "=0" +
+                                  " & ({0}) : {1};\n";
+                    string outCond = "";
+
+                    List<ECAction> ac = new List<ECAction>();
+                    foreach (WithConnection connection in withConnections.Where(conn => conn.Var == variable.Name))
+                    {
+                        foreach (ECAction action in actions.Where(act => act.Output == connection.Event))
+                        {
+                            if (!ac.Contains(action)) ac.Add(action);
+                        }
+                    }
+
+                    foreach (ECAction action in ac)
+                    {
+                        outCond += "(" + Smv.EccStateVar + "=" + Smv.EccState(action.ECState) + " & " +
+                                   Smv.EcActionsCounterVar + "=" + action.Number + ") | ";
+                    }
+                    rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars), variable.Name);
+                    outVarsChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Variable(variable.Name),
+                        rule);
+                }
+                return outVarsChangeString;
+            }
+            public static string SetServiceSignals()
+            {
+                string ruleTemplate = "\t({0} & {1}={2} & !{3} | {1}={4} & {5}): {6};\n";
+                string betaRule = String.Format(ruleTemplate,
+                    Smv.Alpha,
+                    Smv.OsmStateVar,
+                    Smv.Osm.S0,
+                    Smv.ExistsInputEvent,
+                    Smv.Osm.S1,
+                    Smv.AbsentsEnabledEcTran,
+                    Smv.True
+                    );
+                string alphaRule = String.Format(ruleTemplate,
+                    Smv.Alpha,
+                    Smv.OsmStateVar,
+                    Smv.Osm.S0,
+                    Smv.ExistsInputEvent,
+                    Smv.Osm.S1,
+                    Smv.AbsentsEnabledEcTran,
+                    Smv.False
+                    );
+                return String.Format(Smv.NextCaseBlock, Smv.Beta, betaRule) + String.Format(Smv.NextCaseBlock, Smv.Alpha, alphaRule);
+            }
+            public static string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions)
+            {
+                string ecTran = "";
+                foreach (ECState state in states)
+                {
+                    IEnumerable<ECTransition> stateTrans = transitions.Where(t => t.Source == state.Name);
+                    if (!stateTrans.Any()) continue;
+
+                    ecTran += "(";
+                    ecTran += Smv.EccStateVar + "=" + Smv.EccState(state.Name);
+
+                    string transitionRules = "";
+                    foreach (var transition in stateTrans)
+                    {
+                        transitionRules += "(";
+                        if (transition.Condition == null || transition.Condition == "1")
+                        {
+                            if (!showUnconditionalTransitions)
+                            {
+                                transitionRules = null;
+                                break;
+                            }
+                            else transitionRules += "1";
+
+                        }
+                        else
+                        {
+                            transitionRules += _translateEventNames(Smv.ClearConditionExpr(transition.Condition), events);
+                        }
+
+                        transitionRules += ") | ";
+                    }
+                    if (transitionRules != null) ecTran += "  & (" + transitionRules.TrimEnd(Smv.OrTrimChars) + ")";
+                    ecTran += ") | ";
+                }
+
+                string existsEnabledECTran = String.Format("DEFINE {0}:= {1};\n", Smv.ExistsEnabledEcTran, ecTran.Trim(Smv.OrTrimChars));
+                string absentsEnabledECTran = "\n";
+                return FbSmvCommon.DefineExistsInputEvent(events) + existsEnabledECTran + absentsEnabledECTran;
+            }
+
+            private static string _translateEventNames(string str, IEnumerable<Event> events)
+            {
+                Console.WriteLine("\n\n" + str);
+
+                Regex evNamesRegex = new Regex(@"(\w+)");
+
+                string[] strSplit = evNamesRegex.Split(str);
+
+                for (int i = 0; i < strSplit.Count(); i++)
+                {
+                    var foundEvent = events.FirstOrDefault(ev => ev.Name == strSplit[i]);
+                    if (foundEvent != null)
+                    {
+                        strSplit[i] = Smv.ModuleParameters.Event(foundEvent.Name);
+                    }
+                }
+                return String.Concat(strSplit);
+            }
+            private static void _addCounterRules(ref string rule1, ref string rule2, ECState state, int algsCount, ECAction action)
+            {
+                string add = "(";
+                add += Smv.EccStateVar + "=" + Smv.EccState(state.Name);
+                add += " & ";
+                add += Smv.EcActionsCounterVar + " = " + (action.Number);
+                //(state.ActionsCount > 0 ? state.ActionsCount : 1);
+                add += " & ";
+                add += Smv.AlgStepsCounterVar + " {0} " + (algsCount > 0 ? algsCount : 1);
+                add += ") | ";
+                rule1 += String.Format(add, "<");
+                rule2 += String.Format(add, "=");
+            }
+            private static IEnumerable<ECAction> _findActionsByAlgorithmName(IEnumerable<ECAction> actions, string algorithmName)
+            {
+                return actions.Where(act => act.Algorithm == algorithmName);
+            }
+
+        }
+
+    }
+}
