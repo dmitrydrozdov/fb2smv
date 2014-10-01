@@ -40,9 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicFbSmv.cs" />
     <Compile Include="CmSmvPattern.cs" />
     <Compile Include="Comparisions.cs" />
+    <Compile Include="CompositeFbSmv.cs" />
     <Compile Include="ExecutionModel.cs" />
+    <Compile Include="FbSmvCommon.cs" />
     <Compile Include="ISmvPattern.cs" />
     <Compile Include="PriorityContainer.cs" />
     <Compile Include="Settings.cs" />
