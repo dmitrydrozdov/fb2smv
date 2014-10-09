@@ -221,7 +221,7 @@ namespace FB2SMV
                 else if (rangeBegin < 0) correction = " - " + (Math.Abs(rangeBegin));
                 else correction = "";
 
-                return "(" + statement + ") mod " + modulo + correction + ";\n";
+                return "(" + statement + ") mod " + modulo + correction;
             }
             public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
@@ -347,7 +347,7 @@ namespace FB2SMV
                 }
                 else
                 {
-                    return String.Format(Smv.DefineBlock, "alpha_beta", rule);
+                    return String.Format(Smv.DefineBlock, "alpha_reset", rule) + String.Format(Smv.DefineBlock, "beta_set", rule); ;
                 }
             }
             public static string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions)

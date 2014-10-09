@@ -212,13 +212,14 @@ namespace FB2SMV
                             string[] connectionDst = Smv.SplitConnectionVariableName(dst);
                             reset_string = String.Format("\t({0}.{1}_reset) : {2};\n", connectionDst[0], Smv.ModuleParameters.Event(connectionDst[1]), Smv.False);
                             srcString += " : " + Smv.True + ";\n";
-                            eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
                         }
                         else
                         {
                             //reset_string = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
                             //srcString = srcString.TrimEnd(Smv.OrTrimChars) + ") : " + Smv.True + ";\n";
                             //eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
+                            dstSmvVar += "_set";
                             definesList.Add(String.Format(Smv.DefineBlock, dstSmvVar, srcString));
                         }
                         
