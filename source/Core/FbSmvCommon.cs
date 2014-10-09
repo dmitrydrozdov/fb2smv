@@ -62,6 +62,7 @@ namespace FB2SMV
             public static string DefineExistsInputEvent(IEnumerable<Event> events)
             {
                 string inputEvents = events.Where(ev => ev.Direction == Direction.Input).Aggregate("", (current, ev) => current + (Smv.ModuleParameters.Event(ev.Name) + " | "));
+                if (inputEvents == "") inputEvents = Smv.False;
                 return String.Format(Smv.DefineBlock, Smv.ExistsInputEvent, inputEvents.Trim(Smv.OrTrimChars));
             }
 

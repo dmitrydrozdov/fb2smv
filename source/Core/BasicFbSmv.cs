@@ -212,6 +212,17 @@ namespace FB2SMV
                 }
                 return varChangeBlocks;
             }
+
+            private static string _modulo_range(string statement, int rangeBegin, int rangeEnd)
+            {
+                int modulo = rangeEnd - rangeBegin;
+                string correction;
+                if (rangeBegin > 0) correction = " + " + rangeBegin;
+                else if (rangeBegin < 0) correction = " - " + (Math.Abs(rangeBegin));
+                else correction = "";
+
+                return "(" + statement + ") mod " + modulo + correction + ";\n";
+            }
             public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
                 string varChangeBlocks = "";
@@ -246,14 +257,7 @@ namespace FB2SMV
                             {
                                 //string rangeStr = variable.SmvType.Split()
                                 Smv.DataTypes.RangeSmvType varType = (Smv.DataTypes.RangeSmvType)variable.SmvType;
-
-                                int modulo = varType.RangeEnd - varType.RangeBegin;
-                                string correction;
-                                if (varType.RangeBegin > 0) correction = " + " + varType.RangeBegin;
-                                else if (varType.RangeBegin < 0) correction = " - " + (Math.Abs(varType.RangeBegin));
-                                else correction = "";
-
-                                rule += " : (" + val + ") mod " + modulo + correction + ";\n";
+                                rule += " : (" + _modulo_range(val, varType.RangeBegin, varType.RangeEnd) + ");\n"; ;
                             }
                             else
                             {

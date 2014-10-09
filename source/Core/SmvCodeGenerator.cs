@@ -74,13 +74,12 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
                 smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
                 //smvModule += _eventInputsResetRules(events) + "\n";
-                smvModule += CompositeFbSmv.InputEventsResetRules(events);
                 smvModule += "\n-- ---DISPATCHER--- --\n";
                 smvModule += "-- *************** --\n";
                 smvModule += dispatcher.GetSmvCode(_settings.UseProcesses) + "\n";
 
                 smvModule += CompositeFbSmv.InternalEventConnections(connections, _settings.UseProcesses) + "\n";
-
+                smvModule += CompositeFbSmv.InputEventsResetRules(events, _settings.UseProcesses);
                 smvModule += FbSmvCommon.DefineExistsInputEvent(events) + "\n";
                 smvModule += CompositeFbSmv.DefineOmega(connections) + "\n";
 

@@ -369,6 +369,10 @@ namespace GUI
             {
                 StreamWriter wr = new StreamWriter(saveFileDialogSMV.FileName);
                 wr.Write(smvCodeRichTextBox.Text);
+                if (mainModuleRichTextBox.Text != "")
+                {
+                    wr.Write(mainModuleRichTextBox.Text);
+                }
                 wr.Close();
             }
         }

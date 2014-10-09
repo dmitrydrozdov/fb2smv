@@ -196,7 +196,11 @@ namespace FB2SMV
 
             public static string InitialValue(Variable variable)
             {
-                if (variable.InitialValue != null) return variable.InitialValue;
+                if (variable.InitialValue != null)
+                {
+                    if (variable.InitialValue == "0.0") return "0";
+                    return variable.InitialValue;
+                }
                 if (String.Compare(variable.Type, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
                     return "FALSE";
                 return "0";
