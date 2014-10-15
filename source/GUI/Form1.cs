@@ -80,24 +80,7 @@ namespace GUI
             bool solveDispatchingProblem = true;
             //_dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
 
-            _executionModels = new List<ExecutionModel>();
-            foreach (FBType fbType in _parcer.Storage.Types)
-            {
-                ExecutionModel em = new ExecutionModel(fbType.Name);
-                int basicPriority = 0;
-                foreach (Event ev in _parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
-                {
-                    em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
-                }
-                if (fbType.Type == FBClass.Composite)
-                {
-                    //create dispatcher
-                    IEnumerable<FBInstance> curFbInstances = _parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
-                    em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
-                }
-
-                _executionModels.Add(em);
-            }
+            _executionModels = ExecutionModelsList.Generate(_parcer, solveDispatchingProblem);
         }
 
         private ProjectFileStructure loadProject(string filename)

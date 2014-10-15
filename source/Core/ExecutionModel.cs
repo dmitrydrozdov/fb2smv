@@ -50,5 +50,31 @@ namespace FB2SMV
                 return String.Format("{0} - {1}", Priority, Value.Name);
             }
         }
+
+        public class ExecutionModelsList
+        {
+            public static List<ExecutionModel> Generate(FBClassParcer parcer, bool solveDispatchingProblem)
+            {
+                List<ExecutionModel> outList = new List<ExecutionModel>();
+                foreach (FBType fbType in parcer.Storage.Types)
+                {
+                    ExecutionModel em = new ExecutionModel(fbType.Name);
+                    int basicPriority = 0;
+                    foreach (Event ev in parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
+                    {
+                        em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
+                    }
+                    if (fbType.Type == FBClass.Composite)
+                    {
+                        //create dispatcher
+                        IEnumerable<FBInstance> curFbInstances = parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
+                        em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
+                    }
+
+                    outList.Add(em);
+                }
+                return outList;
+            }
+        }
     }
 }
