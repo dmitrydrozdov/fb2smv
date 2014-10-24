@@ -100,8 +100,14 @@ namespace GUI
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                
+                if (mainModuleRichTextBox.Text != "")
+                {
 
+                    if (MessageBox.Show("Main module exists. Clear it?", "", MessageBoxButtons.YesNo) == DialogResult.OK)
+                    {
+                        mainModuleRichTextBox.Text = "";
+                    }
+                }
                 if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
                 {
                     ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);
@@ -299,6 +305,10 @@ namespace GUI
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
+                if (mainModuleRichTextBox.Text == "")
+                {
+                    mainModuleRichTextBox.Text = translator.GenerateMain();
+                }
             }
             //smvCodePage.Focus();
             tabControl1.SelectTab(smvCodePage);

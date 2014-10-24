@@ -27,6 +27,57 @@ namespace FB2SMV
                 }
                 return inst;
             }
+
+            public static string ComponentDataOutputNextStatements(IEnumerable<Variable> allVariables, IEnumerable<FBInstance> instances)
+            {
+                string outStr = "";
+                foreach (FBInstance instance in instances)
+                {
+                    var dataOutputs = allVariables.Where(v => v.FBType == instance.InstanceType && v.Direction == Direction.Output);
+                    foreach (Variable variable in dataOutputs)
+                    {
+                        if (variable.ArraySize == 0)
+                        {
+                            string varName = instance.Name + "_" + variable.Name;
+                            outStr += String.Format(Smv.NextVarAssignment, varName, varName);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < variable.ArraySize; i++)
+                            {
+                                string varName = String.Format("{0}_{1}[{2}]", instance.Name, variable.Name, i);
+                                outStr += String.Format(Smv.NextVarAssignment, varName, varName);
+                            }
+                        }
+                    }
+                }
+                return outStr;
+            }
+            public static string NonConnectedInstanceOutputEvents(IEnumerable<Event> allEvents, IEnumerable<FBInstance> instances, IEnumerable<Connection> connections)
+            {
+                string outStr = "";
+                foreach (FBInstance instance in instances)
+                {
+                    var nonConnectedEvents = allEvents.Where(ev => ev.FBType == instance.InstanceType && _eventIsNonConnected(instance.Name, ev, connections));
+                    foreach (Event ev in nonConnectedEvents)
+                    {
+                        string bufName = instance.Name + "_" + ev.Name;
+                        outStr += String.Format(Smv.NextVarAssignment, bufName, bufName);
+                    }
+                }
+                return outStr;
+            }
+
+            private static bool _eventIsNonConnected(string instanceName, Event ev, IEnumerable<Connection> connections)
+            {
+                foreach (Connection conn in connections)
+                {
+                    if ((conn.Source == instanceName + "." + ev.Name) || (conn.Destination == instanceName + "." + ev.Name))
+                        return false;
+                }
+                return true;
+            }
+
             public static string InternalBuffersDeclaration(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables)
             {
                 string buffers = "";
@@ -124,7 +175,7 @@ namespace FB2SMV
                 }
                 return input;
             }
-            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters)
+            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters, bool mainModule = false)
             {
                 string buffersInit = "";
                 foreach (FBInstance instance in instances)
@@ -172,8 +223,11 @@ namespace FB2SMV
                             }
                         }
                     }
-                    buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Alpha, Smv.False);
-                    buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Beta, Smv.False);
+                    if (!mainModule)
+                    {
+                        buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Alpha, Smv.False);
+                        buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Beta, Smv.False);
+                    }
                     buffersInit += "\n";
                 }
                 return buffersInit;
