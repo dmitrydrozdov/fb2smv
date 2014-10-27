@@ -35,7 +35,7 @@ namespace FB2SMV
                 _solveDispatchingProblem = solveDispatchingProblem;
             }
 
-            public string GetSmvCode()
+            public string GetSmvCode(bool useProcesses)
             {
                 string smvDispatcher = "";
 
@@ -48,20 +48,37 @@ namespace FB2SMV
                     string alphaVar = priorityInstance.Value.Name + "_" + Smv.Alpha;
                     string betaVar = priorityInstance.Value.Name + "_" + Smv.Beta;
 
+                    string instanceBetaSet = "";
+                    string instanceAlphaReset = "";
+                    if (!useProcesses)
+                    {
+                        instanceBetaSet = String.Format("\t{0}.beta_set : {1};\n", priorityInstance.Value.Name, Smv.True);
+                        instanceAlphaReset = String.Format("\t{0}.alpha_reset : {1};\n", priorityInstance.Value.Name, Smv.False);
+                    }
+
                     if (_solveDispatchingProblem){
-                        smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + (firstBlock ? Smv.And + Smv.Not + Smv.ExistsInputEvent : "") + " : " + Smv.True + ";\n");
+                        smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + (firstBlock ? Smv.And + Smv.Not + Smv.ExistsInputEvent : "") + " : " + Smv.True + ";\n" + instanceAlphaReset);
                         firstBlock = false;
                     }
                     else
                     {
-                        smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + Smv.And + Smv.Not + Smv.ExistsInputEvent + " : " + Smv.True + ";\n");
+                        smvDispatcher += String.Format(Smv.NextCaseBlock, alphaVar, "\t" + prevBeta + Smv.And + Smv.Omega + Smv.And + Smv.Not + Smv.ExistsInputEvent + " : " + Smv.True + ";\n" + instanceAlphaReset);
                     }
-                    smvDispatcher += String.Format(Smv.NextCaseBlock, betaVar, "\t" + betaVar + Smv.And + Smv.Omega + " : " + Smv.False + ";\n");
+                    smvDispatcher += String.Format(Smv.NextCaseBlock, betaVar, "\t" + betaVar + Smv.And + Smv.Omega + " : " + Smv.False + ";\n" + instanceBetaSet);
                     prevBeta = betaVar;
                 }
 
-                smvDispatcher += String.Format(Smv.NextCaseBlock, Smv.Alpha, "\t" + Smv.Alpha + Smv.And + Smv.Omega + Smv.And + (Smv.Not + Smv.ExistsInputEvent) + " : " + Smv.False + ";\n");
-                smvDispatcher += String.Format(Smv.NextCaseBlock, Smv.Beta, "\t" + prevBeta + Smv.And + Smv.Omega + " : " + Smv.True + ";\n");
+                if (useProcesses)
+                {
+                    smvDispatcher += String.Format(Smv.NextCaseBlock, Smv.Alpha, "\t" + Smv.Alpha + Smv.And + Smv.Omega + Smv.And + (Smv.Not + Smv.ExistsInputEvent) + " : " + Smv.False + ";\n");
+                    smvDispatcher += String.Format(Smv.NextCaseBlock, Smv.Beta, "\t" + prevBeta + Smv.And + Smv.Omega + " : " + Smv.True + ";\n");
+                }
+                else
+                {
+                    smvDispatcher += String.Format(Smv.DefineBlock, "beta_set", prevBeta + Smv.And + Smv.Omega);
+                    smvDispatcher += String.Format(Smv.DefineBlock, "alpha_reset", Smv.Alpha + Smv.And + Smv.Omega + Smv.And + (Smv.Not + Smv.ExistsInputEvent));
+                    smvDispatcher += Smv.Assign + "\n";
+                }
                 return smvDispatcher;
             }
 

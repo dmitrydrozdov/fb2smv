@@ -34,6 +34,7 @@
             this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.generateSMVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveSMVCodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
@@ -72,7 +73,8 @@
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.saveFileDialogProject = new System.Windows.Forms.SaveFileDialog();
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
-            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mainModuleTab = new System.Windows.Forms.TabPage();
+            this.mainModuleRichTextBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -91,6 +93,7 @@
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.mainModuleTab.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -144,6 +147,13 @@
             this.saveSMVCodeToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
             this.saveSMVCodeToolStripMenuItem.Text = "Save SMV Code";
             this.saveSMVCodeToolStripMenuItem.Click += new System.EventHandler(this.saveSMVCodeToolStripMenuItem_Click);
+            // 
+            // settingsToolStripMenuItem
+            // 
+            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
+            this.settingsToolStripMenuItem.Text = "Settings";
+            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
@@ -291,6 +301,7 @@
             this.tabControl1.Controls.Add(this.eventsPage);
             this.tabControl1.Controls.Add(this.DispatcherPage);
             this.tabControl1.Controls.Add(this.smvCodePage);
+            this.tabControl1.Controls.Add(this.mainModuleTab);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
@@ -526,12 +537,25 @@
             // 
             this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
             // 
-            // settingsToolStripMenuItem
+            // mainModuleTab
             // 
-            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(61, 20);
-            this.settingsToolStripMenuItem.Text = "Settings";
-            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            this.mainModuleTab.Controls.Add(this.mainModuleRichTextBox);
+            this.mainModuleTab.Location = new System.Drawing.Point(4, 22);
+            this.mainModuleTab.Name = "mainModuleTab";
+            this.mainModuleTab.Padding = new System.Windows.Forms.Padding(3);
+            this.mainModuleTab.Size = new System.Drawing.Size(532, 492);
+            this.mainModuleTab.TabIndex = 4;
+            this.mainModuleTab.Text = "Main";
+            this.mainModuleTab.UseVisualStyleBackColor = true;
+            // 
+            // mainModuleRichTextBox
+            // 
+            this.mainModuleRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.mainModuleRichTextBox.Location = new System.Drawing.Point(3, 3);
+            this.mainModuleRichTextBox.Name = "mainModuleRichTextBox";
+            this.mainModuleRichTextBox.Size = new System.Drawing.Size(526, 486);
+            this.mainModuleRichTextBox.TabIndex = 0;
+            this.mainModuleRichTextBox.Text = "";
             // 
             // Form1
             // 
@@ -564,6 +588,7 @@
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
+            this.mainModuleTab.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -616,6 +641,8 @@
         private System.Windows.Forms.Button eventPriorityUp;
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.TabPage mainModuleTab;
+        private System.Windows.Forms.RichTextBox mainModuleRichTextBox;
     }
 }
 

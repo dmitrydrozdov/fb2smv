@@ -41,6 +41,7 @@ namespace FB2SMV
                 }
                 return moduleParameters.TrimEnd(Smv.ModuleParameters.Splitter.ToCharArray());
             }
+
             public static string VarSamplingRule(string varName, IEnumerable<WithConnection> withConnections, bool basic, int arrayIndex = -1)
             {
                 string samplingEvents = "";
@@ -57,15 +58,26 @@ namespace FB2SMV
                 rule += " : " + Smv.ModuleParameters.Variable(varName) + arrayIndexString + " ;\n";
                 return rule;
             }
+
             public static string DefineExistsInputEvent(IEnumerable<Event> events)
             {
                 string inputEvents = events.Where(ev => ev.Direction == Direction.Input).Aggregate("", (current, ev) => current + (Smv.ModuleParameters.Event(ev.Name) + " | "));
+                if (inputEvents == "") inputEvents = Smv.False;
                 return String.Format(Smv.DefineBlock, Smv.ExistsInputEvent, inputEvents.Trim(Smv.OrTrimChars));
             }
-            public static string ModuleFooter()
+
+            public static string ModuleFooter(Settings settings)
             {
-                return "\n" + Smv.FairnessRunning;
+                if (settings.UseProcesses) return "\n" + Smv.Fairness(Smv.Running);
+                else
+                {
+                    string ret = "";
+                    ret += Smv.Fairness(Smv.Alpha);
+                    ret += Smv.Fairness(Smv.Beta);
+                    return ret + "\n";
+                }
             }
+
             public static string SmvModuleDeclaration(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
             {
 

@@ -80,24 +80,7 @@ namespace GUI
             bool solveDispatchingProblem = true;
             //_dispatchers = DispatchersCreator.Create(compositeBlocks, _parcer.Storage.Instances, solveDispatchingProblem);
 
-            _executionModels = new List<ExecutionModel>();
-            foreach (FBType fbType in _parcer.Storage.Types)
-            {
-                ExecutionModel em = new ExecutionModel(fbType.Name);
-                int basicPriority = 0;
-                foreach (Event ev in _parcer.Storage.Events.Where(ev => ev.FBType == fbType.Name && ev.Direction == Direction.Input))
-                {
-                    em.AddInputPriorityEvent(new PriorityEvent(basicPriority++, ev));
-                }
-                if (fbType.Type == FBClass.Composite)
-                {
-                    //create dispatcher
-                    IEnumerable<FBInstance> curFbInstances = _parcer.Storage.Instances.Where((inst) => inst.FBType == fbType.Name);
-                    em.Dispatcher = new CyclicDispatcher(fbType.Name, curFbInstances, solveDispatchingProblem);
-                }
-
-                _executionModels.Add(em);
-            }
+            _executionModels = ExecutionModelsList.Generate(_parcer, solveDispatchingProblem);
         }
 
         private ProjectFileStructure loadProject(string filename)
@@ -117,8 +100,14 @@ namespace GUI
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                
+                if (mainModuleRichTextBox.Text != "")
+                {
 
+                    if (MessageBox.Show("Main module exists. Clear it?", "", MessageBoxButtons.YesNo) == DialogResult.OK)
+                    {
+                        mainModuleRichTextBox.Text = "";
+                    }
+                }
                 if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
                 {
                     ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);
@@ -316,6 +305,10 @@ namespace GUI
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
+                if (mainModuleRichTextBox.Text == "")
+                {
+                    mainModuleRichTextBox.Text = translator.GenerateMain();
+                }
             }
             //smvCodePage.Focus();
             tabControl1.SelectTab(smvCodePage);
@@ -369,6 +362,10 @@ namespace GUI
             {
                 StreamWriter wr = new StreamWriter(saveFileDialogSMV.FileName);
                 wr.Write(smvCodeRichTextBox.Text);
+                if (mainModuleRichTextBox.Text != "")
+                {
+                    wr.Write(mainModuleRichTextBox.Text);
+                }
                 wr.Close();
             }
         }

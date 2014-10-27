@@ -63,7 +63,7 @@ namespace FB2SMV
                 FBType = fbType;
             }
 
-            public readonly string Source;
+            public readonly string Source; //TODO: string -> ConnectionNode
             public readonly string Destination;
             public readonly string FBType;
             public readonly ConnectionType Type;

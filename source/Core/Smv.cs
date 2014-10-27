@@ -94,6 +94,11 @@ namespace FB2SMV
                 get { return _smvPattern.NextCaseBlock; }
             }
 
+            public static string EmptyNextCaseBlock
+            {
+                get { return _smvPattern.EmptyNextCaseBlock; }
+            }
+
             public static string ExistsInputEvent
             {
                 get { return _smvPattern.ExistsInputEvent; }
@@ -129,9 +134,14 @@ namespace FB2SMV
                 get { return _smvPattern.Assign; }
             }
 
-            public static string FairnessRunning
+            /*public static string FairnessRunning
             {
                 get { return _smvPattern.FairnessRunning; }
+            }*/
+
+            public static string Fairness(string fairCondition)
+            {
+                return String.Format(_smvPattern.Fairness, fairCondition);
             }
 
             public static string NormalVarAssignment
@@ -164,6 +174,11 @@ namespace FB2SMV
                 get { return _smvPattern.Not; }
             }
 
+            public static string Running
+            {
+                get { return _smvPattern.Running; }
+            }
+
             public static string OsmState(string name)
             {
                 return name + "_osm";
@@ -181,7 +196,11 @@ namespace FB2SMV
 
             public static string InitialValue(Variable variable)
             {
-                if (variable.InitialValue != null) return variable.InitialValue;
+                if (variable.InitialValue != null)
+                {
+                    if (variable.InitialValue == "0.0") return "0";
+                    return variable.InitialValue;
+                }
                 if (String.Compare(variable.Type, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
                     return "FALSE";
                 return "0";
@@ -230,7 +249,7 @@ namespace FB2SMV
             /// </summary>
             /// <param name="name"></param>
             /// <returns>[0] - instance name or variable name; [1] - variable name</returns>
-            public static string[] SplitConnectionVariableName(string name)
+            public static string[] SplitConnectionVariableName(string name) //TODO: refactoring: ConnectionNode.Instance + ConnectionNode.Name
             {
                 string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
                 if (splitArr.Count() == 0) throw new Exception("No connection var name");

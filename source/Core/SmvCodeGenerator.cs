@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using System.Text.RegularExpressions;
 using FB2SMV.FBCollections;
 using FB2SMV.ST;
 using FB2SMV.ServiceClasses;
@@ -67,21 +69,27 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.InternalBuffersDeclaration(instances, connections, _storage.Events, _storage.Variables) + "\n";
                 smvModule += Smv.Assign;
                 smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, connections, _storage.Events, _storage.Variables, instanceParameters) + "\n";
+
+                if (_settings.UseProcesses)
+                {
+                    smvModule += CompositeFbSmv.NonConnectedInstanceOutputEvents(_storage.Events, instances, connections);
+                    smvModule += CompositeFbSmv.ComponentDataOutputNextStatements(_storage.Variables, instances);
+                }
                 //smvModule += _moduleVariablesInitBlock(variables) + "\n";
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
-                smvModule += CompositeFbSmv.InternalEventConnections(connections) + "\n";
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
-                smvModule += CompositeFbSmv.ResetComponentEventOutputs(connections) + "\n";
+                smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
                 //smvModule += _eventInputsResetRules(events) + "\n";
-                smvModule += CompositeFbSmv.InputEventsResetRules(events);
                 smvModule += "\n-- ---DISPATCHER--- --\n";
                 smvModule += "-- *************** --\n";
-                smvModule += dispatcher.GetSmvCode() + "\n";
+                smvModule += dispatcher.GetSmvCode(_settings.UseProcesses) + "\n";
 
-
+                smvModule += CompositeFbSmv.InternalEventConnections(connections, _settings.UseProcesses) + "\n";
+                smvModule += CompositeFbSmv.InputEventsResetRules(events, _settings.UseProcesses);
                 smvModule += FbSmvCommon.DefineExistsInputEvent(events) + "\n";
                 smvModule += CompositeFbSmv.DefineOmega(connections) + "\n";
-                smvModule += FbSmvCommon.ModuleFooter() + "\n";
+
+                smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 //smvModule += Smv.AlphaBetaRules;
 
                 return smvModule;
@@ -119,14 +127,18 @@ namespace FB2SMV
                 smvModule += Smv.OsmStateChangeBlock + "\n";
                 smvModule += BasicFbSmv.EcActionsCounterChangeBlock(states) + "\n";
                 smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
-                smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve) + "\n";
+
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
-                smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections) + "\n";
-                smvModule += BasicFbSmv.SetServiceSignals() + "\n";
+                smvModule += BasicFbSmv.SetServiceSignals(_settings.UseProcesses) + "\n";
+
+                smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
+                smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
+
                 smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
-                smvModule += FbSmvCommon.ModuleFooter() + "\n";
+
+                smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 return smvModule;
             }
 
@@ -145,6 +157,69 @@ namespace FB2SMV
             private Storage _storage;
             private IEnumerable<ExecutionModel> _executionModels;
             private Settings _settings;
+
+            public string GenerateMain()
+            {
+                string mainModule = "";
+                FBType topLevelFbType = _storage.Types.FirstOrDefault(fbType => fbType.IsRoot);
+                if (topLevelFbType == null) throw new ArgumentNullException("Can't find root FB type");
+
+                List<FBInstance> instanceList = new List<FBInstance>();
+                List<Connection> connections = new List<Connection>();
+                List<InstanceParameter> instanceParameters = new List<InstanceParameter>();
+                FBInstance instance = new FBInstance(topLevelFbType.Name + "_inst", topLevelFbType.Name, "Top-level FB instance", "main");
+                instanceList.Add(instance);
+
+                mainModule += String.Format(Smv.ModuleDef, "main", "");
+                mainModule += CompositeFbSmv.FbInstances(instanceList, _storage.Events, _storage.Variables, connections, _settings) + "\n";
+                mainModule += CompositeFbSmv.InternalBuffersDeclaration(instanceList, connections, _storage.Events, _storage.Variables) + "\n";
+                mainModule += Smv.Assign;
+                mainModule += CompositeFbSmv.InternalBuffersInitialization(instanceList, connections, _storage.Events, _storage.Variables, instanceParameters, true) + "\n";
+                
+                mainModule += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Alpha, Smv.True);
+                mainModule += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Beta, Smv.False);
+                    
+
+                //Main module next blocks
+                //**********************
+                foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input))
+                {
+                    string smvVariable = instance.Name + "_" + variable.Name;
+                    if (variable.ArraySize == 0)
+                    {
+                        mainModule += String.Format(Smv.NextVarAssignment, smvVariable, smvVariable);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            mainModule += String.Format(Smv.NextVarAssignment, smvVariable + Smv.ArrayIndex(i), smvVariable + Smv.ArrayIndex(i));
+                        }
+                    }
+                }
+                foreach (Event ev in _storage.Events.Where(ev => ev.FBType == topLevelFbType.Name))
+                {
+                    string smvVariable = instance.Name + "_" + ev.Name;
+                    string nextRule = "";
+                    if (ev.Direction == Direction.Output)
+                        nextRule = instance.Name + "." + "event_" + ev.Name + "_set : " + Smv.True + ";\n";
+                    else
+                        nextRule = instance.Name + "." + "event_"+ev.Name+"_reset : "+Smv.False + ";\n";
+                    mainModule += String.Format(Smv.NextCaseBlock, smvVariable, nextRule);
+                }
+
+                string alphaRule = "\t" + instance.Name + "_" + Smv.Beta + " : " + Smv.True + ";\n" +
+                                    "\t" + instance.Name + ".alpha_reset : " + Smv.False + ";\n";
+                string betaRule = "\t" + instance.Name + "_" + Smv.Beta + " : " + Smv.False + ";\n" +
+                                    "\t" + instance.Name + ".beta_set : " + Smv.True + ";\n";
+                mainModule += String.Format(Smv.NextCaseBlock, instance.Name + "_" + Smv.Alpha, alphaRule);
+                mainModule += String.Format(Smv.NextCaseBlock, instance.Name + "_" + Smv.Beta, betaRule);
+                //**********************
+
+                //mainModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
+
+                return mainModule;
+            }
         }
     }
 }
