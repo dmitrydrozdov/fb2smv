@@ -215,13 +215,15 @@ namespace FB2SMV
 
             private static string _modulo_range(string statement, int rangeBegin, int rangeEnd)
             {
-                int modulo = rangeEnd - rangeBegin;
+                /*int modulo = rangeEnd - rangeBegin;
                 string correction;
                 if (rangeBegin > 0) correction = " + " + rangeBegin;
                 else if (rangeBegin < 0) correction = " - " + (Math.Abs(rangeBegin));
                 else correction = "";
 
-                return "(" + statement + ") mod " + modulo + correction;
+                return "(" + statement + ") mod " + modulo + correction;*/
+
+                return String.Format("({0}) mod {1}", statement, rangeEnd);
             }
             public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {

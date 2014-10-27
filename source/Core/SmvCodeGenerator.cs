@@ -70,9 +70,11 @@ namespace FB2SMV
                 smvModule += Smv.Assign;
                 smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, connections, _storage.Events, _storage.Variables, instanceParameters) + "\n";
 
-
-                smvModule += CompositeFbSmv.NonConnectedInstanceOutputEvents(_storage.Events, instances, connections);
-                smvModule += CompositeFbSmv.ComponentDataOutputNextStatements(_storage.Variables, instances);
+                if (_settings.UseProcesses)
+                {
+                    smvModule += CompositeFbSmv.NonConnectedInstanceOutputEvents(_storage.Events, instances, connections);
+                    smvModule += CompositeFbSmv.ComponentDataOutputNextStatements(_storage.Variables, instances);
+                }
                 //smvModule += _moduleVariablesInitBlock(variables) + "\n";
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
@@ -183,12 +185,27 @@ namespace FB2SMV
                 foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input))
                 {
                     string smvVariable = instance.Name + "_" + variable.Name;
-                    mainModule += String.Format(Smv.NextVarAssignment, smvVariable, smvVariable);
+                    if (variable.ArraySize == 0)
+                    {
+                        mainModule += String.Format(Smv.NextVarAssignment, smvVariable, smvVariable);
+                    }
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            mainModule += String.Format(Smv.NextVarAssignment, smvVariable + Smv.ArrayIndex(i), smvVariable + Smv.ArrayIndex(i));
+                        }
+                    }
                 }
                 foreach (Event ev in _storage.Events.Where(ev => ev.FBType == topLevelFbType.Name))
                 {
                     string smvVariable = instance.Name + "_" + ev.Name;
-                    mainModule += String.Format(Smv.NextVarAssignment, smvVariable, smvVariable);
+                    string nextRule = "";
+                    if (ev.Direction == Direction.Output)
+                        nextRule = instance.Name + "." + "event_" + ev.Name + "_set : " + Smv.True + ";\n";
+                    else
+                        nextRule = instance.Name + "." + "event_"+ev.Name+"_reset : "+Smv.False + ";\n";
+                    mainModule += String.Format(Smv.NextCaseBlock, smvVariable, nextRule);
                 }
 
                 string alphaRule = "\t" + instance.Name + "_" + Smv.Beta + " : " + Smv.True + ";\n" +
