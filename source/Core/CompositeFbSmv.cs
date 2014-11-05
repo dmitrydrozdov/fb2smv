@@ -165,7 +165,7 @@ namespace FB2SMV
                 return moduleParameters.TrimEnd(Smv.ModuleParameters.Splitter.ToCharArray());
             }
 
-            private static string _clearZeroValues(string input, Type varType) //Fix the problem with 0.0 initial values
+            /*private static string _clearZeroValues(string input, Type varType) //Fix the problem with 0.0 initial values
             {
                 if (input == "0.0") return "0";
                 if (varType == typeof (Smv.DataTypes.BoolSmvType))
@@ -174,7 +174,7 @@ namespace FB2SMV
                     if (input == "1") return Smv.True;
                 }
                 return input;
-            }
+            }*/
             public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters, bool mainModule = false)
             {
                 string buffersInit = "";
@@ -199,7 +199,7 @@ namespace FB2SMV
                         InstanceParameter instanceParameter = instanceParameters.FirstOrDefault(p => p.InstanceName == instance.Name && p.Name == variable.Name);
                         if (variable.ArraySize == 0)
                         {
-                            string value = instanceParameter == null ? Smv.InitialValue(variable) : _clearZeroValues(instanceParameter.Value, variable.SmvType.GetType());
+                            string value = instanceParameter == null ? Smv.InitialValue(variable) : Smv.ClearInitialValue(instanceParameter.Value, variable);
                             buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name, value);
                         }
                         else
@@ -219,7 +219,7 @@ namespace FB2SMV
                             }
                             for (int i = 0; i < variable.ArraySize; i++)
                             {
-                                buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), _clearZeroValues(values[i], variable.SmvType.GetType()));
+                                buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), Smv.ClearInitialValue(values[i], variable));
                             }
                         }
                     }

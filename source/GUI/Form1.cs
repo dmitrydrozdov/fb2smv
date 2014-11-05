@@ -302,6 +302,7 @@ namespace GUI
         {
             smvCodeRichTextBox.Text = "";
             SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings);
+            translator.Check();
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;

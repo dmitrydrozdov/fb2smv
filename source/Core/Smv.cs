@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Services;
 using System.Text;
 using System.Text.RegularExpressions;
 using FB2SMV.FBCollections;
@@ -194,15 +195,48 @@ namespace FB2SMV
                 return "[" + index + "]";
             }
 
+            public static string ClearInitialValue(string initialValue, Variable variable) //TODO: fix in SmvCodeGenerator.Check()
+            {
+                string val = initialValue;
+                
+                if (variable.SmvType.GetType() == typeof(DataTypes.RangeSmvType))
+                {
+                    if (val == "0.0") val = "0";
+                    if (Convert.ToInt32(val) < ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin)
+                        val = ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin.ToString();
+                    else if (Convert.ToInt32(val) > ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd)
+                        val = ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd.ToString();
+                }
+                else if (variable.SmvType.GetType() == typeof(DataTypes.BoolSmvType))
+                {
+                    if (val == "0") return Smv.False;
+                    if (val == "1") return Smv.True;
+                }
+                return val;
+            }
+
             public static string InitialValue(Variable variable)
             {
-                if (variable.InitialValue != null)
+                if (variable.SmvType.GetType() == typeof (DataTypes.RangeSmvType))
                 {
-                    if (variable.InitialValue == "0.0") return "0";
-                    return variable.InitialValue;
+                    if (variable.InitialValue != null)
+                    {
+                        string val;
+                        val = variable.InitialValue == "0.0" ? "0" : variable.InitialValue;
+                        if (Convert.ToInt32(val) < ((DataTypes.RangeSmvType) variable.SmvType).RangeBegin)
+                            val = ((DataTypes.RangeSmvType) variable.SmvType).RangeBegin.ToString();
+                        else if (Convert.ToInt32(val) > ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd)
+                            val = ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd.ToString();
+                        return val;
+                    }
+                    else return ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin.ToString();
                 }
-                if (String.Compare(variable.Type, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
-                    return "FALSE";
+                else if (variable.SmvType.GetType() == typeof (DataTypes.BoolSmvType))
+                {
+                    if (variable.InitialValue != null && variable.InitialValue == "1") return Smv.True;
+                    else if (variable.InitialValue != null && variable.InitialValue == "0") return Smv.False;
+                    else if (variable.InitialValue == null) return Smv.False;
+                }
                 return "0";
             }
 

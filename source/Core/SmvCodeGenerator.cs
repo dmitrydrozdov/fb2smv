@@ -220,6 +220,12 @@ namespace FB2SMV
 
                 return mainModule;
             }
+
+            public void Check()
+            {
+                //TODO
+                //CheckRanges();
+            }
         }
     }
 }
