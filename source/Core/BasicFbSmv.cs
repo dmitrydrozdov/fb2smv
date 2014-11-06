@@ -213,17 +213,11 @@ namespace FB2SMV
                 return varChangeBlocks;
             }
 
-            private static string _modulo_range(string statement, int rangeBegin, int rangeEnd)
+            private static string _modulo_range(string statement, int rangeBegin, int rangeEnd)//y= ((x-c) mod d) + c
             {
-                /*int modulo = rangeEnd - rangeBegin;
-                string correction;
-                if (rangeBegin > 0) correction = " + " + rangeBegin;
-                else if (rangeBegin < 0) correction = " - " + (Math.Abs(rangeBegin));
-                else correction = "";
-
-                return "(" + statement + ") mod " + modulo + correction;*/
-
-                return String.Format("({0}) mod {1}", statement, rangeEnd);
+                int c = (rangeBegin + rangeEnd)/2;
+                int d = (rangeEnd - rangeBegin)/2 + 1;
+                return String.Format("(({0} - {1}) mod {2}) + {1}", statement, c, d);
             }
             public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
