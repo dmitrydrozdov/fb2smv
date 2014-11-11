@@ -473,6 +473,35 @@ namespace FB2SMV
                 }
                 return internalEventOutputs;
             }
+
+            public static string NonConnectedInputs(IEnumerable<Connection> connections, IEnumerable<Variable> allVariables, IEnumerable<FBInstance> instances)
+            {
+                string ret = "";
+                foreach (FBInstance instance in instances)
+                {
+                    var instanceVariables = allVariables.Where(v => v.FBType == instance.InstanceType && v.Direction == Direction.Input);
+
+                    foreach (Variable variable in instanceVariables)
+                    {
+                        string connectionNodeName = instance.Name + "." + variable.Name;
+                        Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
+                        if (connection != null) continue;
+
+                        if (variable.ArraySize == 0)
+                        {
+                            ret += String.Format(Smv.NextVarAssignment, instance.Name + "_" + variable.Name, instance.Name + "_" + variable.Name);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < variable.ArraySize; i++)
+                            {
+                                ret += String.Format(Smv.NextVarAssignment, instance.Name + "_" + variable.Name + Smv.ArrayIndex(i), instance.Name + "_" + variable.Name + Smv.ArrayIndex(i));
+                            }
+                        }
+                    }
+                }
+                return ret;
+            }
         }
 
     }
