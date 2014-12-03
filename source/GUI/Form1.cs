@@ -100,14 +100,14 @@ namespace GUI
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                if (mainModuleRichTextBox.Text != "")
+                /*if (mainModuleRichTextBox.Text != "")
                 {
 
                     if (MessageBox.Show("Main module exists. Clear it?", "", MessageBoxButtons.YesNo) == DialogResult.OK)
                     {
                         mainModuleRichTextBox.Text = "";
                     }
-                }
+                }*/
                 if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
                 {
                     ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);
@@ -160,8 +160,8 @@ namespace GUI
         private void fillEventsTreeView(IEnumerable<Event> events)
         {
             eventsTreeView.Nodes.Clear();
-            TreeNode inputEvents = new TreeNode("InputVars");
-            TreeNode outputEvents = new TreeNode("OutputVars");
+            TreeNode inputEvents = new TreeNode("InputEvents");
+            TreeNode outputEvents = new TreeNode("OutputEvents");
             foreach (Event ev in events)
             {
                 if (ev.Direction == Direction.Input) inputEvents.Nodes.Add(ev.Name, ev.Name);
@@ -301,17 +301,22 @@ namespace GUI
         private void generateSMVToolStripMenuItem_Click(object sender, EventArgs e)
         {
             smvCodeRichTextBox.Text = "";
+            if (_parcer == null) return;
             SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings);
             translator.Check();
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;
-                if (mainModuleRichTextBox.Text == "")
-                {
-                    mainModuleRichTextBox.Text = translator.GenerateMain();
-                }
             }
             //smvCodePage.Focus();
+            if (mainModuleRichTextBox.Text == "")
+            {
+                mainModuleRichTextBox.Text = translator.GenerateMain();
+            }
+            else if (MessageBox.Show("Main module exists. Do you want to replace it?", "", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            {
+                mainModuleRichTextBox.Text = translator.GenerateMain();
+            }
             tabControl1.SelectTab(smvCodePage);
         }
 

@@ -62,9 +62,9 @@
             this.modCheckBox.AutoSize = true;
             this.modCheckBox.Location = new System.Drawing.Point(13, 13);
             this.modCheckBox.Name = "modCheckBox";
-            this.modCheckBox.Size = new System.Drawing.Size(117, 17);
+            this.modCheckBox.Size = new System.Drawing.Size(112, 17);
             this.modCheckBox.TabIndex = 2;
-            this.modCheckBox.Text = "Modular arithmetics";
+            this.modCheckBox.Text = "Modular arithmetic";
             this.modCheckBox.UseVisualStyleBackColor = true;
             // 
             // useProcessesCheckBox
