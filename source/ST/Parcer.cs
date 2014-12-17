@@ -246,8 +246,10 @@ namespace FB2SMV
                 else //If token is not a condition operator - create standard node
                 {
                     if (String.Compare(token, "then", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        token = _lexicalAnalyzer.GetNextToken();
-                    return new BinaryNode(NodeType.Expression, token);
+                        return createNewTokenNode();
+                        //token = _lexicalAnalyzer.GetNextToken();
+                    else
+                        return new BinaryNode(NodeType.Expression, token);
                 }
 
             }

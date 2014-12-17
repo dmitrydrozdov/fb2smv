@@ -333,6 +333,7 @@ namespace FB2SMV
                         return new RangeSmvType(0,99);
                     if (String.Compare(varType, "UINT", StringComparison.InvariantCultureIgnoreCase) == 0)
                         return new RangeSmvType(0, 99);
+                    throw new Exception(String.Format("Unsupported data type \"{0}\"!", varType));
                     return null;
                 }
             }
