@@ -182,6 +182,7 @@ namespace GUI
         private void fillEventsPriorityList()
         {
             eventsPriorityListBox.Items.Clear();
+            if (_executionModels == null) return;
             ExecutionModel em = _executionModels.FirstOrDefault(model => model.FBTypeName == _selectedFbType);
             foreach (PriorityEvent pe in em.InputEventsPriorities)
             {

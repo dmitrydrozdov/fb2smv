@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FB2SMV
 {
@@ -48,7 +49,14 @@ namespace FB2SMV
                 input = " " + input;
                 SortedSet<int> splitIndex = new SortedSet<int>();
 
-                foreach (var splitter in splitters)
+
+                Regex splitRegex = new Regex(@"((?<=(\W))(?i)(if|end_if|then|else))|(;)");
+                foreach (Match match in splitRegex.Matches(input))
+                {
+                    splitIndex.Add(match.Index);
+                    splitIndex.Add(match.Index + match.Length);
+                }
+                /*foreach (var splitter in splitters)
                 {
                     index = 0;
                     while (index >= 0)
@@ -62,7 +70,7 @@ namespace FB2SMV
                             index--; //correction for next cycle iteration
                         }
                     }
-                }
+                }*/
 
                 List<string> output = new List<string>();
                 //bool first = true;

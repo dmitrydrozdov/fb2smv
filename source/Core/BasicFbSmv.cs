@@ -219,52 +219,72 @@ namespace FB2SMV
                 int d = (rangeEnd - rangeBegin)/2 + 1;
                 return String.Format("(({0} - {1}) mod {2}) + {1}", statement, c, d);
             }
+
+            private static string _getVarChangingRules(Variable variable, IEnumerable<AlgorithmLine> currrentVarLines, IEnumerable<ECAction> actions, Settings settings)
+            {
+                string rules = "";
+                foreach (AlgorithmLine line in currrentVarLines)
+                {
+                    foreach (ECAction action in _findActionsByAlgorithmName(actions, line.AlgorithmName))
+                    {
+                        string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2;
+                        rule += " & ";
+                        rule += Smv.EccStateVar + "=" + Smv.EccState(action.ECState);
+                        rule += " & ";
+                        rule += Smv.EcActionsCounterVar + "=" + action.Number;
+                        rule += " & ";
+                        rule += Smv.AlgStepsCounterVar + "=" + line.NI;
+                        if (line.Condition != "1")
+                        {
+                            rule += " & ";
+                            rule += "(" + Smv.ClearConditionExpr(line.Condition) + ")";
+                        }
+                        //string val = line.Value;
+                        string val = Smv.ClearConditionExpr(line.Value);
+                        if (String.Compare(val, "false", StringComparison.InvariantCultureIgnoreCase) == 0)
+                            val = Smv.False;
+                        if (String.Compare(val, "true", StringComparison.InvariantCultureIgnoreCase) == 0)
+                            val = Smv.True;
+
+                        if (variable.SmvType.GetType() != typeof(Smv.DataTypes.BoolSmvType) && settings.ModularArithmetics)
+                        {
+                            //string rangeStr = variable.SmvType.Split()
+                            Smv.DataTypes.RangeSmvType varType = (Smv.DataTypes.RangeSmvType)variable.SmvType;
+                            rule += " : (" + _modulo_range(val, varType.RangeBegin, varType.RangeEnd) + ");\n"; ;
+                        }
+                        else
+                        {
+                            rule += " : (" + val + ");\n";
+                        }
+                        rules += rule;
+                    }
+
+                }
+                return rules;
+            }
             public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
                 string varChangeBlocks = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output || v.Direction == Direction.Internal))
                 {
-                    string rules = "";
-                    IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
-                    foreach (AlgorithmLine line in currrentVarLines)
+                    if (variable.ArraySize == 0)
                     {
-                        foreach (ECAction action in _findActionsByAlgorithmName(actions, line.AlgorithmName))
-                        {
-                            string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2;
-                            rule += " & ";
-                            rule += Smv.EccStateVar + "=" + Smv.EccState(action.ECState);
-                            rule += " & ";
-                            rule += Smv.EcActionsCounterVar + "=" + action.Number;
-                            rule += " & ";
-                            rule += Smv.AlgStepsCounterVar + "=" + line.NI;
-                            if (line.Condition != "1")
-                            {
-                                rule += " & ";
-                                rule += "(" + Smv.ClearConditionExpr(line.Condition) + ")";
-                            }
-                            //string val = line.Value;
-                            string val = Smv.ClearConditionExpr(line.Value); //TODO: test this. It is an experiment
-                            if (String.Compare(val, "false", StringComparison.InvariantCultureIgnoreCase) == 0)
-                                val = Smv.False;
-                            if (String.Compare(val, "true", StringComparison.InvariantCultureIgnoreCase) == 0)
-                                val = Smv.True;
+                        IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
 
-                            if (variable.SmvType.GetType() != typeof(Smv.DataTypes.BoolSmvType) && settings.ModularArithmetics)
-                            {
-                                //string rangeStr = variable.SmvType.Split()
-                                Smv.DataTypes.RangeSmvType varType = (Smv.DataTypes.RangeSmvType)variable.SmvType;
-                                rule += " : (" + _modulo_range(val, varType.RangeBegin, varType.RangeEnd) + ");\n"; ;
-                            }
-                            else
-                            {
-                                rule += " : (" + val + ");\n";
-                            }
-                            rules += rule;
-                        }
-
+                        string rules = _getVarChangingRules(variable, currrentVarLines, actions, settings);
+                        varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, rules);
                     }
-                    varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, rules);
+                    else
+                    {
+                        for (int i = 0; i < variable.ArraySize; i++)
+                        {
+                            string arrayElementVar = String.Format("{0}[{1}]", variable.Name, i);
+                            IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == arrayElementVar);
 
+                            string rules = _getVarChangingRules(variable, currrentVarLines, actions, settings);
+                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), rules);
+                        }
+                    }
                 }
                 return varChangeBlocks;
             }

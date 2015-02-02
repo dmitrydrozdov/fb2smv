@@ -244,7 +244,7 @@ namespace FB2SMV
             {
                 Regex rAnd = new Regex(@"((?<=\w)&(?=\w))|((?<=\W)(AND|and|And)(?=\W))");
                 Regex rOr = new Regex(@"(?<=\w)\|(?=\w)|((?<=\W)(OR|or|Or)(?=\W))");
-                Regex rNot = new Regex(@"(?<=\W)(NOT|not|Not)");
+                Regex rNot = new Regex(@"(?<=(\W|^))(NOT|not|Not)(?=\W)");//new Regex(@"(?<=\W)(NOT|not|Not)");
 
                 Regex rFalse = new Regex(@"((?<=\W)(false|False)(?=\W))"); //TODO: switch off case sensitive
                 Regex rTrue = new Regex(@"((?<=\W)(true|True)(?=\W))"); //TODO: switch off case sensitive
@@ -332,6 +332,8 @@ namespace FB2SMV
                     if (String.Compare(varType, "INT", StringComparison.InvariantCultureIgnoreCase) == 0)
                         return new RangeSmvType(0,99);
                     if (String.Compare(varType, "UINT", StringComparison.InvariantCultureIgnoreCase) == 0)
+                        return new RangeSmvType(0, 99);
+                    if (String.Compare(varType, "DINT", StringComparison.InvariantCultureIgnoreCase) == 0)
                         return new RangeSmvType(0, 99);
                     throw new Exception(String.Format("Unsupported data type \"{0}\"!", varType));
                     return null;
