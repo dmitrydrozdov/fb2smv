@@ -3,17 +3,37 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using FB2SMV.FBCollections;
 using FB2SMV.FBXML;
 using FB2SMV.ST;
+using FBType = FB2SMV.FBCollections.FBType;
 
 namespace FB2SMV
 {
     namespace Core
     {
+        public delegate void ShowMessageDelegate(string message);
+
         public class FBClassParcer
         {
+            public static string[] LibraryTypes = new string[] {"E_DELAY", "E_MERGE", "E_SPLIT"};
+            public static string[] LibraryTemplatesNxt = new string[] { @"AND_-\d*", @"NOT_\d*" };
+
+            public static bool IsLibraryType(string fbType)
+            {
+                if (!string.IsNullOrEmpty(LibraryTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
+                    return true;
+                foreach (string template in LibraryTemplatesNxt)
+                {
+                    Regex r = new Regex(template);
+                    Match m = r.Match(fbType);
+                    if (m.Success) return true;
+                }
+                return false;
+            }
+
             private List<string> fileExtensions = new List<string>(new[] {".fbt", ".xml"});
 
             public FBClassParcer()
@@ -29,7 +49,7 @@ namespace FB2SMV
                 _processedTypes = null;
             }
 
-            public void ParseRecursive(string filename)
+            public void ParseRecursive(string filename, ShowMessageDelegate ShowMessage)
             {
                 if (!fileExtensions.Contains(Path.GetExtension(filename)))
                     fileExtensions.Add(Path.GetExtension(filename));
@@ -40,9 +60,9 @@ namespace FB2SMV
                 {
                     try //TODO: replace with FaultCallbackDelegate()
                     {
-
+                        ShowMessage("Loading file: " + filename);
                         FB2SMV.FBXML.FBType fb = Deserialie(filename);
-                        PutClassToStorage(fb, elementIsRoot);
+                        PutClassToStorage(fb, elementIsRoot, ShowMessage);
                         filename = NextFileName(directory);
                         elementIsRoot = false;
                     }
@@ -80,7 +100,7 @@ namespace FB2SMV
                 //return NewTypes.Count > 0 ? Path.Combine()/*directory + NewTypes.Dequeue()*/ : null;
             }
 
-            public void PutClassToStorage(FB2SMV.FBXML.FBType fbType, bool elementIsRoot)
+            public void PutClassToStorage(FB2SMV.FBXML.FBType fbType, bool elementIsRoot, ShowMessageDelegate ShowMessage)
             {
                 FB2SMV.FBCollections.FBClass type;
                 if (fbType.BasicFB != null) type = FBClass.Basic;
@@ -98,7 +118,7 @@ namespace FB2SMV
                 }
                 else if (fbType.FBNetwork != null)
                 {
-                    PutFBNetwork(fbType.FBNetwork, fbType.Name);
+                    PutFBNetwork(fbType.FBNetwork, fbType.Name, ShowMessage);
                 }
 
                 _processedTypes.Add(fbType.Name);
@@ -139,7 +159,7 @@ namespace FB2SMV
                 }
             }
 
-            private void PutFBNetwork(FBNetwork fbNetwork, string fbTypeName)
+            private void PutFBNetwork(FBNetwork fbNetwork, string fbTypeName, ShowMessageDelegate ShowMessage)
             {
                 foreach (var fbInstance in fbNetwork.FB)
                 {
@@ -147,7 +167,18 @@ namespace FB2SMV
                     fbInstance.Parameters.ForEach(p => Storage.PutInstanceParameter(new FBCollections.InstanceParameter(p.Name, p.Value, fbInstance.Name, fbTypeName, p.Comment)));
 
                     if (!_processedTypes.Contains(fbInstance.Type) && !_newTypes.Contains(fbInstance.Type))
-                        _newTypes.Enqueue(fbInstance.Type);
+                    {
+                        if (!IsLibraryType(fbInstance.Type))
+                        {
+                            _newTypes.Enqueue(fbInstance.Type);
+                        }
+                        else
+                        {
+                            ShowMessage("Pre-defined FB type added to storage: " + fbInstance.Type);
+                            Storage.PutFBType(new FBType(fbInstance.Type, "", FBClass.Library));
+                            _processedTypes.Add(fbInstance.Type);
+                        }
+                    }
 
                 }
                 foreach (var connection in fbNetwork.DataConnections)

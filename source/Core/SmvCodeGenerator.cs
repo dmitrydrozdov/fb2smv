@@ -19,17 +19,19 @@ namespace FB2SMV
         
         public class SmvCodeGenerator
         {
-            public SmvCodeGenerator(Storage storage, IEnumerable<ExecutionModel> executionModels, Settings settings)
+            private ShowMessageDelegate _showMessage = null;
+            public SmvCodeGenerator(Storage storage, IEnumerable<ExecutionModel> executionModels, Settings settings, ShowMessageDelegate showMessage)
             {
                 _storage = storage;
                 _executionModels = executionModels;
                 _settings = settings;
+                _showMessage = showMessage;
             }
 
             public int fbTypeCompare(FBType a, FBType b)
             {
-                if (a.Type == FBClass.Basic && b.Type == FBClass.Composite) return -1;
-                else if (a.Type == FBClass.Composite && b.Type == FBClass.Basic) return 1;
+                if(a.Type < b.Type) return -1;
+                else if (a.Type > b.Type) return 1;
                 else return 0;
             }
 
@@ -47,7 +49,33 @@ namespace FB2SMV
             public string translateFB(FBType fbType)
             {
                 if (fbType.Type == FBClass.Basic) return TranslateBasicFB(fbType);
-                else return TranslateCompositeFB(fbType);
+                else if(fbType.Type == FBClass.Composite) return TranslateCompositeFB(fbType);
+                else if (fbType.Type == FBClass.Library) return TranslateLibraryFBType(fbType);
+                else throw new Exception("Unsupported FB class! " + fbType.Type);
+            }
+
+            public string TranslateLibraryFBType(FBType fbType)
+            {
+                /*if (String.Compare("E_DELAY", fbType.Name, StringComparison.InvariantCultureIgnoreCase) == 0)
+                {
+                    return EDelayFBModule();
+                }*/
+                _showMessage(String.Format("Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
+                return emptyFbModule(fbType.Name);
+            }
+
+            private string emptyFbModule(string moduleName)
+            {
+                string smvModule = "";
+                smvModule += FbSmvCommon.SmvModuleDeclaration(new List<Event>(), new List<Variable>(), moduleName);
+                smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
+
+                return smvModule;
+            }
+
+            private string EDelayFBModule()
+            {
+                throw new NotImplementedException();
             }
 
             public string TranslateCompositeFB(FBType fbType)

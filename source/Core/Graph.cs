@@ -42,9 +42,17 @@ namespace Core
 
         public void AddConnection(KeyType nodeKey, KeyType connectedNodeKey, Func<KeyType, bool> comparisionDelegate)
         {
-            GraphContainer<KeyType, NodeType> node = _nodes[nodeKey];
-            if (node == null) throw new ArgumentNullException();
-            node.AddConnection(connectedNodeKey, comparisionDelegate);
+            try
+            {
+                GraphContainer<KeyType, NodeType> node = _nodes[nodeKey];
+                if (node == null) throw new ArgumentNullException();
+                node.AddConnection(connectedNodeKey, comparisionDelegate);
+            }
+            catch (KeyNotFoundException e)
+            {
+                throw new KeyNotFoundException("Unable to find var dependency graph node " + nodeKey + ". Graph might be incomplete.");
+            }
+            
         }
 
         public NodeType GetNode(KeyType key)

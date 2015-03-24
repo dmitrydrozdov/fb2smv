@@ -31,10 +31,12 @@ namespace GUI
         //private List<IDispatcher> _dispatchers = null;
         private List<ExecutionModel> _executionModels = null;
         private IDispatcher _currentDisp = null;
+        private static Form1 _inst = null;
 
         public Form1()
         {
             InitializeComponent();
+            _inst = this;
         }
 
         //EventHandler xmlParsingFinishedHandler = XmlParsingFinishedHandler;
@@ -51,6 +53,7 @@ namespace GUI
             _selectedVariable = null;
             fbTypesView.Nodes.Clear();
             smvCodeRichTextBox.Text = "";
+            messagesRichTextBox.Text = "";
         }
 
         private void resetWorkspace(ProjectFileStructure project)
@@ -61,13 +64,14 @@ namespace GUI
             _selectedVariable = null;
             fbTypesView.Nodes.Clear();
             smvCodeRichTextBox.Text = "";
+            messagesRichTextBox.Text = "";
         }
 
         private void loadFbSystem(string filename)
         {
             try
             {
-                _parcer.ParseRecursive(filename);
+                _parcer.ParseRecursive(filename, ShowMessage);
             }
             catch (Exception exception)
             {
@@ -122,8 +126,15 @@ namespace GUI
                 t.Construct(_parcer.Storage);
                 fbTypesView.Nodes.Add(t.TreeViewRoot());
 
-                varDependencyGraph = new VarDependencyGraph(_parcer.Storage);
-                varDependencyGraph.Construct();
+                try
+                {
+                    varDependencyGraph = new VarDependencyGraph(_parcer.Storage);
+                    varDependencyGraph.Construct();
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    ShowMessage(ex.Message);
+                }
             }
         }
 
@@ -303,7 +314,7 @@ namespace GUI
         {
             smvCodeRichTextBox.Text = "";
             if (_parcer == null) return;
-            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings);
+            SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings, ShowMessage);
             translator.Check();
             foreach (string fbSmv in translator.TranslateAll())
             {
@@ -439,6 +450,14 @@ namespace GUI
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.ShowDialog();
+        }
+
+        
+
+        public ShowMessageDelegate ShowMessage = ShowMessageMethod;
+        public static void ShowMessageMethod(string message)
+        {
+            _inst.messagesRichTextBox.Text += message + "\n";
         }
     }
 }

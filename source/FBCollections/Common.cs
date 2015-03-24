@@ -15,7 +15,8 @@ namespace FB2SMV
         public enum FBClass
         {
             Basic,
-            Composite
+            Composite,
+            Library
         }
 
         public enum Direction

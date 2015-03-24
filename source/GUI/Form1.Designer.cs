@@ -70,11 +70,13 @@
             this.cyclicDispatcherRadioButton = new System.Windows.Forms.RadioButton();
             this.smvCodePage = new System.Windows.Forms.TabPage();
             this.smvCodeRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.mainModuleTab = new System.Windows.Forms.TabPage();
+            this.mainModuleRichTextBox = new System.Windows.Forms.RichTextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.saveFileDialogProject = new System.Windows.Forms.SaveFileDialog();
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
-            this.mainModuleTab = new System.Windows.Forms.TabPage();
-            this.mainModuleRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.messagesRichTextBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -89,11 +91,15 @@
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.smvCodePage.SuspendLayout();
+            this.mainModuleTab.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
-            this.mainModuleTab.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).BeginInit();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -105,7 +111,7 @@
             this.toolStripMenuItem1});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(772, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(779, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -177,7 +183,7 @@
             this.fbTypesView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.fbTypesView.Location = new System.Drawing.Point(0, 0);
             this.fbTypesView.Name = "fbTypesView";
-            this.fbTypesView.Size = new System.Drawing.Size(228, 518);
+            this.fbTypesView.Size = new System.Drawing.Size(230, 442);
             this.fbTypesView.TabIndex = 1;
             this.fbTypesView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.fbTypesView_AfterSelect);
             // 
@@ -197,7 +203,7 @@
             this.varArraySizeTextBox.Enabled = false;
             this.varArraySizeTextBox.Location = new System.Drawing.Point(69, 81);
             this.varArraySizeTextBox.Name = "varArraySizeTextBox";
-            this.varArraySizeTextBox.Size = new System.Drawing.Size(272, 20);
+            this.varArraySizeTextBox.Size = new System.Drawing.Size(276, 20);
             this.varArraySizeTextBox.TabIndex = 11;
             // 
             // varRangeTextBox
@@ -206,7 +212,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.varRangeTextBox.Location = new System.Drawing.Point(69, 55);
             this.varRangeTextBox.Name = "varRangeTextBox";
-            this.varRangeTextBox.Size = new System.Drawing.Size(272, 20);
+            this.varRangeTextBox.Size = new System.Drawing.Size(276, 20);
             this.varRangeTextBox.TabIndex = 10;
             // 
             // varTypeTextBox
@@ -216,7 +222,7 @@
             this.varTypeTextBox.Enabled = false;
             this.varTypeTextBox.Location = new System.Drawing.Point(69, 29);
             this.varTypeTextBox.Name = "varTypeTextBox";
-            this.varTypeTextBox.Size = new System.Drawing.Size(272, 20);
+            this.varTypeTextBox.Size = new System.Drawing.Size(276, 20);
             this.varTypeTextBox.TabIndex = 9;
             // 
             // varNameTextBox
@@ -226,7 +232,7 @@
             this.varNameTextBox.Enabled = false;
             this.varNameTextBox.Location = new System.Drawing.Point(69, 3);
             this.varNameTextBox.Name = "varNameTextBox";
-            this.varNameTextBox.Size = new System.Drawing.Size(272, 20);
+            this.varNameTextBox.Size = new System.Drawing.Size(276, 20);
             this.varNameTextBox.TabIndex = 8;
             // 
             // connectedVarsTreeView
@@ -236,7 +242,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.connectedVarsTreeView.Location = new System.Drawing.Point(2, 160);
             this.connectedVarsTreeView.Name = "connectedVarsTreeView";
-            this.connectedVarsTreeView.Size = new System.Drawing.Size(339, 304);
+            this.connectedVarsTreeView.Size = new System.Drawing.Size(343, 228);
             this.connectedVarsTreeView.TabIndex = 7;
             // 
             // label3
@@ -280,14 +286,14 @@
             this.variablesTreeView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.variablesTreeView.Location = new System.Drawing.Point(0, 0);
             this.variablesTreeView.Name = "variablesTreeView";
-            this.variablesTreeView.Size = new System.Drawing.Size(172, 467);
+            this.variablesTreeView.Size = new System.Drawing.Size(173, 391);
             this.variablesTreeView.TabIndex = 1;
             this.variablesTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.variablesTreeView_AfterSelect);
             // 
             // propChangeButton
             // 
             this.propChangeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.propChangeButton.Location = new System.Drawing.Point(260, 107);
+            this.propChangeButton.Location = new System.Drawing.Point(264, 107);
             this.propChangeButton.Name = "propChangeButton";
             this.propChangeButton.Size = new System.Drawing.Size(81, 25);
             this.propChangeButton.TabIndex = 13;
@@ -306,7 +312,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(540, 518);
+            this.tabControl1.Size = new System.Drawing.Size(545, 442);
             this.tabControl1.TabIndex = 3;
             // 
             // VariablesPage
@@ -316,7 +322,7 @@
             this.VariablesPage.Location = new System.Drawing.Point(4, 22);
             this.VariablesPage.Name = "VariablesPage";
             this.VariablesPage.Padding = new System.Windows.Forms.Padding(3);
-            this.VariablesPage.Size = new System.Drawing.Size(532, 492);
+            this.VariablesPage.Size = new System.Drawing.Size(537, 416);
             this.VariablesPage.TabIndex = 0;
             this.VariablesPage.Text = "Variables";
             // 
@@ -326,7 +332,7 @@
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(3, 3);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(526, 486);
+            this.groupBox1.Size = new System.Drawing.Size(531, 410);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "<Block>";
@@ -354,8 +360,8 @@
             this.splitContainer2.Panel2.Controls.Add(this.connectedVarsTreeView);
             this.splitContainer2.Panel2.Controls.Add(this.varTypeTextBox);
             this.splitContainer2.Panel2.Controls.Add(this.varNameTextBox);
-            this.splitContainer2.Size = new System.Drawing.Size(520, 467);
-            this.splitContainer2.SplitterDistance = 172;
+            this.splitContainer2.Size = new System.Drawing.Size(525, 391);
+            this.splitContainer2.SplitterDistance = 173;
             this.splitContainer2.TabIndex = 3;
             // 
             // eventsPage
@@ -512,31 +518,6 @@
             this.smvCodeRichTextBox.TabIndex = 0;
             this.smvCodeRichTextBox.Text = "";
             // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
-            this.splitContainer1.Name = "splitContainer1";
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.fbTypesView);
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(772, 518);
-            this.splitContainer1.SplitterDistance = 228;
-            this.splitContainer1.TabIndex = 4;
-            // 
-            // saveFileDialogProject
-            // 
-            this.saveFileDialogProject.Filter = "FB-to-SMV Converter project (.f2s) | *.f2s";
-            // 
-            // saveFileDialogSMV
-            // 
-            this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
-            // 
             // mainModuleTab
             // 
             this.mainModuleTab.Controls.Add(this.mainModuleRichTextBox);
@@ -557,12 +538,64 @@
             this.mainModuleRichTextBox.TabIndex = 0;
             this.mainModuleRichTextBox.Text = "";
             // 
+            // splitContainer1
+            // 
+            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.fbTypesView);
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
+            this.splitContainer1.Size = new System.Drawing.Size(779, 442);
+            this.splitContainer1.SplitterDistance = 230;
+            this.splitContainer1.TabIndex = 4;
+            // 
+            // saveFileDialogProject
+            // 
+            this.saveFileDialogProject.Filter = "FB-to-SMV Converter project (.f2s) | *.f2s";
+            // 
+            // saveFileDialogSMV
+            // 
+            this.saveFileDialogSMV.Filter = "SMV File (.smv) | *.smv";
+            // 
+            // splitContainer3
+            // 
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 24);
+            this.splitContainer3.Name = "splitContainer3";
+            this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.splitContainer1);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.messagesRichTextBox);
+            this.splitContainer3.Size = new System.Drawing.Size(779, 561);
+            this.splitContainer3.SplitterDistance = 442;
+            this.splitContainer3.TabIndex = 5;
+            // 
+            // messagesRichTextBox
+            // 
+            this.messagesRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.messagesRichTextBox.Location = new System.Drawing.Point(0, 0);
+            this.messagesRichTextBox.Name = "messagesRichTextBox";
+            this.messagesRichTextBox.Size = new System.Drawing.Size(779, 115);
+            this.messagesRichTextBox.TabIndex = 0;
+            this.messagesRichTextBox.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(772, 542);
-            this.Controls.Add(this.splitContainer1);
+            this.ClientSize = new System.Drawing.Size(779, 585);
+            this.Controls.Add(this.splitContainer3);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
@@ -584,11 +617,15 @@
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.smvCodePage.ResumeLayout(false);
+            this.mainModuleTab.ResumeLayout(false);
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
             this.splitContainer1.ResumeLayout(false);
-            this.mainModuleTab.ResumeLayout(false);
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
+            this.splitContainer3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -643,6 +680,8 @@
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.TabPage mainModuleTab;
         private System.Windows.Forms.RichTextBox mainModuleRichTextBox;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.RichTextBox messagesRichTextBox;
     }
 }
 
