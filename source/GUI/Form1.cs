@@ -48,7 +48,7 @@ namespace GUI
 
         private void resetWorkspace()
         {
-            _parcer = new FBClassParcer();
+            _parcer = new FBClassParcer(ShowMessage);
             _selectedFbType = null;
             _selectedVariable = null;
             fbTypesView.Nodes.Clear();
@@ -59,7 +59,7 @@ namespace GUI
         private void resetWorkspace(ProjectFileStructure project)
         {
             _executionModels = project.ExecutionModels;
-            _parcer = new FBClassParcer(project.Storage);
+            _parcer = new FBClassParcer(project.Storage, ShowMessage);
             _selectedFbType = null;
             _selectedVariable = null;
             fbTypesView.Nodes.Clear();

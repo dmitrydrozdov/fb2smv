@@ -325,7 +325,7 @@ namespace FB2SMV
                 public static string BoolType = "boolean";
                 //public static string NormalRangeType = "0..99";
 
-                public static ISmvType GetType(string varType)
+                public static ISmvType GetType(string varType, ShowMessageDelegate showMessage)
                 {
                     if (String.Compare(varType, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
                         return new BoolSmvType();
@@ -335,6 +335,21 @@ namespace FB2SMV
                         return new RangeSmvType(0, 99);
                     if (String.Compare(varType, "DINT", StringComparison.InvariantCultureIgnoreCase) == 0)
                         return new RangeSmvType(0, 99);
+                    if (String.Compare(varType, "TIME", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    {
+                        showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..500]", varType));
+                        return new RangeSmvType(0, 500);
+                    }
+                    if (String.Compare(varType, "STRING", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    {
+                        showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to bool", varType));
+                        return new BoolSmvType();
+                    }
+                    if (String.Compare(varType, "REAL", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    {
+                        showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..99]", varType));
+                        return new RangeSmvType(0, 99);
+                    }
                     throw new Exception(String.Format("Unsupported data type \"{0}\"!", varType));
                     return null;
                 }

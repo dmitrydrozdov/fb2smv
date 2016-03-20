@@ -83,7 +83,7 @@ namespace FB2SMV
                         {
                             node.Counter = node.LeftAncestor.Counter + 1;
                         }
-                        else if (node.Type == NodeType.Condition)
+                        else if (node.Type == NodeType.Condition || node.Type == NodeType.ConditionAlternativeElsif)
                         {
                             node.Counter = node.LeftAncestor.Counter;
                         }
@@ -91,7 +91,7 @@ namespace FB2SMV
                         {
                             node.Counter = Math.Max(node.LeftAncestor.Counter, node.RightAncestor.Counter);
                         }
-                        else throw new Exception("Unsupported node type throw instruction enumeration");
+                        else throw new Exception("Unsupported node type encountered during instruction enumeration");
                     }
                 }
             }
@@ -136,7 +136,7 @@ namespace FB2SMV
                             conditionsStack.Push(String.Format("!({0})", lastCondition));
                         }
                     }
-                    else if (currentNode.Type == NodeType.Condition)
+                    else if (currentNode.Type == NodeType.Condition || currentNode.Type == NodeType.ConditionAlternativeElsif)
                     {
                         conditionsStack.Push(currentNode.Value);
                     }
@@ -144,7 +144,7 @@ namespace FB2SMV
                     {
                         conditionsStack.Pop();
                     }
-                    else throw new Exception("Unsupported node type throw instruction enumeration");
+                    else throw new Exception("Unsupported node type during instruction enumeration");
                 }
                 //_outputLines.Sort((a, b) => String.CompareOrdinal(a.Variable, b.Variable)); //Sort by variable name
             }

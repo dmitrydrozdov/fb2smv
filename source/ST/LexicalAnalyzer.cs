@@ -13,7 +13,7 @@ namespace FB2SMV
         internal class StringSplitter
             //split input string to basic expressions (a:=b / IF / <condition> / THEN / ELSE / END_IF)
         {
-            private static string[] splitters = {"end_if", "then", "else", "if", ";"};
+            //private static string[] splitters = {"end_if", "then", "else", "if", "elsif", ";"};
 
             public StringSplitter(string input)
             {
@@ -50,7 +50,7 @@ namespace FB2SMV
                 SortedSet<int> splitIndex = new SortedSet<int>();
 
 
-                Regex splitRegex = new Regex(@"((?<=(\W))(?i)(if|end_if|then|else))|(;)");
+                Regex splitRegex = new Regex(@"((?<=(\W))(?i)(if|end_if|then|else|elsif))|(;)");
                 foreach (Match match in splitRegex.Matches(input))
                 {
                     splitIndex.Add(match.Index);

@@ -21,6 +21,8 @@ namespace FB2SMV
             public static string[] LibraryTypes = new string[] {"E_DELAY", "E_MERGE", "E_SPLIT"};
             public static string[] LibraryTemplatesNxt = new string[] { @"AND_-\d*", @"NOT_\d*" };
 
+            private ShowMessageDelegate _showMessage;
+
             public static bool IsLibraryType(string fbType)
             {
                 if (!string.IsNullOrEmpty(LibraryTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
@@ -36,17 +38,19 @@ namespace FB2SMV
 
             private List<string> fileExtensions = new List<string>(new[] {".fbt", ".xml"});
 
-            public FBClassParcer()
+            public FBClassParcer(ShowMessageDelegate showMessage)
             {
                 Storage = new FB2SMV.FBCollections.Storage();
                 _newTypes = new Queue<string>();
                 _processedTypes = new SortedSet<string>();
+                _showMessage = showMessage;
             }
-            public FBClassParcer(Storage openedStorage)
+            public FBClassParcer(Storage openedStorage, ShowMessageDelegate showMessage)
             {
                 Storage = openedStorage;
                 _newTypes = null;
                 _processedTypes = null;
+                _showMessage = showMessage;
             }
 
             public void ParseRecursive(string filename, ShowMessageDelegate ShowMessage)
@@ -150,12 +154,12 @@ namespace FB2SMV
                 foreach (var inputVar in interfaceList.InputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(inputVar.Name, inputVar.Comment, fbTypeName,
-                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type)));
+                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type, _showMessage)));
                 }
                 foreach (var outputVar in interfaceList.OutputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(outputVar.Name, outputVar.Comment, fbTypeName,
-                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type)));
+                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage)));
                 }
             }
 
@@ -200,7 +204,7 @@ namespace FB2SMV
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(internalVar.Name, internalVar.Comment,
                         fbTypeName, Direction.Internal, internalVar.Type, internalVar.ArraySize,
-                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type)));
+                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type, _showMessage)));
                 }
                 foreach (var ecState in basicFb.ECC.ECState)
                 {

@@ -13,7 +13,7 @@ namespace ModuleVariablesTest
         public void TestMethod1()
         {
             const string filename = @"c:\Users\dim\Projects\fb2smv\tests\full_fb\fb\pnp\PNP_PLANT_MS_CONTROL_FOR_SMV.fbt";
-            FBClassParcer parcer = new FBClassParcer();
+            FBClassParcer parcer = new FBClassParcer(del);
             parcer.ParseRecursive(filename, del);
 
             List<ExecutionModel> executionModels = ExecutionModelsList.Generate(parcer, true);

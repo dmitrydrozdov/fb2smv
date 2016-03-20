@@ -12,6 +12,7 @@ namespace FB2SMV
             Expression,
             Condition,
             ConditionAlternative,
+            ConditionAlternativeElsif,
             ConditionEndPoint
         }
 
@@ -23,9 +24,9 @@ namespace FB2SMV
 
         internal class BinaryNode //Binary tree(graph) element
         {
-            private static string[] conditionOperators = {"if"}; //Condition operator
-            private static string[] endpointOperators = {"end_if"}; //Condition end operator
-            private static string[] conditionRightHandOperators = { "else" }; //Condition "else" branch operator
+            //private static string[] conditionOperators = {"if"}; //Condition operator
+            //private static string[] endpointOperators = {"end_if"}; //Condition end operator
+            //private static string[] conditionRightHandOperators = { "else", "elsif" }; //Condition "else" branch operator
 
             public BinaryNode(NodeType type, string val)
             {
@@ -95,6 +96,7 @@ namespace FB2SMV
             {
                 if (_type == NodeType.Condition) return String.Format("IF ({0})", _value);
                 else if (_type == NodeType.ConditionAlternative) return String.Format("ELSE {0}", _value);
+                //TODO: condition elsif
                 else if (_type == NodeType.ConditionEndPoint) return "END_IF";
                 else if (_type == NodeType.Expression) return _value;
                 else return base.ToString();
@@ -134,7 +136,8 @@ namespace FB2SMV
             //TODO: make this strings common
             private static string[] conditionOperators = { "if" }; //Condition operator
             private static string[] endpointOperators = { "end_if" }; //Condition end operator
-            private static string[] conditionAlternativeOperators = { "else" }; //Condition "else" branch operator
+            private static string[] conditionAlternativeOperators = { "else", "elsif" }; //Condition "else" branch operator
+            private int _elsifCnt = 0;
 
             public Parcer(StringSplitter lexicalAnalyzer)
             {
@@ -157,9 +160,9 @@ namespace FB2SMV
                     {
                         BinaryNode newNode = createNewTokenNode();
                         BinaryNode stackTop = graphConstructionStack.Peek();
-                        if (stackTop.Type != NodeType.Condition) graphConstructionStack.Pop();
+                        if (stackTop.Type != NodeType.Condition && stackTop.Type != NodeType.ConditionAlternativeElsif) graphConstructionStack.Pop();
 
-                        if (newNode.Type != NodeType.ConditionAlternative && newNode.Type != NodeType.ConditionEndPoint)
+                        if (newNode.Type != NodeType.ConditionAlternative && newNode.Type != NodeType.ConditionAlternativeElsif && newNode.Type != NodeType.ConditionEndPoint)
                         {
                             if (stackTop.LeftChild == null)
                             {
@@ -175,33 +178,41 @@ namespace FB2SMV
                         }
                         else if (newNode.Type == NodeType.ConditionAlternative)
                         {
-                            if (stackTop.Type == NodeType.Condition || stackTop.Type == NodeType.ConditionAlternative) throw new Exception("Invalid condition operator syntax");
+                            if (stackTop.Type == NodeType.Condition || stackTop.Type == NodeType.ConditionAlternative || stackTop.Type == NodeType.ConditionAlternativeElsif) throw new Exception("Invalid condition operator syntax");
 
                             leftHeadStack.Push(stackTop);
                         }
-                        else if (newNode.Type == NodeType.ConditionEndPoint)
+                        else if(newNode.Type == NodeType.ConditionAlternativeElsif)
                         {
-                            BinaryNode condNode = graphConstructionStack.Peek();
-                            if (stackTop.Type == NodeType.Condition) throw new Exception("Missing operator before \"END_IF\"");
-                            if (condNode.Type != NodeType.Condition) throw new Exception();
-                            if (condNode.RightChild != null)
-                            {
-                                if (!leftHeadStack.Any()) throw new ArgumentNullException();
+                            if (stackTop.Type == NodeType.Condition || stackTop.Type == NodeType.ConditionAlternative || stackTop.Type == NodeType.ConditionAlternativeElsif) throw new Exception("Invalid condition operator syntax");
+                            leftHeadStack.Push(stackTop);
 
-                                BinaryNode leftHead = leftHeadStack.Pop();
-                                stackTop.LeftChild = newNode;
-                                leftHead.LeftChild = newNode;
-                                newNode.RightAncestor = stackTop;
-                                newNode.LeftAncestor = leftHead;
-                            }
-                            else
+                            stackTop = graphConstructionStack.Peek();
+                            if (stackTop.Type != NodeType.Condition && stackTop.Type != NodeType.ConditionAlternativeElsif) throw new Exception();
+
+                            if (stackTop.LeftChild != null && stackTop.RightChild == null)
                             {
-                                condNode.RightChild = newNode;
-                                newNode.RightAncestor = condNode;
-                                stackTop.LeftChild = newNode;
+                                stackTop.RightChild = newNode;
                                 newNode.LeftAncestor = stackTop;
                             }
-                            graphConstructionStack.Pop(); //Delete expression node from stack
+                            else throw new Exception();
+                        }
+                        else if (newNode.Type == NodeType.ConditionEndPoint)
+                        {
+                            treatConditionEndPoint(ref graphConstructionStack, ref stackTop, ref leftHeadStack, newNode);
+                            if (_elsifCnt > 0)
+                            {
+                                for (int i = 0; i < _elsifCnt; i++)
+                                {
+                                    graphConstructionStack.Push(newNode);
+                                    stackTop = graphConstructionStack.Peek();
+                                    if (stackTop.Type != NodeType.Condition) graphConstructionStack.Pop();
+
+                                    newNode = new BinaryNode(NodeType.ConditionEndPoint, "");
+                                    treatConditionEndPoint(ref graphConstructionStack, ref stackTop, ref leftHeadStack, newNode);
+                                }
+                                _elsifCnt = 0;
+                            }
                         }
                         if (newNode.Type != NodeType.ConditionAlternative) graphConstructionStack.Push(newNode);
                     }
@@ -209,6 +220,31 @@ namespace FB2SMV
                 }
                 else return null;
                 
+            }
+
+            private void treatConditionEndPoint(ref Stack<BinaryNode> graphConstructionStack, ref BinaryNode stackTop, ref Stack<BinaryNode> leftHeadStack, BinaryNode newNode)
+            {
+                BinaryNode condNode = graphConstructionStack.Peek();
+                if (stackTop.Type == NodeType.Condition) throw new Exception("Missing operator before \"END_IF\"");
+                if (condNode.Type != NodeType.Condition && condNode.Type != NodeType.ConditionAlternativeElsif) throw new Exception("Invalid condition operator!");
+                if (condNode.RightChild != null)
+                {
+                    if (!leftHeadStack.Any()) throw new ArgumentNullException();
+
+                    BinaryNode leftHead = leftHeadStack.Pop();
+                    stackTop.LeftChild = newNode;
+                    leftHead.LeftChild = newNode;
+                    newNode.RightAncestor = stackTop;
+                    newNode.LeftAncestor = leftHead;
+                }
+                else
+                {
+                    condNode.RightChild = newNode;
+                    newNode.RightAncestor = condNode;
+                    stackTop.LeftChild = newNode;
+                    newNode.LeftAncestor = stackTop;
+                }
+                graphConstructionStack.Pop(); //Delete expression node from stack
             }
 
             private BinaryNode createNewTokenNode()
@@ -230,7 +266,6 @@ namespace FB2SMV
                             String.Compare(token, endpointOperator, StringComparison.InvariantCultureIgnoreCase) == 0))
                     //If token is a condition end operator
                 {
-
                     return new BinaryNode(NodeType.ConditionEndPoint, "");
                 }
                 if (
@@ -241,6 +276,14 @@ namespace FB2SMV
                             0)) //If token is a condition "else" operator
                 {
                     //token = _lexicalAnalyzer.GetNextToken();
+                    if (String.Compare(token, "elsif", StringComparison.InvariantCultureIgnoreCase) == 0)  //Elsif operator. //TODO: 
+                    {
+                        _elsifCnt++;
+                        token = _lexicalAnalyzer.GetNextToken();
+                        return new BinaryNode(NodeType.ConditionAlternativeElsif, token);
+                    }
+
+                    
                     return new BinaryNode(NodeType.ConditionAlternative, ""/*token*/);
                 }
                 else //If token is not a condition operator - create standard node
