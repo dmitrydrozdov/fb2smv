@@ -159,7 +159,7 @@ namespace FB2SMV
 
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
-                smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections) + "\n";
+                smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
                 smvModule += BasicFbSmv.SetServiceSignals(_settings.UseProcesses) + "\n";
 
                 smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";

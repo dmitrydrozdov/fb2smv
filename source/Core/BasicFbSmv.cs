@@ -316,7 +316,7 @@ namespace FB2SMV
                 }
                 return eventChangeString;
             }
-            public static string SetOutputVarBuffers(IEnumerable<Variable> variables, IEnumerable<Event> events, IEnumerable<ECAction> actions, IEnumerable<WithConnection> withConnections)
+            public static string SetOutputVarBuffers(IEnumerable<Variable> variables, IEnumerable<Event> events, IEnumerable<ECAction> actions, IEnumerable<WithConnection> withConnections, ShowMessageDelegate showMessage)
             {
                 string outVarsChangeString = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output))
@@ -328,7 +328,10 @@ namespace FB2SMV
                     List<ECAction> ac = new List<ECAction>();
                     foreach (WithConnection connection in withConnections.Where(conn => conn.Var == variable.Name))
                     {
-                        foreach (ECAction action in actions.Where(act => act.Output == connection.Event))
+                        var outputEventsActions = actions.Where(act => act.Output == connection.Event);
+                        if (outputEventsActions.Count() == 0)
+                            showMessage(String.Format("Warning! Event {0} associated with output {1} never fires.", connection.Event, variable.Name));
+                        foreach (ECAction action in outputEventsActions)
                         {
                             if (!ac.Contains(action)) ac.Add(action);
                         }
@@ -339,9 +342,13 @@ namespace FB2SMV
                         outCond += "(" + Smv.EccStateVar + "=" + Smv.EccState(action.ECState) + " & " +
                                    Smv.EcActionsCounterVar + "=" + action.Number + ") | ";
                     }
-                    rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars), variable.Name);
-                    outVarsChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Variable(variable.Name),
-                        rule);
+
+                    if (outCond != "")
+                    {
+                        rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars), variable.Name);
+                        outVarsChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Variable(variable.Name), rule);
+                    }
+                    else showMessage(String.Format("Warning! No active events associated with output {0}.", variable.Name));
                 }
                 return outVarsChangeString;
             }
