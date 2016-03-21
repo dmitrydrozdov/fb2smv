@@ -32,6 +32,7 @@
             this.cancelButton = new System.Windows.Forms.Button();
             this.modCheckBox = new System.Windows.Forms.CheckBox();
             this.useProcessesCheckBox = new System.Windows.Forms.CheckBox();
+            this.generateDummyPropertyCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // saveButton
@@ -77,6 +78,16 @@
             this.useProcessesCheckBox.Text = "Use processes";
             this.useProcessesCheckBox.UseVisualStyleBackColor = true;
             // 
+            // generateDummyPropertyCheckBox
+            // 
+            this.generateDummyPropertyCheckBox.AutoSize = true;
+            this.generateDummyPropertyCheckBox.Location = new System.Drawing.Point(13, 61);
+            this.generateDummyPropertyCheckBox.Name = "generateDummyPropertyCheckBox";
+            this.generateDummyPropertyCheckBox.Size = new System.Drawing.Size(169, 17);
+            this.generateDummyPropertyCheckBox.TabIndex = 4;
+            this.generateDummyPropertyCheckBox.Text = "Generate dummy LTL property";
+            this.generateDummyPropertyCheckBox.UseVisualStyleBackColor = true;
+            // 
             // SettingsWindow
             // 
             this.AcceptButton = this.saveButton;
@@ -84,6 +95,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(302, 120);
+            this.Controls.Add(this.generateDummyPropertyCheckBox);
             this.Controls.Add(this.useProcessesCheckBox);
             this.Controls.Add(this.modCheckBox);
             this.Controls.Add(this.cancelButton);
@@ -104,5 +116,7 @@
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.CheckBox modCheckBox;
         private System.Windows.Forms.CheckBox useProcessesCheckBox;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox generateDummyPropertyCheckBox;
     }
 }

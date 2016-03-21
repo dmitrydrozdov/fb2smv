@@ -35,11 +35,13 @@ namespace GUI
         {
             modCheckBox.Checked = Program.Settings.ModularArithmetics;
             useProcessesCheckBox.Checked = Program.Settings.UseProcesses;
+            generateDummyPropertyCheckBox.Checked = Program.Settings.GenerateDummyProperty;
         }
         private void _saveSettings()
         {
             Program.Settings.ModularArithmetics = modCheckBox.Checked;
             Program.Settings.UseProcesses = useProcessesCheckBox.Checked;
+            Program.Settings.GenerateDummyProperty = generateDummyPropertyCheckBox.Checked;
         }
     }
 }

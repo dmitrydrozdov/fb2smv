@@ -203,7 +203,16 @@ namespace FB2SMV
                 mainModule += String.Format(Smv.ModuleDef, "main", "");
                 mainModule += CompositeFbSmv.FbInstances(instanceList, _storage.Events, _storage.Variables, connections, _settings) + "\n";
                 mainModule += CompositeFbSmv.InternalBuffersDeclaration(instanceList, connections, _storage.Events, _storage.Variables) + "\n";
+                if (_settings.GenerateDummyProperty)
+                {
+                    mainModule += String.Format(Smv.VarDeclarationBlock, "false_var", Smv.DataTypes.BoolType);
+                }
                 mainModule += Smv.Assign;
+                if (_settings.GenerateDummyProperty)
+                {
+                    mainModule += String.Format(Smv.VarInitializationBlock, "false_var", Smv.False);
+                    mainModule += String.Format(Smv.NextVarAssignment, "false_var", Smv.False);
+                }
                 mainModule += CompositeFbSmv.InternalBuffersInitialization(instanceList, connections, _storage.Events, _storage.Variables, instanceParameters, true) + "\n";
                 
                 mainModule += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Alpha, Smv.True);
@@ -247,6 +256,11 @@ namespace FB2SMV
                 //**********************
 
                 //mainModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
+
+                if (_settings.GenerateDummyProperty)
+                {
+                    mainModule += "\nLTLSPEC F false_var=TRUE";
+                }
 
                 return mainModule;
             }
