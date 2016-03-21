@@ -117,6 +117,28 @@ namespace FB2SMV
                 }
                 return buffers;
             }
+
+            internal static string NonConnectedEventInputs(IEnumerable<Connection> connections, List<Event> events, IEnumerable<FBInstance> instances, ShowMessageDelegate showMessage)
+            {
+                string ret = "";
+                foreach (FBInstance instance in instances)
+                {
+                    var instanceInputEvents = events.Where(ev => ev.FBType == instance.InstanceType && ev.Direction == Direction.Input);
+
+                    foreach (Event inputEvent in instanceInputEvents)
+                    {
+                        string connectionNodeName = instance.Name + "." + inputEvent.Name;
+                        Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
+                        if (connection == null)
+                        {
+                            showMessage(String.Format("Warning! Input event {0} in {1}:{2} is not connected!", inputEvent.Name, instance.Name, instance.FBType));
+                            ret += String.Format(Smv.NextVarAssignment, instance.Name + "_" + inputEvent.Name, instance.Name + "_" + inputEvent.Name);
+                        }
+                    }
+                }
+                return ret;
+            }
+
             private static bool _isInputFromComponent(FBInterface instanceParameter, IEnumerable<Connection> connections, string instanceName, out Connection inputConnection)
             {
                 inputConnection = null;

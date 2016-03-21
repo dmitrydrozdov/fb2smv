@@ -105,6 +105,7 @@ namespace FB2SMV
                 }
                 //smvModule += _moduleVariablesInitBlock(variables) + "\n";
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
+                smvModule += CompositeFbSmv.NonConnectedEventInputs(connections, _storage.Events, instances, _showMessage);
                 smvModule += CompositeFbSmv.NonConnectedInputs(connections, _storage.Variables, instances);
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
                 smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
