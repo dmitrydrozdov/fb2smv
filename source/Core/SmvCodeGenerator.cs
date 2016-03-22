@@ -56,11 +56,15 @@ namespace FB2SMV
 
             public string TranslateLibraryFBType(FBType fbType)
             {
+                if(fbType.Name == LibraryTypes.E_SPLIT)
+                {
+                    return LibraryFBTypes.ESplitFBModule(_storage, _settings);
+                }
                 /*if (String.Compare("E_DELAY", fbType.Name, StringComparison.InvariantCultureIgnoreCase) == 0)
                 {
                     return EDelayFBModule();
                 }*/
-                _showMessage(String.Format("Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
+                _showMessage(String.Format("Warning! Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
                 return emptyFbModule(fbType.Name);
             }
 
@@ -73,10 +77,7 @@ namespace FB2SMV
                 return smvModule;
             }
 
-            private string EDelayFBModule()
-            {
-                throw new NotImplementedException();
-            }
+            
 
             public string TranslateCompositeFB(FBType fbType)
             {

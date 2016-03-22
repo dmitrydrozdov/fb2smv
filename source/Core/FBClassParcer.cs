@@ -16,16 +16,28 @@ namespace FB2SMV
     {
         public delegate void ShowMessageDelegate(string message);
 
+        public static class LibraryTypes
+        {
+            public static string E_SPLIT = "E_SPLIT";
+            public static string E_DELAY = "E_DELAY";
+            public static string E_CYCLE = "E_CYCLE";
+            public static string E_MERGE = "E_MERGE";
+        }
+
         public class FBClassParcer
         {
-            public static string[] LibraryTypes = new string[] {"E_DELAY", "E_MERGE", "E_SPLIT"};
+            public static string[] LibTypes = new string[] {    LibraryTypes.E_DELAY,
+                                                                LibraryTypes.E_MERGE,
+                                                                LibraryTypes.E_SPLIT,
+                                                                LibraryTypes.E_CYCLE
+                                                           };
             public static string[] LibraryTemplatesNxt = new string[] { @"AND_-\d*", @"NOT_\d*" };
 
             private ShowMessageDelegate _showMessage;
 
             public static bool IsLibraryType(string fbType)
             {
-                if (!string.IsNullOrEmpty(LibraryTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
+                if (!string.IsNullOrEmpty(LibTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
                     return true;
                 foreach (string template in LibraryTemplatesNxt)
                 {
@@ -179,7 +191,7 @@ namespace FB2SMV
                         else
                         {
                             ShowMessage("Pre-defined FB type added to storage: " + fbInstance.Type);
-                            Storage.PutFBType(new FBType(fbInstance.Type, "", FBClass.Library));
+                            PutLibraryType(fbInstance.Type);
                             _processedTypes.Add(fbInstance.Type);
                         }
                     }
@@ -196,6 +208,18 @@ namespace FB2SMV
                         ConnectionType.Event, fbTypeName));
                 }
 
+            }
+
+            private void PutLibraryType(string fbType)
+            {
+                if(fbType == LibraryTypes.E_SPLIT)
+                {
+                    Storage.PutEvent(new FBCollections.Event("EI", "", fbType, Direction.Input));
+                    Storage.PutEvent(new FBCollections.Event("EO1", "", fbType, Direction.Output));
+                    Storage.PutEvent(new FBCollections.Event("EO2", "", fbType, Direction.Output));
+                }
+
+                Storage.PutFBType(new FBType(fbType, "", FBClass.Library));
             }
 
             private void PutBasicFB(BasicFB basicFb, string fbTypeName)
