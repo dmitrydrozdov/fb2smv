@@ -34,6 +34,7 @@ namespace FB2SMV
             public static string[] LibraryTemplatesNxt = new string[] { @"AND_-\d*", @"NOT_\d*" };
 
             private ShowMessageDelegate _showMessage;
+            private Settings _settings;
 
             public static bool IsLibraryType(string fbType)
             {
@@ -50,12 +51,13 @@ namespace FB2SMV
 
             private List<string> fileExtensions = new List<string>(new[] {".fbt", ".xml"});
 
-            public FBClassParcer(ShowMessageDelegate showMessage)
+            public FBClassParcer(ShowMessageDelegate showMessage, Settings settings)
             {
                 Storage = new FB2SMV.FBCollections.Storage();
                 _newTypes = new Queue<string>();
                 _processedTypes = new SortedSet<string>();
                 _showMessage = showMessage;
+                _settings = settings;
             }
             public FBClassParcer(Storage openedStorage, ShowMessageDelegate showMessage)
             {
@@ -108,6 +110,16 @@ namespace FB2SMV
                     {
                         string filename = Path.Combine(directory, fbType + extension);
                         if (File.Exists(filename)) return filename;
+
+                        //Search next FB file in ../ and all subdirectories
+                        string parentDir = Directory.GetParent(directory).FullName;
+                        var foundFiles = Directory.GetFiles(parentDir, fbType + extension, SearchOption.AllDirectories);
+                        if (foundFiles.Length == 1) return foundFiles[0];
+                        else if (foundFiles.Length > 1)
+                        {
+                            throw new FileNotFoundException(
+                                String.Format("Multiple definitions of type \"{0}\" found in directory \"{1}\" ", fbType, parentDir));
+                        }
                     }
                     throw new FileNotFoundException(
                         String.Format("Definition of type \"{0}\" not found in directory \"{1}\" ", fbType, directory));
@@ -166,12 +178,12 @@ namespace FB2SMV
                 foreach (var inputVar in interfaceList.InputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(inputVar.Name, inputVar.Comment, fbTypeName,
-                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type, _showMessage)));
+                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
                 foreach (var outputVar in interfaceList.OutputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(outputVar.Name, outputVar.Comment, fbTypeName,
-                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage)));
+                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
             }
 
@@ -228,7 +240,7 @@ namespace FB2SMV
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(internalVar.Name, internalVar.Comment,
                         fbTypeName, Direction.Internal, internalVar.Type, internalVar.ArraySize,
-                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type, _showMessage)));
+                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
                 foreach (var ecState in basicFb.ECC.ECState)
                 {

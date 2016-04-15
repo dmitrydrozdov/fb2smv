@@ -48,7 +48,7 @@ namespace GUI
 
         private void resetWorkspace()
         {
-            _parcer = new FBClassParcer(ShowMessage);
+            _parcer = new FBClassParcer(ShowMessage, Program.Settings);
             _selectedFbType = null;
             _selectedVariable = null;
             fbTypesView.Nodes.Clear();
@@ -269,7 +269,7 @@ namespace GUI
 
         private void propChangeButton_Click(object sender, EventArgs e)
         {
-            if (_selectedVariable.SmvType is Smv.DataTypes.BoolSmvType) { }
+            if (Smv.DataTypes.IsSimple(_selectedVariable.SmvType)) { }
 
             else
             {

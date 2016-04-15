@@ -12,6 +12,7 @@ namespace FB2SMV
             public bool ModularArithmetics = true;
             public bool UseProcesses = false;
             public bool GenerateDummyProperty = true;
+            public bool nuXmvInfiniteDataTypes = true;
         }
     }
 }

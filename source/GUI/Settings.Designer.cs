@@ -33,12 +33,13 @@
             this.modCheckBox = new System.Windows.Forms.CheckBox();
             this.useProcessesCheckBox = new System.Windows.Forms.CheckBox();
             this.generateDummyPropertyCheckBox = new System.Windows.Forms.CheckBox();
+            this.intRealCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // saveButton
             // 
             this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.Location = new System.Drawing.Point(134, 85);
+            this.saveButton.Location = new System.Drawing.Point(134, 109);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 0;
@@ -50,7 +51,7 @@
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(215, 85);
+            this.cancelButton.Location = new System.Drawing.Point(215, 109);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 1;
@@ -88,13 +89,24 @@
             this.generateDummyPropertyCheckBox.Text = "Generate dummy LTL property";
             this.generateDummyPropertyCheckBox.UseVisualStyleBackColor = true;
             // 
+            // intRealCheckBox
+            // 
+            this.intRealCheckBox.AutoSize = true;
+            this.intRealCheckBox.Location = new System.Drawing.Point(12, 84);
+            this.intRealCheckBox.Name = "intRealCheckBox";
+            this.intRealCheckBox.Size = new System.Drawing.Size(152, 17);
+            this.intRealCheckBox.TabIndex = 4;
+            this.intRealCheckBox.Text = "Integers and Reals in SMV";
+            this.intRealCheckBox.UseVisualStyleBackColor = true;
+            // 
             // SettingsWindow
             // 
             this.AcceptButton = this.saveButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(302, 120);
+            this.ClientSize = new System.Drawing.Size(302, 144);
+            this.Controls.Add(this.intRealCheckBox);
             this.Controls.Add(this.generateDummyPropertyCheckBox);
             this.Controls.Add(this.useProcessesCheckBox);
             this.Controls.Add(this.modCheckBox);
@@ -118,5 +130,6 @@
         private System.Windows.Forms.CheckBox useProcessesCheckBox;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox generateDummyPropertyCheckBox;
+        private System.Windows.Forms.CheckBox intRealCheckBox;
     }
 }
