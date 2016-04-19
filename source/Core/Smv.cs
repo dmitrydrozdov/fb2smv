@@ -254,6 +254,7 @@ namespace FB2SMV
                 cleared = rNot.Replace(cleared, " " + _smvPattern.Not);
                 cleared = rFalse.Replace(cleared, " " + _smvPattern.False);
                 cleared = rTrue.Replace(cleared, " " + _smvPattern.True);
+                cleared = cleared.Replace("<>", "!=");
                 return cleared;
             }
 
@@ -351,28 +352,28 @@ namespace FB2SMV
 
                 public static ISmvType GetType(string varType, ShowMessageDelegate showMessage, bool smvInfiniteTypes)
                 {
-                    if (String.Compare(varType, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.BOOL))
                         return new BoolSmvType();
-                    if (String.Compare(varType, "INT", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.INT))
                         if (smvInfiniteTypes) return new IntSmvType();
                         else return new RangeSmvType(0,99);
-                    if (String.Compare(varType, "UINT", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.UINT))
                         if (smvInfiniteTypes) return new IntSmvType();
                         else return new RangeSmvType(0, 99);
-                    if (String.Compare(varType, "DINT", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.DINT))
                         if (smvInfiniteTypes) return new IntSmvType();
                         else return new RangeSmvType(0, 99);
-                    if (String.Compare(varType, "TIME", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.TIME)) //Костыль
                     {
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..500]", varType));
                         return new RangeSmvType(0, 500);
                     }
-                    if (String.Compare(varType, "STRING", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.STRING)) //Костыль
                     {
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to bool", varType));
                         return new BoolSmvType();
                     }
-                    if (String.Compare(varType, "REAL", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.REAL)) //Костыль
                     {
                         if (smvInfiniteTypes) return new RealSmvType();
                         else {

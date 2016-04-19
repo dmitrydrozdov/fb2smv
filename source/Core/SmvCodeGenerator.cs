@@ -64,6 +64,10 @@ namespace FB2SMV
                 {
                     return EDelayFBModule();
                 }*/
+                else if (fbType.Name == LibraryTypes.E_CYCLE)
+                {
+                    return LibraryFBTypes.ECycleFBModule(_storage, _settings);
+                }
                 _showMessage(String.Format("Warning! Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
                 return emptyFbModule(fbType.Name);
             }

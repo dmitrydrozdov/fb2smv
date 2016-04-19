@@ -46,6 +46,7 @@
     <Compile Include="CompositeFbSmv.cs" />
     <Compile Include="ExecutionModel.cs" />
     <Compile Include="FbSmvCommon.cs" />
+    <Compile Include="IEC61499.cs" />
     <Compile Include="ISmvPattern.cs" />
     <Compile Include="LibraryFBTypes.cs" />
     <Compile Include="PriorityContainer.cs" />
