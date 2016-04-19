@@ -109,9 +109,10 @@ namespace FB2SMV
             public readonly string InitialValue;
             public readonly int ArraySize;
             public ISmvType SmvType;
+            public bool IsConstant;
 
             public Variable(string name, string comment, string fbType, Direction direction, string type, int arrSize,
-                string initialValue, ISmvType smvType)
+                string initialValue, ISmvType smvType, bool constant = false)
             {
                 Name = name;
                 Comment = comment;
@@ -121,6 +122,7 @@ namespace FB2SMV
                 ArraySize = arrSize;
                 InitialValue = initialValue;
                 SmvType = smvType;
+                IsConstant = constant;
             }
 
             public override string ToString()

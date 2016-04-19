@@ -226,7 +226,7 @@ namespace FB2SMV
 
                 //Main module next blocks
                 //**********************
-                foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input))
+                foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input && !v.IsConstant))
                 {
                     string smvVariable = instance.Name + "_" + variable.Name;
                     if (variable.ArraySize == 0)

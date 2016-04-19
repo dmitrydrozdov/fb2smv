@@ -260,6 +260,12 @@ namespace GUI
 
                 _connectedVars = varDependencyGraph.GetConnectedVariables(VarDependencyGraph.VariableKey(_selectedVariable));
 
+                varIsConstantCheckBox.Checked = _selectedVariable.IsConstant;
+
+                FBType selType = _parcer.Storage.Types.FirstOrDefault(t => t.Name == _selectedFbType);
+                if (selType.Type == FBClass.Basic && _selectedVariable.Direction == Direction.Input && _connectedVars.Count()==0) varIsConstantCheckBox.Enabled = true;
+                else varIsConstantCheckBox.Enabled = false;
+
                 foreach (Variable connectedVar in _connectedVars)
                 {
                     connectedVarsTreeView.Nodes.Add(connectedVar.ToString(), connectedVar.ToString());
@@ -458,6 +464,14 @@ namespace GUI
         public static void ShowMessageMethod(string message)
         {
             _inst.messagesRichTextBox.Text += message + "\n";
+        }
+
+        private void varIsConstantCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (_selectedVariable != null)
+            {
+                _selectedVariable.IsConstant = varIsConstantCheckBox.Checked;
+            }
         }
     }
 }

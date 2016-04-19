@@ -217,7 +217,7 @@ namespace FB2SMV
 
             public static string InitialValue(Variable variable)
             {
-                if (variable.SmvType.GetType() == typeof (DataTypes.RangeSmvType))
+                if (variable.SmvType is DataTypes.RangeSmvType)
                 {
                     if (variable.InitialValue != null)
                     {
@@ -227,17 +227,21 @@ namespace FB2SMV
                             val = ((DataTypes.RangeSmvType) variable.SmvType).RangeBegin.ToString();
                         else if (Convert.ToInt32(val) > ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd)
                             val = ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd.ToString();
+
                         return val;
                     }
                     else return ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin.ToString();
                 }
-                else if (variable.SmvType.GetType() == typeof (DataTypes.BoolSmvType))
+                else if (variable.SmvType is DataTypes.BoolSmvType)
                 {
                     if (variable.InitialValue != null && variable.InitialValue == "1") return Smv.True;
                     else if (variable.InitialValue != null && variable.InitialValue == "0") return Smv.False;
-                    else if (variable.InitialValue == null) return Smv.False;
+                    else if (variable.InitialValue != null) return variable.InitialValue;
+                    else return Smv.False;
                 }
-                return "0";
+
+                if(variable.InitialValue != null) return variable.InitialValue;
+                else return "0";
             }
 
             public static string ClearConditionExpr(string cond)

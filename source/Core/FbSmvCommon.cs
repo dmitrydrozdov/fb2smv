@@ -21,7 +21,7 @@ namespace FB2SMV
                 }
                 foreach (Variable variable in variables)
                 {
-                    if (variable.Direction != Direction.Internal)
+                    if (variable.Direction != Direction.Internal && !variable.IsConstant)
                     {
                         if (preffix == null)
                             moduleParameters += (Smv.ModuleParameters.Variable(variable.Name) +

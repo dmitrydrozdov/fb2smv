@@ -83,7 +83,7 @@ namespace FB2SMV
                 string buffers = "";
                 foreach (FBInstance instance in instances)
                 {
-                    var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal);
+                    var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal && !v.IsConstant);
                     var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
 
 
@@ -175,7 +175,7 @@ namespace FB2SMV
                 }
                 foreach (Variable variable in variables)
                 {
-                    if (variable.Direction != Direction.Internal)
+                    if (variable.Direction != Direction.Internal && !variable.IsConstant)
                     {
                         moduleParameters += _getInstanceParameterString(variable, connections, instanceName) + Smv.ModuleParameters.Splitter;
                     }
@@ -202,7 +202,7 @@ namespace FB2SMV
                 string buffersInit = "";
                 foreach (FBInstance instance in instances)
                 {
-                    var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal);
+                    var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal && !v.IsConstant);
                     var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
                     foreach (Event ev in instanceEvents)
                     {
@@ -501,7 +501,7 @@ namespace FB2SMV
                 string ret = "";
                 foreach (FBInstance instance in instances)
                 {
-                    var instanceVariables = allVariables.Where(v => v.FBType == instance.InstanceType && v.Direction == Direction.Input);
+                    var instanceVariables = allVariables.Where(v => v.FBType == instance.InstanceType && v.Direction == Direction.Input && !v.IsConstant);
 
                     foreach (Variable variable in instanceVariables)
                     {

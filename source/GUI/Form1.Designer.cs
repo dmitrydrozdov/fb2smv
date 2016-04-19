@@ -77,6 +77,7 @@
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.messagesRichTextBox = new System.Windows.Forms.RichTextBox();
+            this.varIsConstantCheckBox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -240,15 +241,15 @@
             this.connectedVarsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.connectedVarsTreeView.Location = new System.Drawing.Point(2, 160);
+            this.connectedVarsTreeView.Location = new System.Drawing.Point(2, 207);
             this.connectedVarsTreeView.Name = "connectedVarsTreeView";
-            this.connectedVarsTreeView.Size = new System.Drawing.Size(343, 228);
+            this.connectedVarsTreeView.Size = new System.Drawing.Size(343, 181);
             this.connectedVarsTreeView.TabIndex = 7;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(6, 134);
+            this.label3.Location = new System.Drawing.Point(2, 191);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(104, 13);
             this.label3.TabIndex = 6;
@@ -293,7 +294,7 @@
             // propChangeButton
             // 
             this.propChangeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.propChangeButton.Location = new System.Drawing.Point(264, 107);
+            this.propChangeButton.Location = new System.Drawing.Point(264, 143);
             this.propChangeButton.Name = "propChangeButton";
             this.propChangeButton.Size = new System.Drawing.Size(81, 25);
             this.propChangeButton.TabIndex = 13;
@@ -349,6 +350,7 @@
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.varIsConstantCheckBox);
             this.splitContainer2.Panel2.Controls.Add(this.label1);
             this.splitContainer2.Panel2.Controls.Add(this.propChangeButton);
             this.splitContainer2.Panel2.Controls.Add(this.label2);
@@ -371,7 +373,7 @@
             this.eventsPage.Controls.Add(this.eventsTreeView);
             this.eventsPage.Location = new System.Drawing.Point(4, 22);
             this.eventsPage.Name = "eventsPage";
-            this.eventsPage.Size = new System.Drawing.Size(532, 492);
+            this.eventsPage.Size = new System.Drawing.Size(537, 416);
             this.eventsPage.TabIndex = 3;
             this.eventsPage.Text = "Events";
             // 
@@ -421,7 +423,7 @@
             this.eventsTreeView.Dock = System.Windows.Forms.DockStyle.Left;
             this.eventsTreeView.Location = new System.Drawing.Point(0, 0);
             this.eventsTreeView.Name = "eventsTreeView";
-            this.eventsTreeView.Size = new System.Drawing.Size(166, 492);
+            this.eventsTreeView.Size = new System.Drawing.Size(166, 416);
             this.eventsTreeView.TabIndex = 0;
             // 
             // DispatcherPage
@@ -430,7 +432,7 @@
             this.DispatcherPage.Controls.Add(this.groupBox2);
             this.DispatcherPage.Location = new System.Drawing.Point(4, 22);
             this.DispatcherPage.Name = "DispatcherPage";
-            this.DispatcherPage.Size = new System.Drawing.Size(532, 492);
+            this.DispatcherPage.Size = new System.Drawing.Size(537, 416);
             this.DispatcherPage.TabIndex = 2;
             this.DispatcherPage.Text = "Dispatcher";
             // 
@@ -441,7 +443,7 @@
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(0, 0);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(532, 492);
+            this.groupBox2.Size = new System.Drawing.Size(537, 416);
             this.groupBox2.TabIndex = 2;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "groupBox2";
@@ -505,7 +507,7 @@
             this.smvCodePage.Location = new System.Drawing.Point(4, 22);
             this.smvCodePage.Name = "smvCodePage";
             this.smvCodePage.Padding = new System.Windows.Forms.Padding(3);
-            this.smvCodePage.Size = new System.Drawing.Size(532, 492);
+            this.smvCodePage.Size = new System.Drawing.Size(537, 416);
             this.smvCodePage.TabIndex = 1;
             this.smvCodePage.Text = "SMV Code";
             // 
@@ -514,7 +516,7 @@
             this.smvCodeRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.smvCodeRichTextBox.Location = new System.Drawing.Point(3, 3);
             this.smvCodeRichTextBox.Name = "smvCodeRichTextBox";
-            this.smvCodeRichTextBox.Size = new System.Drawing.Size(526, 486);
+            this.smvCodeRichTextBox.Size = new System.Drawing.Size(531, 410);
             this.smvCodeRichTextBox.TabIndex = 0;
             this.smvCodeRichTextBox.Text = "";
             // 
@@ -524,7 +526,7 @@
             this.mainModuleTab.Location = new System.Drawing.Point(4, 22);
             this.mainModuleTab.Name = "mainModuleTab";
             this.mainModuleTab.Padding = new System.Windows.Forms.Padding(3);
-            this.mainModuleTab.Size = new System.Drawing.Size(532, 492);
+            this.mainModuleTab.Size = new System.Drawing.Size(537, 416);
             this.mainModuleTab.TabIndex = 4;
             this.mainModuleTab.Text = "Main";
             this.mainModuleTab.UseVisualStyleBackColor = true;
@@ -534,7 +536,7 @@
             this.mainModuleRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.mainModuleRichTextBox.Location = new System.Drawing.Point(3, 3);
             this.mainModuleRichTextBox.Name = "mainModuleRichTextBox";
-            this.mainModuleRichTextBox.Size = new System.Drawing.Size(526, 486);
+            this.mainModuleRichTextBox.Size = new System.Drawing.Size(531, 410);
             this.mainModuleRichTextBox.TabIndex = 0;
             this.mainModuleRichTextBox.Text = "";
             // 
@@ -589,6 +591,17 @@
             this.messagesRichTextBox.Size = new System.Drawing.Size(779, 115);
             this.messagesRichTextBox.TabIndex = 0;
             this.messagesRichTextBox.Text = "";
+            // 
+            // varIsConstantCheckBox
+            // 
+            this.varIsConstantCheckBox.AutoSize = true;
+            this.varIsConstantCheckBox.Location = new System.Drawing.Point(69, 108);
+            this.varIsConstantCheckBox.Name = "varIsConstantCheckBox";
+            this.varIsConstantCheckBox.Size = new System.Drawing.Size(68, 17);
+            this.varIsConstantCheckBox.TabIndex = 14;
+            this.varIsConstantCheckBox.Text = "Constant";
+            this.varIsConstantCheckBox.UseVisualStyleBackColor = true;
+            this.varIsConstantCheckBox.CheckedChanged += new System.EventHandler(this.varIsConstantCheckBox_CheckedChanged);
             // 
             // Form1
             // 
@@ -682,6 +695,7 @@
         private System.Windows.Forms.RichTextBox mainModuleRichTextBox;
         private System.Windows.Forms.SplitContainer splitContainer3;
         private System.Windows.Forms.RichTextBox messagesRichTextBox;
+        private System.Windows.Forms.CheckBox varIsConstantCheckBox;
     }
 }
 
