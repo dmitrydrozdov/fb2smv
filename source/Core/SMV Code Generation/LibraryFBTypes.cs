@@ -10,13 +10,13 @@ namespace FB2SMV
     {
         static class LibraryFBTypes
         {
-            private static string _timeDelayModule(Storage storage, Settings settings, string rule)
+            private static string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string rule)
             {
                 string smvModule = "";
-                var events = storage.Events.Where(ev => ev.FBType == LibraryTypes.E_CYCLE);
-                var variables = storage.Variables.Where(v => v.FBType == LibraryTypes.E_CYCLE);
+                var events = storage.Events.Where(ev => ev.FBType == fbTypeName);
+                var variables = storage.Variables.Where(v => v.FBType == fbTypeName);
 
-                smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, LibraryTypes.E_CYCLE);
+                smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
                 smvModule += Smv.Assign;
 
                 smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
@@ -35,13 +35,13 @@ namespace FB2SMV
             public static string EDelayFBModule(Storage storage, Settings settings)
             {
                 string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
-                return _timeDelayModule(storage, settings, rule);
+                return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, rule);
             }
 
             public static string ECycleFBModule(Storage storage, Settings settings)
             {
                 string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
-                return _timeDelayModule(storage, settings, rule);
+                return _timeDelayModule(storage, settings, LibraryTypes.E_CYCLE, rule);
             }
 
 
