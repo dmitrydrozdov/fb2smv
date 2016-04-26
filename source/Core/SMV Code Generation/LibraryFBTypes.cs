@@ -10,22 +10,16 @@ namespace FB2SMV
     {
         static class LibraryFBTypes
         {
-            public static string EDelayFBModule(Storage storage, Settings settings)
-            {
-                throw new NotImplementedException();
-            }
-
-            public static string ECycleFBModule(Storage storage, Settings settings)
+            private static string _timeDelayModule(Storage storage, Settings settings, string rule)
             {
                 string smvModule = "";
                 var events = storage.Events.Where(ev => ev.FBType == LibraryTypes.E_CYCLE);
-                var variables = storage.Variables.Where(v=>v.FBType == LibraryTypes.E_CYCLE);
+                var variables = storage.Variables.Where(v => v.FBType == LibraryTypes.E_CYCLE);
 
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, LibraryTypes.E_CYCLE);
                 smvModule += Smv.Assign;
 
-                string doRule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
-                smvModule += String.Format(Smv.NextCaseBlock, "Do_", doRule);
+                smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
 
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);
                 smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START))");
@@ -36,6 +30,18 @@ namespace FB2SMV
 
                 smvModule += FbSmvCommon.ModuleFooter(settings) + "\n";
                 return smvModule;
+            }
+
+            public static string EDelayFBModule(Storage storage, Settings settings)
+            {
+                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
+                return _timeDelayModule(storage, settings, rule);
+            }
+
+            public static string ECycleFBModule(Storage storage, Settings settings)
+            {
+                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
+                return _timeDelayModule(storage, settings, rule);
             }
 
 

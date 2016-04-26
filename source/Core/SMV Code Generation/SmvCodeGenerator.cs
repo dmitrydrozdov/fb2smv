@@ -60,10 +60,10 @@ namespace FB2SMV
                 {
                     return LibraryFBTypes.ESplitFBModule(_storage, _settings);
                 }
-                /*if (String.Compare("E_DELAY", fbType.Name, StringComparison.InvariantCultureIgnoreCase) == 0)
+                if (fbType.Name == LibraryTypes.E_DELAY)
                 {
-                    return EDelayFBModule();
-                }*/
+                    return LibraryFBTypes.EDelayFBModule(_storage, _settings);
+                }
                 else if (fbType.Name == LibraryTypes.E_CYCLE)
                 {
                     return LibraryFBTypes.ECycleFBModule(_storage, _settings);
