@@ -308,10 +308,10 @@ namespace GUI
 
             string aboutMessage = String.Format("{0}\nVersion: {1}.{2}.{3}.{4}\n{5}",
                 description,
-                name.Version.Major, 
-                name.Version.Minor, 
-                name.Version.MajorRevision,
-                name.Version.MinorRevision,
+                name.Version.Major,
+                name.Version.Minor,
+                name.Version.Build,
+                name.Version.MajorRevision | name.Version.MinorRevision,
                 copyrightAttribute.Copyright
                 );
             MessageBox.Show(aboutMessage);
