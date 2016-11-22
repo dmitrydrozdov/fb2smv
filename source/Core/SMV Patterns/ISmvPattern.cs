@@ -28,6 +28,7 @@ namespace FB2SMV
             string Beta { get; }
             string Omega { get; }
             string Assign { get; }
+            string Trans { get; }
             string Running { get; }
             string NormalVarAssignment { get; }
             string NextVarAssignment { get; }
@@ -36,6 +37,8 @@ namespace FB2SMV
             string Or { get; }
             string Not { get; }
             string Fairness { get; }
+            string InitStatement { get; }
+            string Eq { get; }
         }
     }
 }

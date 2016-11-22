@@ -30,7 +30,10 @@ namespace FB2SMV
             private static string _beta = "beta";
             private static string _omega = "omega";
             private static string _assign = "\nASSIGN\n";
+            private static string _trans = "\nTRANS\n";
+            private static string _init = "\nINIT\n";
 
+            private static string _equals = "{0} = {1}";
             private static string _normalVarAssignment = "{0} := {1};\n";
             private static string _nextVarAssignment = "next({0}) := {1};\n";
             private static char   _connectionNameSeparator = '.';
@@ -117,10 +120,23 @@ namespace FB2SMV
             {
                 get { return _assign; }
             }
+            public string Trans
+            {
+                get { return _trans; }
+            }
+            public string InitStatement
+            {
+                get { return _init; }
+            }
 
             public string Running
             {
                 get { return _running; }
+            }
+
+            public string Eq
+            {
+                get { return _equals; }
             }
 
             public string NormalVarAssignment

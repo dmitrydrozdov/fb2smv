@@ -10,6 +10,8 @@ namespace FB2SMV
     {
         static class LibraryFBTypes
         {
+            static Smv Smv = new Smv(new CmSmvPattern());
+
             private static string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string rule)
             {
                 string smvModule = "";

@@ -11,6 +11,7 @@ namespace FB2SMV
     {
         internal class CompositeFbSmv
         {
+            static Smv Smv = new Smv(new CmSmvPattern());
             public static string FbInstances(IEnumerable<FBInstance> instances, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<Connection> connections, Settings settings)
             {
                 string inst = "";

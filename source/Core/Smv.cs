@@ -15,19 +15,23 @@ namespace FB2SMV
         /// </summary>
         public class Smv
         {
-            private static ISmvPattern _smvPattern = new CmSmvPattern();
+            private ISmvPattern _smvPattern = new CmSmvPattern();
 
             /// <summary>
             /// Set SMV code generation pattern (default pattern is CmSmvPattern)
             /// </summary>
             /// <param name="smvPattern"></param>
-            public static void SetPattern(ISmvPattern smvPattern)
+            public Smv()
             {
-                if (smvPattern == null) throw new ArgumentException();
-                _smvPattern = smvPattern;
+                _smvPattern = new CmSmvPattern();
+            }
+            public Smv(ISmvPattern pattern)
+            {
+                if (pattern == null) throw new ArgumentException();
+                _smvPattern = pattern;
             }
 
-            public static string OsmStateChangeBlock 
+            public string OsmStateChangeBlock 
             {
                 get
                 {
@@ -40,99 +44,114 @@ namespace FB2SMV
                 }
             }
 
-            public static string True
+            public string True
             {
                 get { return _smvPattern.True; }
             }
 
-            public static string False
+            public string False
             {
                 get { return _smvPattern.False; }
             }
 
-            public static string ModuleDef
+            public string ModuleDef
             {
                 get { return _smvPattern.ModuleDef; }
             }
 
-            public static string VarDeclarationBlock
+            public string VarDeclarationBlock
             {
                 get { return _smvPattern.VarDeclarationBlock; }
             }
 
-            public static string VarInitializationBlock
+            public string VarInitializationBlock
             {
                 get { return _smvPattern.VarInitializationBlock; }
             }
 
-            public static string DefineBlock
+            public string DefineBlock
             {
                 get { return _smvPattern.DefineBlock; }
             }
 
-            public static string OsmStateVar
+            public string OsmStateVar
             {
                 get { return _smvPattern.OsmStateVar; }
             }
 
-            public static string EccStateVar
+            public string EccStateVar
             {
                 get { return _smvPattern.EccStateVar; }
             }
 
-            public static string EcActionsCounterVar
+            public string EcActionsCounterVar
             {
                 get { return _smvPattern.EcActionsCounterVar; }
             }
 
-            public static string AlgStepsCounterVar
+            public string AlgStepsCounterVar
             {
                 get { return _smvPattern.AlgStepsCounterVar; }
             }
 
-            public static string NextCaseBlock
+            public string NextCaseBlock
             {
                 get { return _smvPattern.NextCaseBlock; }
             }
 
-            public static string EmptyNextCaseBlock
+            public string EmptyNextCaseBlock
             {
                 get { return _smvPattern.EmptyNextCaseBlock; }
             }
 
-            public static string ExistsInputEvent
+            public string ExistsInputEvent
             {
                 get { return _smvPattern.ExistsInputEvent; }
             }
 
-            public static string ExistsEnabledEcTran
+            public string ExistsEnabledEcTran
             {
                 get { return _smvPattern.ExistsEnabledEcTran; }
             }
 
-            public static string AbsentsEnabledEcTran
+            public string AbsentsEnabledEcTran
             {
                 get { return _smvPattern.AbsentsEnabledEcTran; }
             }
 
-            public static string Alpha
+            public string Alpha
             {
                 get { return _smvPattern.Alpha; }
             }
 
-            public static string Beta
+            public string Beta
             {
                 get { return _smvPattern.Beta; }
             }
 
-            public static string Omega
+            public string Omega
             {
                 get { return _smvPattern.Omega; }
             }
 
-            public static string Assign
+            public string Assign
             {
                 get { return _smvPattern.Assign; }
+            }
+
+            public string Trans
+            {
+                get { return _smvPattern.Trans; }
+            }
+
+            public string InitStatement
+            {
+                get { return _smvPattern.InitStatement; }
+            }
+
+            public string Eq
+            {
+                get { return _smvPattern.Eq; }
             }
 
             /*public static string FairnessRunning
@@ -140,42 +159,47 @@ namespace FB2SMV
                 get { return _smvPattern.FairnessRunning; }
             }*/
 
-            public static string Fairness(string fairCondition)
+            public string Fairness(string fairCondition)
             {
                 return String.Format(_smvPattern.Fairness, fairCondition);
             }
 
-            public static string NormalVarAssignment
+            public string NormalVarAssignment
             {
                 get { return _smvPattern.NormalVarAssignment; }
             }
 
-            public static string NextVarAssignment
+            public string NextVarAssignment
             {
                 get { return _smvPattern.NextVarAssignment; }
             }
 
-            public static char ConnectionNameSeparator
+            public char ConnectionNameSeparator
             {
                 get { return _smvPattern.ConnectionNameSeparator; }
             }
 
-            public static string And
+            public string And
             {
                 get { return _smvPattern.And; }
             }
 
-            public static string Or
+            public string Or
             {
                 get { return _smvPattern.Or; }
             }
 
-            public static string Not
+            public string Not
             {
                 get { return _smvPattern.Not; }
             }
 
-            public static string Running
+            public string NotFunc(string expr)
+            {
+                return "(" + _smvPattern.Not + expr + ")";
+            }
+
+            public string Running
             {
                 get { return _smvPattern.Running; }
             }
@@ -195,7 +219,7 @@ namespace FB2SMV
                 return "[" + index + "]";
             }
 
-            public static string ClearInitialValue(string initialValue, Variable variable) //TODO: fix in SmvCodeGenerator.Check()
+            public string ClearInitialValue(string initialValue, Variable variable) //TODO: fix in SmvCodeGenerator.Check()
             {
                 string val = initialValue;
                 
@@ -209,13 +233,13 @@ namespace FB2SMV
                 }
                 else if (variable.SmvType.GetType() == typeof(DataTypes.BoolSmvType))
                 {
-                    if (val == "0") return Smv.False;
-                    if (val == "1") return Smv.True;
+                    if (val == "0") return _smvPattern.False;
+                    if (val == "1") return _smvPattern.True;
                 }
                 return val;
             }
 
-            public static string InitialValue(Variable variable)
+            public string InitialValue(Variable variable)
             {
                 if (variable.SmvType is DataTypes.RangeSmvType)
                 {
@@ -234,17 +258,17 @@ namespace FB2SMV
                 }
                 else if (variable.SmvType is DataTypes.BoolSmvType)
                 {
-                    if (variable.InitialValue != null && variable.InitialValue == "1") return Smv.True;
-                    else if (variable.InitialValue != null && variable.InitialValue == "0") return Smv.False;
+                    if (variable.InitialValue != null && variable.InitialValue == "1") return _smvPattern.True;
+                    else if (variable.InitialValue != null && variable.InitialValue == "0") return _smvPattern.False;
                     else if (variable.InitialValue != null) return variable.InitialValue;
-                    else return Smv.False;
+                    else return _smvPattern.False;
                 }
 
                 if(variable.InitialValue != null) return variable.InitialValue;
                 else return "0";
             }
 
-            public static string ClearConditionExpr(string cond)
+            public string ClearConditionExpr(string cond)
             {
                 Regex rAnd = new Regex(@"((?<=\w)&(?=\w))|((?<=\W)(AND|and|And)(?=\W))");
                 Regex rOr = new Regex(@"(?<=\w)\|(?=\w)|((?<=\W)(OR|or|Or)(?=\W))");
@@ -264,7 +288,7 @@ namespace FB2SMV
 
             public delegate string ProccessingFunc(string name);
 
-            public static string ConvertConnectionVariableName(string name, ProccessingFunc moduleParamNameConversionFunc, out bool componentVar)
+            public string ConvertConnectionVariableName(string name, ProccessingFunc moduleParamNameConversionFunc, out bool componentVar)
             {
                 string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
                 string converted = "";
@@ -288,14 +312,14 @@ namespace FB2SMV
             /// </summary>
             /// <param name="name"></param>
             /// <returns>[0] - instance name or variable name; [1] - variable name</returns>
-            public static string[] SplitConnectionVariableName(string name) //TODO: refactoring: ConnectionNode.Instance + ConnectionNode.Name
+            public string[] SplitConnectionVariableName(string name) //TODO: refactoring: ConnectionNode.Instance + ConnectionNode.Name
             {
                 string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
                 if (splitArr.Count() == 0) throw new Exception("No connection var name");
                 return splitArr;
             }
 
-            public static class DataTypes
+            public class DataTypes
             {
                 public static bool IsSimple(ISmvType type)
                 {

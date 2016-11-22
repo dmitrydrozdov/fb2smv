@@ -10,6 +10,8 @@ namespace FB2SMV
     {
         internal class FbSmvCommon
         {
+            static Smv Smv = new Smv(new CmSmvPattern());
+
             public static string ModuleParametersString(IEnumerable<Event> events, IEnumerable<Variable> variables, string preffix = null)
             {
                 string moduleParameters = "";

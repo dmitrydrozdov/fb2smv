@@ -112,6 +112,7 @@ namespace GUI
                         mainModuleRichTextBox.Text = "";
                     }
                 }*/
+                string fname = openFileDialog1.FileName;
                 if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
                 {
                     ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);

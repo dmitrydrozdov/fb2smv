@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace FB2SMV
 {
@@ -24,6 +25,14 @@ namespace FB2SMV
         [Serializable]
         public class CyclicDispatcher : IDispatcher
         {
+            [NonSerialized]
+            Smv Smv = new Smv(new CmSmvPattern());
+
+            [OnDeserialized]
+            internal void OnDeserializingMethod(StreamingContext context)
+            {
+                Smv = new Smv(new CmSmvPattern());
+            }
             public CyclicDispatcher(string fbTypeName, IEnumerable<FBInstance> instances, bool solveDispatchingProblem)
             {
                 FBTypeName = fbTypeName;

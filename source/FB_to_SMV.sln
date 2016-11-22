@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FBXML", "FBXML\FBXML.csproj", "{69EB69E0-7112-40AE-AC88-0FE875DF6365}"
 EndProject
@@ -30,6 +30,7 @@ Global
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Debug|x86.Build.0 = Debug|Any CPU
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Release|Any CPU.Build.0 = Release|Any CPU
 		{69EB69E0-7112-40AE-AC88-0FE875DF6365}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
@@ -40,6 +41,7 @@ Global
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Debug|x86.Build.0 = Debug|Any CPU
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A6DF83EA-31AE-408A-87F7-765891C5A93F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
@@ -50,6 +52,7 @@ Global
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Debug|x86.Build.0 = Debug|Any CPU
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0CA2F407-F05B-41AD-9EBF-A17664D099E7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
@@ -60,6 +63,7 @@ Global
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Debug|x86.Build.0 = Debug|Any CPU
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C944686-ED97-4AE1-8414-2C2316E160ED}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU

@@ -41,13 +41,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SMV Code Generation\BasicFbSmv.cs" />
-    <Compile Include="CmSmvPattern.cs" />
+    <Compile Include="SMV Patterns\CmSmvPattern.cs" />
     <Compile Include="Comparisions.cs" />
+    <Compile Include="SMV Code Generation\BasicFBSmvTrans.cs" />
     <Compile Include="SMV Code Generation\CompositeFbSmv.cs" />
     <Compile Include="Intermediate model\ExecutionModel.cs" />
-    <Compile Include="FbSmvCommon.cs" />
+    <Compile Include="SMV Code Generation\FbSmvCommon.cs" />
     <Compile Include="IEC61499.cs" />
-    <Compile Include="ISmvPattern.cs" />
+    <Compile Include="SMV Patterns\ISmvPattern.cs" />
     <Compile Include="SMV Code Generation\LibraryFBTypes.cs" />
     <Compile Include="PriorityContainer.cs" />
     <Compile Include="Settings.cs" />
@@ -60,6 +61,7 @@
     <Compile Include="Multimap.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structures.cs" />
+    <Compile Include="SMV Patterns\nuXmvtransPattern.cs" />
     <Compile Include="Tree.cs" />
     <Compile Include="VarDependencyGraph.cs" />
   </ItemGroup>
