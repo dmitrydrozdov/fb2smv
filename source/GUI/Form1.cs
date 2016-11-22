@@ -309,8 +309,8 @@ namespace GUI
                 description,
                 name.Version.Major, 
                 name.Version.Minor, 
-                name.Version.MajorRevision,
-                name.Version.MinorRevision,
+                name.Version.Build,
+                name.Version.MajorRevision | name.Version.MinorRevision,
                 copyrightAttribute.Copyright
                 );
             MessageBox.Show(aboutMessage);
