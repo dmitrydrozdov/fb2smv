@@ -56,11 +56,19 @@ namespace FB2SMV
 
             public string TranslateLibraryFBType(FBType fbType)
             {
-                /*if (String.Compare("E_DELAY", fbType.Name, StringComparison.InvariantCultureIgnoreCase) == 0)
+                if(fbType.Name == LibraryTypes.E_SPLIT)
                 {
-                    return EDelayFBModule();
-                }*/
-                _showMessage(String.Format("Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
+                    return LibraryFBTypes.ESplitFBModule(_storage, _settings);
+                }
+                if (fbType.Name == LibraryTypes.E_DELAY)
+                {
+                    return LibraryFBTypes.EDelayFBModule(_storage, _settings);
+                }
+                else if (fbType.Name == LibraryTypes.E_CYCLE)
+                {
+                    return LibraryFBTypes.ECycleFBModule(_storage, _settings);
+                }
+                _showMessage(String.Format("Warning! Library type {0} is not supported for current execution model. Dummy FB module was generated.", fbType.Name));
                 return emptyFbModule(fbType.Name);
             }
 
@@ -73,10 +81,7 @@ namespace FB2SMV
                 return smvModule;
             }
 
-            private string EDelayFBModule()
-            {
-                throw new NotImplementedException();
-            }
+            
 
             public string TranslateCompositeFB(FBType fbType)
             {
@@ -221,7 +226,7 @@ namespace FB2SMV
 
                 //Main module next blocks
                 //**********************
-                foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input))
+                foreach (Variable variable in _storage.Variables.Where(v=>v.FBType == topLevelFbType.Name && v.Direction == Direction.Input && !v.IsConstant))
                 {
                     string smvVariable = instance.Name + "_" + variable.Name;
                     if (variable.ArraySize == 0)

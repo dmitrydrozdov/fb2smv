@@ -258,6 +258,7 @@ namespace FB2SMV
                 cleared = rNot.Replace(cleared, " " + _smvPattern.Not);
                 cleared = rFalse.Replace(cleared, " " + _smvPattern.False);
                 cleared = rTrue.Replace(cleared, " " + _smvPattern.True);
+                cleared = cleared.Replace("<>", "!=");
                 return cleared;
             }
 
@@ -296,6 +297,11 @@ namespace FB2SMV
 
             public static class DataTypes
             {
+                public static bool IsSimple(ISmvType type)
+                {
+                    if (type is BoolSmvType || type is IntSmvType || type is RealSmvType) return true;
+                    else return false;
+                }
                 [Serializable]
                 public class BoolSmvType : ISmvType
                 {
@@ -304,6 +310,25 @@ namespace FB2SMV
                         return "boolean";
                     }
                 }
+
+                [Serializable]
+                public class IntSmvType : ISmvType
+                {
+                    public override string ToString()
+                    {
+                        return "integer";
+                    }
+                }
+
+                [Serializable]
+                public class RealSmvType : ISmvType
+                {
+                    public override string ToString()
+                    {
+                        return "real";
+                    }
+                }
+
                 [Serializable]
                 public class RangeSmvType : ISmvType
                 {
@@ -329,30 +354,36 @@ namespace FB2SMV
                 public static string BoolType = "boolean";
                 //public static string NormalRangeType = "0..99";
 
-                public static ISmvType GetType(string varType, ShowMessageDelegate showMessage)
+                public static ISmvType GetType(string varType, ShowMessageDelegate showMessage, bool smvInfiniteTypes)
                 {
-                    if (String.Compare(varType, "BOOL", StringComparison.InvariantCultureIgnoreCase) == 0)
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.BOOL))
                         return new BoolSmvType();
-                    if (String.Compare(varType, "INT", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return new RangeSmvType(0,99);
-                    if (String.Compare(varType, "UINT", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return new RangeSmvType(0, 99);
-                    if (String.Compare(varType, "DINT", StringComparison.InvariantCultureIgnoreCase) == 0)
-                        return new RangeSmvType(0, 99);
-                    if (String.Compare(varType, "TIME", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.INT))
+                        if (smvInfiniteTypes) return new IntSmvType();
+                        else return new RangeSmvType(0,99);
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.UINT))
+                        if (smvInfiniteTypes) return new IntSmvType();
+                        else return new RangeSmvType(0, 99);
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.DINT))
+                        if (smvInfiniteTypes) return new IntSmvType();
+                        else return new RangeSmvType(0, 99);
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.TIME)) //Костыль
                     {
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..500]", varType));
                         return new RangeSmvType(0, 500);
                     }
-                    if (String.Compare(varType, "STRING", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.STRING)) //Костыль
                     {
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to bool", varType));
                         return new BoolSmvType();
                     }
-                    if (String.Compare(varType, "REAL", StringComparison.InvariantCultureIgnoreCase) == 0) //Костыль
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.REAL)) //Костыль
                     {
-                        showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..99]", varType));
-                        return new RangeSmvType(0, 99);
+                        if (smvInfiniteTypes) return new RealSmvType();
+                        else {
+                            showMessage(String.Format("Warning! Data type \"{0}\" is not supported for current settings and will be changed to range [0..99]", varType));
+                            return new RangeSmvType(0, 99);
+                        }
                     }
                     throw new Exception(String.Format("Unsupported data type \"{0}\"!", varType));
                     return null;

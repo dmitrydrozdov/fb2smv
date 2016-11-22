@@ -40,19 +40,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BasicFbSmv.cs" />
+    <Compile Include="SMV Code Generation\BasicFbSmv.cs" />
     <Compile Include="CmSmvPattern.cs" />
     <Compile Include="Comparisions.cs" />
-    <Compile Include="CompositeFbSmv.cs" />
-    <Compile Include="ExecutionModel.cs" />
+    <Compile Include="SMV Code Generation\CompositeFbSmv.cs" />
+    <Compile Include="Intermediate model\ExecutionModel.cs" />
     <Compile Include="FbSmvCommon.cs" />
+    <Compile Include="IEC61499.cs" />
     <Compile Include="ISmvPattern.cs" />
+    <Compile Include="SMV Code Generation\LibraryFBTypes.cs" />
     <Compile Include="PriorityContainer.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Smv.cs" />
-    <Compile Include="SmvCodeGenerator.cs" />
+    <Compile Include="SMV Code Generation\SmvCodeGenerator.cs" />
     <Compile Include="CyclicDispatcher.cs" />
-    <Compile Include="FBClassParcer.cs" />
+    <Compile Include="Intermediate model\FBClassParcer.cs" />
     <Compile Include="Graph.cs" />
     <Compile Include="IDispatcher.cs" />
     <Compile Include="Multimap.cs" />

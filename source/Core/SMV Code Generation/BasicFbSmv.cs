@@ -19,12 +19,16 @@ namespace FB2SMV
                 foreach (var variable in variables)
                 {
                     if (variable.ArraySize == 0)
-                        outp += String.Format(Smv.VarDeclarationBlock, variable.Name, variable.SmvType);
+                    {
+                        if(variable.IsConstant) outp += String.Format(Smv.DefineBlock, variable.Name, variable.InitialValue);
+                        else outp += String.Format(Smv.VarDeclarationBlock, variable.Name, variable.SmvType);
+                    }
                     else
                     {
                         for (int i = 0; i < variable.ArraySize; i++)
                         {
-                            outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.SmvType);
+                            if (variable.IsConstant) outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.InitialValue); //TODO: parse initial values for arrays
+                            else outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.SmvType);
                         }
                     }
                 }
@@ -154,13 +158,16 @@ namespace FB2SMV
                 string varsInit = "-- _moduleVariablesInitBlock\n";
                 foreach (var variable in variables)
                 {
-                    if (variable.ArraySize == 0)
-                        varsInit += String.Format(Smv.VarInitializationBlock, variable.Name, Smv.InitialValue(variable));
-                    else
+                    if (!variable.IsConstant)
                     {
-                        for (int i = 0; i < variable.ArraySize; i++)
+                        if (variable.ArraySize == 0)
+                            varsInit += String.Format(Smv.VarInitializationBlock, variable.Name, Smv.InitialValue(variable));
+                        else
                         {
-                            varsInit += String.Format(Smv.VarInitializationBlock, variable.Name + Smv.ArrayIndex(i), Smv.InitialValue(variable));
+                            for (int i = 0; i < variable.ArraySize; i++)
+                            {
+                                varsInit += String.Format(Smv.VarInitializationBlock, variable.Name + Smv.ArrayIndex(i), Smv.InitialValue(variable));
+                            }
                         }
                     }
                 }
@@ -200,13 +207,16 @@ namespace FB2SMV
                 string varChangeBlocks = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Input))
                 {
-                    if (variable.ArraySize == 0)
-                        varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true));
-                    else
+                    if (!variable.IsConstant)
                     {
-                        for (int i = 0; i < variable.ArraySize; i++)
+                        if (variable.ArraySize == 0)
+                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true));
+                        else
                         {
-                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true, i));
+                            for (int i = 0; i < variable.ArraySize; i++)
+                            {
+                                varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true, i));
+                            }
                         }
                     }
                 }

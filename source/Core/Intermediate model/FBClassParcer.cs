@@ -16,16 +16,29 @@ namespace FB2SMV
     {
         public delegate void ShowMessageDelegate(string message);
 
+        public static class LibraryTypes
+        {
+            public static string E_SPLIT = "E_SPLIT";
+            public static string E_DELAY = "E_DELAY";
+            public static string E_CYCLE = "E_CYCLE";
+            public static string E_MERGE = "E_MERGE";
+        }
+
         public class FBClassParcer
         {
-            public static string[] LibraryTypes = new string[] {"E_DELAY", "E_MERGE", "E_SPLIT"};
+            public static string[] LibTypes = new string[] {    LibraryTypes.E_DELAY,
+                                                                LibraryTypes.E_MERGE,
+                                                                LibraryTypes.E_SPLIT,
+                                                                LibraryTypes.E_CYCLE
+                                                           };
             public static string[] LibraryTemplatesNxt = new string[] { @"AND_-\d*", @"NOT_\d*" };
 
             private ShowMessageDelegate _showMessage;
+            private Settings _settings;
 
             public static bool IsLibraryType(string fbType)
             {
-                if (!string.IsNullOrEmpty(LibraryTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
+                if (!string.IsNullOrEmpty(LibTypes.FirstOrDefault(t => String.Compare(t, fbType, StringComparison.InvariantCultureIgnoreCase) == 0)))
                     return true;
                 foreach (string template in LibraryTemplatesNxt)
                 {
@@ -38,12 +51,13 @@ namespace FB2SMV
 
             private List<string> fileExtensions = new List<string>(new[] {".fbt", ".xml"});
 
-            public FBClassParcer(ShowMessageDelegate showMessage)
+            public FBClassParcer(ShowMessageDelegate showMessage, Settings settings)
             {
                 Storage = new FB2SMV.FBCollections.Storage();
                 _newTypes = new Queue<string>();
                 _processedTypes = new SortedSet<string>();
                 _showMessage = showMessage;
+                _settings = settings;
             }
             public FBClassParcer(Storage openedStorage, ShowMessageDelegate showMessage)
             {
@@ -96,6 +110,16 @@ namespace FB2SMV
                     {
                         string filename = Path.Combine(directory, fbType + extension);
                         if (File.Exists(filename)) return filename;
+
+                        //Search next FB file in ../ and all subdirectories
+                        string parentDir = Directory.GetParent(directory).FullName;
+                        var foundFiles = Directory.GetFiles(parentDir, fbType + extension, SearchOption.AllDirectories);
+                        if (foundFiles.Length == 1) return foundFiles[0];
+                        else if (foundFiles.Length > 1)
+                        {
+                            throw new FileNotFoundException(
+                                String.Format("Multiple definitions of type \"{0}\" found in directory \"{1}\" ", fbType, parentDir));
+                        }
                     }
                     throw new FileNotFoundException(
                         String.Format("Definition of type \"{0}\" not found in directory \"{1}\" ", fbType, directory));
@@ -154,12 +178,12 @@ namespace FB2SMV
                 foreach (var inputVar in interfaceList.InputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(inputVar.Name, inputVar.Comment, fbTypeName,
-                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type, _showMessage)));
+                        Direction.Input, inputVar.Type, inputVar.ArraySize, inputVar.InitialValue, Smv.DataTypes.GetType(inputVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
                 foreach (var outputVar in interfaceList.OutputVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(outputVar.Name, outputVar.Comment, fbTypeName,
-                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage)));
+                        Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
             }
 
@@ -179,7 +203,7 @@ namespace FB2SMV
                         else
                         {
                             ShowMessage("Pre-defined FB type added to storage: " + fbInstance.Type);
-                            Storage.PutFBType(new FBType(fbInstance.Type, "", FBClass.Library));
+                            PutLibraryType(fbInstance.Type);
                             _processedTypes.Add(fbInstance.Type);
                         }
                     }
@@ -198,13 +222,35 @@ namespace FB2SMV
 
             }
 
+            private void PutLibraryType(string fbType)
+            {
+                if(fbType == LibraryTypes.E_SPLIT)
+                {
+                    Storage.PutEvent(new FBCollections.Event("EI", "", fbType, Direction.Input));
+                    Storage.PutEvent(new FBCollections.Event("EO1", "", fbType, Direction.Output));
+                    Storage.PutEvent(new FBCollections.Event("EO2", "", fbType, Direction.Output));
+                }
+                else if (fbType == LibraryTypes.E_DELAY || fbType == LibraryTypes.E_CYCLE)
+                {
+                    Storage.PutEvent(new FBCollections.Event("START", "", fbType, Direction.Input));
+                    Storage.PutEvent(new FBCollections.Event("STOP", "", fbType, Direction.Input));
+                    Storage.PutEvent(new FBCollections.Event("EO", "", fbType, Direction.Output));
+
+                    Storage.PutVariable(new Variable("Dt", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "666", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                    Storage.PutVariable(new Variable("Di", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                    Storage.PutVariable(new Variable("Do", "", fbType, Direction.Output, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                }
+
+                Storage.PutFBType(new FBType(fbType, "", FBClass.Library));
+            }
+
             private void PutBasicFB(BasicFB basicFb, string fbTypeName)
             {
                 foreach (var internalVar in basicFb.InternalVars)
                 {
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(internalVar.Name, internalVar.Comment,
                         fbTypeName, Direction.Internal, internalVar.Type, internalVar.ArraySize,
-                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type, _showMessage)));
+                        internalVar.InitialValue, Smv.DataTypes.GetType(internalVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
                 foreach (var ecState in basicFb.ECC.ECState)
                 {

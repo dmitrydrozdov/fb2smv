@@ -9,9 +9,10 @@ namespace FB2SMV
     {
         public class Settings
         {
-            public bool ModularArithmetics = true;
+            public bool ModularArithmetics = false;
             public bool UseProcesses = false;
             public bool GenerateDummyProperty = true;
+            public bool nuXmvInfiniteDataTypes = true;
         }
     }
 }

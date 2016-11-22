@@ -9,11 +9,12 @@ namespace ModuleVariablesTest
     public class UnitTest1
     {
         ShowMessageDelegate del = delegate(string message) {  };
+        Settings s = new Settings();
         [TestMethod]
         public void TestMethod1()
         {
             const string filename = @"c:\Users\dim\Projects\fb2smv\tests\full_fb\fb\pnp\PNP_PLANT_MS_CONTROL_FOR_SMV.fbt";
-            FBClassParcer parcer = new FBClassParcer(del);
+            FBClassParcer parcer = new FBClassParcer(del, s);
             parcer.ParseRecursive(filename, del);
 
             List<ExecutionModel> executionModels = ExecutionModelsList.Generate(parcer, true);
