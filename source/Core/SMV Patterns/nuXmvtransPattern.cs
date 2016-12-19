@@ -42,7 +42,7 @@ namespace FB2SMV
 
             private static string _equals = "{0} = {1}";
             private static string _normalVarAssignment = "{0} := {1};\n";
-            private static string _nextVarAssignment = "next({0}) := {1};\n";
+            private static string _nextVarAssignment = "next({0}) = {1}";
             private static char _connectionNameSeparator = '.';
 
             private static string _and = " & ";

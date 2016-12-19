@@ -14,6 +14,9 @@ namespace FB2SMV
         {
             static Smv Smv = new Smv(new nuXmvtransPattern());
 
+            static string transOrBlockTemplate = "| ( {0} )\n";
+            const string modFormatSuffix = "(({0}) mod {1}) ";
+
             public static string GenerateSMVCode(FBType fbType,
                                                     Storage storage,
                                                     IEnumerable<ExecutionModel> executionModels,
@@ -54,7 +57,14 @@ namespace FB2SMV
                 smvModule += "(";
                 smvModule += BasicOsmTransitions();
                 smvModule += EcStateChangeTransitions(transitions, events);
-                smvModule += ")";
+                smvModule += OsmRollBack();
+
+                smvModule += EcActionsCounterChangeBlock(states) + "\n";
+                smvModule += AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
+
+                smvModule += DeadlockHandlingBlock();
+
+                smvModule += ")\n";
                 /*smvModule += Smv.Assign;
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EccStateVar, Smv.EccState(states.First(s => true).Name));
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.OsmStateVar, Smv.Osm.S0);
@@ -69,13 +79,13 @@ namespace FB2SMV
 
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), settings) + "\n";
-                smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, showMessage) + "\n";
+                smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, showMessage) + "\n";*/
                 smvModule += BasicFbSmv.SetServiceSignals(settings.UseProcesses) + "\n";
 
                 smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, settings.UseProcesses) + "\n";
                 smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, settings.UseProcesses) + "\n";
 
-                smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";*/
+                smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
 
                 return smvModule;
             }
@@ -91,11 +101,20 @@ namespace FB2SMV
                 return smvAlgs;
             }
 
+            private static string OsmRollBack()
+            {
+                string rollbackRule = Smv.OsmStateVar + " = " + Smv.Osm.S2 + Smv.And +
+                                        Smv.EcActionsCounterVar + " = 0 " + Smv.And +
+                                        CommonVariablesNext(Smv.EccStateVar, Smv.Osm.S1, Smv.EcActionsCounterVar, Smv.AlgStepsCounterVar);
+
+                return String.Format(transOrBlockTemplate, rollbackRule);
+            }
+
             private static string BasicOsmTransitions()
             {
                 string returnStr = "";
                 //(alpha & S_smv=s0_osm & ExistsInputEvent    & next...
-                string condition = Smv.Alpha
+                string condition = Smv.Alpha + Smv.And
                                  + String.Format(Smv.Eq, Smv.OsmStateVar, Smv.Osm.S0) + Smv.And
                                  + Smv.ExistsInputEvent;
                 returnStr += "(";
@@ -158,13 +177,13 @@ namespace FB2SMV
                 return ecTransitionsSmv;
             }
 
-            /*public static string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
+            public static string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
             {
-                string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
-                string rformat = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar +
-                                 "=0 & ({0}): ";
-                const string modFormatSuffix = "({1}) mod {2};\n";
-                const string normalFormatSuffix = "{1};\n";
+
+                string res = "";
+                
+
+                string actionZeroRule = Smv.OsmStateVar + "=" + Smv.Osm.S2 + Smv.And + Smv.AlgStepsCounterVar + "=0" + Smv.And + "(";
 
                 string rule1 = "";
                 string rule2 = "";
@@ -178,23 +197,44 @@ namespace FB2SMV
                     rule1 += String.Format(add, "<");
                     rule2 += String.Format(add, "=");
                 }
-                rules += String.Format(rformat + modFormatSuffix, rule1.TrimEnd(Smv.OrTrimChars), Smv.EcActionsCounterVar + " + 1", states.Max(state => state.ActionsCount) + 1);
-                rules += String.Format(rformat + normalFormatSuffix, rule2.TrimEnd(Smv.OrTrimChars), " 0 ");
 
-                return String.Format(Smv.NextCaseBlock, Smv.EcActionsCounterVar, rules);
-            }*/
-            /*public static string AlgStepsCounterChangeBlock(IEnumerable<ECState> states, IEnumerable<ECAction> actions, IEnumerable<TranslatedAlg> algorithms)
+                actionZeroRule += rule2.TrimEnd(Smv.OrTrimChars);
+                actionZeroRule += ")" + Smv.And;
+                actionZeroRule += CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, "0", Smv.AlgStepsCounterVar);
+
+
+                string actionIncRule = Smv.OsmStateVar + "=" + Smv.Osm.S2 + Smv.And + Smv.AlgStepsCounterVar + "=0" + Smv.And + "(";
+
+                actionIncRule += rule1.TrimEnd(Smv.OrTrimChars);
+                actionIncRule += ")" + Smv.And;
+                string naIncValue = String.Format(modFormatSuffix, Smv.EcActionsCounterVar + " + 1", states.Max(state => state.ActionsCount) + 1); // (NA + 1) mod (max(NA)+1)
+                actionIncRule += CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, naIncValue, Smv.AlgStepsCounterVar);
+
+
+                res += String.Format(transOrBlockTemplate, actionZeroRule);
+                res += String.Format(transOrBlockTemplate, actionIncRule);
+
+                return res;
+            }
+            public static string AlgStepsCounterChangeBlock(IEnumerable<ECState> states, IEnumerable<ECAction> actions, IEnumerable<TranslatedAlg> algorithms)
             {
+                
+
+                string res = "";
+
+                string algStepZeroRule = Smv.OsmStateVar + "=" + Smv.Osm.S2 + Smv.And + "(";
+                string algStepIncRule = Smv.OsmStateVar + "=" + Smv.Osm.S2 + Smv.And + "(";
                 //if (!algorithms.Any()) return "";
-                string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
+                /*string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
                 string rformat = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & ({0}):";
                 const string modFormatSuffix = "({1}) mod {2};\n";
-                const string normalFormatSuffix = "{1};\n";
+                const string normalFormatSuffix = "{1};\n";*/
                 string rule1 = "";
                 string rule2 = "";
 
                 foreach (ECState state in states)
                 {
+                    
                     string stateName = state.Name;
                     if (state.ActionsCount == 0)
                     {
@@ -226,11 +266,38 @@ namespace FB2SMV
                     }
                 }
                 int maxAlgStepsCount = algorithms.Any() ? algorithms.Max(alg => alg.Lines.Max(line => line.NI)) : 1;
-                rules += String.Format(rformat + modFormatSuffix, rule1.TrimEnd(Smv.OrTrimChars), Smv.AlgStepsCounterVar + " + 1", maxAlgStepsCount + 1);
+
+                algStepZeroRule += rule2.TrimEnd(Smv.OrTrimChars);
+                algStepZeroRule += ")" + Smv.And;
+                algStepZeroRule += CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, Smv.EcActionsCounterVar, "0");
+
+                algStepIncRule += rule1.TrimEnd(Smv.OrTrimChars);
+                algStepIncRule += ")" + Smv.And;
+                string niIncValue = String.Format(modFormatSuffix, Smv.EcActionsCounterVar + " + 1", maxAlgStepsCount + 1); // (NI + 1) mod (max(NI)+1)
+                algStepIncRule += CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, Smv.EcActionsCounterVar, niIncValue);
+                /*rules += String.Format(rformat + modFormatSuffix, rule1.TrimEnd(Smv.OrTrimChars), Smv.AlgStepsCounterVar + " + 1", maxAlgStepsCount + 1);
                 rules += String.Format(rformat + normalFormatSuffix, rule2.TrimEnd(Smv.OrTrimChars), " 0 ");
 
-                return String.Format(Smv.NextCaseBlock, Smv.AlgStepsCounterVar, rules);
-            }*/
+                return String.Format(Smv.NextCaseBlock, Smv.AlgStepsCounterVar, rules);*/
+                res += String.Format(transOrBlockTemplate, algStepZeroRule);
+                res += String.Format(transOrBlockTemplate, algStepIncRule);
+
+                return res;
+            }
+            public static string DeadlockHandlingBlock()
+            {
+                string res = "";
+                string noInputEventsRule = Smv.OsmStateVar + "=" + Smv.Osm.S0 + 
+                                            Smv.And + String.Format("({0})",Smv.Not + Smv.ExistsInputEvent) +
+                                            Smv.And + CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, Smv.EcActionsCounterVar, Smv.AlgStepsCounterVar);
+                string noAlphaRule = Smv.OsmStateVar + "=" + Smv.Osm.S0 +
+                                            Smv.And + String.Format("({0})", Smv.Not + Smv.Alpha) +
+                                            Smv.And + CommonVariablesNext(Smv.EccStateVar, Smv.OsmStateVar, Smv.EcActionsCounterVar, Smv.AlgStepsCounterVar);
+                res += String.Format(transOrBlockTemplate, noInputEventsRule);
+                res += String.Format(transOrBlockTemplate, noAlphaRule);
+                return res;
+            }
+
             public static string ModuleVariablesInitBlock(IEnumerable<Variable> variables)
             {
                 string varsInit = "";
