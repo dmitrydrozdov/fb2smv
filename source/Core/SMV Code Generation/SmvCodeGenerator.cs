@@ -123,6 +123,7 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.InputEventsResetRules(events, _settings.UseProcesses);
                 smvModule += FbSmvCommon.DefineExistsInputEvent(events) + "\n";
                 smvModule += CompositeFbSmv.DefineOmega(connections) + "\n";
+                smvModule += CompositeFbSmv.DefinePhi(instances, _storage.Events) + "\n"; //phi variable for timed models
 
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 //smvModule += Smv.AlphaBetaRules;

@@ -130,6 +130,11 @@ namespace FB2SMV
                 get { return _smvPattern.Omega; }
             }
 
+            public static string Phi
+            {
+                get { return _smvPattern.Phi; }
+            }
+
             public static string Assign
             {
                 get { return _smvPattern.Assign; }

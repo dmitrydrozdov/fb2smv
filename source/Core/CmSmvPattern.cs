@@ -29,6 +29,7 @@ namespace FB2SMV
             private static string _alpha = "alpha";
             private static string _beta = "beta";
             private static string _omega = "omega";
+            private static string _phi = "phi";
             private static string _assign = "\nASSIGN\n";
 
             private static string _normalVarAssignment = "{0} := {1};\n";
@@ -112,6 +113,10 @@ namespace FB2SMV
             public string Omega
             {
                 get { return _omega; }
+            }
+            public string Phi
+            {
+                get { return _phi; }
             }
             public string Assign
             {

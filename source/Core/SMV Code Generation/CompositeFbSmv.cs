@@ -426,9 +426,25 @@ namespace FB2SMV
                 string omega = "";
                 foreach (string output in _getInternalEventOutputStrings(internalBuffers))
                 {
-                    omega += Smv.Not + output + Smv.Or;
+                    omega += output + Smv.Or;
                 }
-                return String.Format(Smv.DefineBlock, Smv.Omega, omega.TrimEnd(Smv.OrTrimChars));
+                omega = Smv.Not + "(" + omega.TrimEnd(Smv.OrTrimChars) + ")";
+                return String.Format(Smv.DefineBlock, Smv.Omega, omega);
+            }
+            public static string DefinePhi(IEnumerable<FBInstance> instances, IEnumerable<Event> nonFilteredEvents)
+            {
+                string phi = "(" + Smv.Not + Smv.ExistsInputEvent + ")" + Smv.And;
+                string phiEvents = "";
+                foreach (FBInstance instance in instances)
+                {
+                    var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
+                    foreach (Event ev in instanceEvents)
+                    {
+                        phiEvents += instance.Name + "_" + ev.Name + Smv.Or;
+                    }
+                }
+                phi += String.Format("({0}({1}))", Smv.Not, phiEvents.Trim(Smv.OrTrimChars));
+                return String.Format(Smv.DefineBlock, Smv.Phi, phi);
             }
             public static string InputEventsResetRules(IEnumerable<Event> events, bool useProcesses)
             {

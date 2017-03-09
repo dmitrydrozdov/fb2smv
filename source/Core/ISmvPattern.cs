@@ -27,6 +27,7 @@ namespace FB2SMV
             string Alpha { get; }
             string Beta { get; }
             string Omega { get; }
+            string Phi { get; }
             string Assign { get; }
             string Running { get; }
             string NormalVarAssignment { get; }
