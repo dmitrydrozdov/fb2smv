@@ -19,6 +19,7 @@ namespace FB2SMV
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
                 smvModule += Smv.Assign;
 
+                smvModule += String.Format(Smv.VarInitializationBlock, "Do_", "-1");
                 smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
 
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);

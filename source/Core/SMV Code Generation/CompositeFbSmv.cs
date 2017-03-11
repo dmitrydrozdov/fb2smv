@@ -197,6 +197,14 @@ namespace FB2SMV
                 }
                 return input;
             }*/
+            private static bool _nonInitializableVar(Variable variable)
+            {
+                var delayBlocks = new string[] { "E_DELAY", "E_CYCLE" };
+                var delayDataIOs = new string[] { "Di", "Do", "Dt" };
+
+                if (delayBlocks.Contains(variable.FBType) && delayDataIOs.Contains(variable.Name)) return true;
+                else return false;
+            }
             public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters, bool mainModule = false)
             {
                 string buffersInit = "";
@@ -215,6 +223,7 @@ namespace FB2SMV
                     foreach (Variable variable in instanceVariables)
                     {
                         Connection inputConnection;
+                        if (_nonInitializableVar(variable)) continue; // do not initialize SMV variables for FB_DELAY and E_CYCLE data IOs
                         if (_isInputFromComponent(variable, connections, instance.Name, out inputConnection)) continue;
 
                         // if(! _isInputFromComponent)
@@ -521,6 +530,7 @@ namespace FB2SMV
 
                     foreach (Variable variable in instanceVariables)
                     {
+                        if (_nonInitializableVar(variable)) continue; // do not add "next" statement for FB_DELAY and E_CYCLE data IOs
                         string connectionNodeName = instance.Name + "." + variable.Name;
                         Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
                         if (connection != null) continue;
