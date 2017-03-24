@@ -80,7 +80,6 @@ namespace FB2SMV
 
                 return smvModule;
             }
-
             
 
             public string TranslateCompositeFB(FBType fbType)
@@ -193,6 +192,19 @@ namespace FB2SMV
             private Storage _storage;
             private IEnumerable<ExecutionModel> _executionModels;
             private Settings _settings;
+
+            public string GetTimeScheduler()
+            {
+                string smvType = _storage.TimeSMVType;
+                int timeLocalRangeTop = 100;
+                string[] timeRangeSplit = smvType.Split(new string[] {".."}, StringSplitOptions.RemoveEmptyEntries);
+                if(timeRangeSplit.Count() > 1)
+                {
+                    timeLocalRangeTop = Convert.ToInt32(timeRangeSplit[1]);
+                }
+                TimeScheduler ts = new TimeScheduler(_storage.TimersCount, smvType, timeLocalRangeTop);
+                return ts.GetSMVCode(_storage.Tmax);
+            }
 
             public string GenerateMain()
             {

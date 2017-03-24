@@ -433,6 +433,7 @@ namespace FB2SMV
             }
 
             public static char[] OrTrimChars = {' ', '|'};
+            public static char[] AndTrimChars = { ' ', '&' };
         }
     }
 }

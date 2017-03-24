@@ -51,6 +51,7 @@
     <Compile Include="SMV Code Generation\LibraryFBTypes.cs" />
     <Compile Include="PriorityContainer.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="SMV Code Generation\TimeScheduler.cs" />
     <Compile Include="Smv.cs" />
     <Compile Include="SMV Code Generation\SmvCodeGenerator.cs" />
     <Compile Include="CyclicDispatcher.cs" />

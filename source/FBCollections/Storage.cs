@@ -75,6 +75,35 @@ namespace FB2SMV
                 InstanceParameters.Add(instanceParameter);
             }
 
+            public int TimersCount
+            {
+                get
+                {
+                    if(_timersCount < 0) _timersCount = Instances.Where((FBInstance i) => i.InstanceType == "E_DELAY" || i.InstanceType == "E_CYCLE").Count();
+                    return _timersCount;
+                }
+                set
+                {
+                    _timersCount = value;
+                }
+            }
+
+            public string TimeSMVType
+            {
+                get { return _timeType; }
+                set { _timeType = value; }
+            }
+
+            public int Tmax
+            {
+                get { return _tmax; }
+                set { _tmax = value; }
+            }
+
+            private int _timersCount = -1;
+            private string _timeType = "integer";
+            private int _tmax = 100;
+
             public readonly List<FBType> Types = new List<FBType>();
             public readonly List<Event> Events = new List<Event>();
             public readonly List<Variable> Variables = new List<Variable>();

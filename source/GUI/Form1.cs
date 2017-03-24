@@ -112,12 +112,12 @@ namespace GUI
                         mainModuleRichTextBox.Text = "";
                     }
                 }*/
-                if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension)
+                if (Path.GetExtension(openFileDialog1.FileName) == projectFileExtension) //load saved project
                 {
                     ProjectFileStructure openedProject = loadProject(openFileDialog1.FileName);
                     resetWorkspace(openedProject);
                 } 
-                else
+                else //load from .fbt files
                 {
                     resetWorkspace();
                     loadFbSystem(openFileDialog1.FileName);
@@ -135,6 +135,11 @@ namespace GUI
                 {
                     ShowMessage(ex.Message);
                 }
+
+                //time scheduler data
+                timersTextBox.Text = _parcer.Storage.TimersCount.ToString();
+                timetypeTextBox.Text = _parcer.Storage.TimeSMVType;
+                tmaxTextBox.Text = _parcer.Storage.Tmax.ToString();
             }
         }
 
@@ -326,6 +331,9 @@ namespace GUI
             {
                 smvCodeRichTextBox.Text += fbSmv;
             }
+
+            smvCodeRichTextBox.Text += translator.GetTimeScheduler();
+
             //smvCodePage.Focus();
             if (mainModuleRichTextBox.Text == "")
             {
@@ -472,6 +480,13 @@ namespace GUI
             {
                 _selectedVariable.IsConstant = varIsConstantCheckBox.Checked;
             }
+        }
+
+        private void timersButton_Click(object sender, EventArgs e)
+        {
+            _parcer.Storage.TimersCount = Convert.ToInt32(timersTextBox.Text);
+            _parcer.Storage.TimeSMVType = timetypeTextBox.Text;
+            _parcer.Storage.Tmax = Convert.ToInt32(tmaxTextBox.Text);
         }
     }
 }
