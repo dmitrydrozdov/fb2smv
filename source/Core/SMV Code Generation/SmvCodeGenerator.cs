@@ -195,6 +195,7 @@ namespace FB2SMV
 
             public string GetTimeScheduler()
             {
+                if (_storage.TimersCount == 0) return ""; //return empty string if there is no timers
                 string smvType = _storage.TimeSMVType;
                 int timeLocalRangeTop = 100;
                 string[] timeRangeSplit = smvType.Split(new string[] {".."}, StringSplitOptions.RemoveEmptyEntries);
