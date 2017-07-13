@@ -12,7 +12,7 @@ namespace FB2SMV
     {
         internal class BasicFbSmv
         {
-            public static string ModuleHeader(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
+            public string ModuleHeader(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
             {
                 string outp = "";
                 outp += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
@@ -34,11 +34,11 @@ namespace FB2SMV
                 }
                 return outp;
             }
-            public static string OsmStatesDeclaration()
+            public string OsmStatesDeclaration()
             {
                 return String.Format("VAR {0} : {{{1}, {2}, {3}}};\n", Smv.OsmStateVar, Smv.Osm.S0, Smv.Osm.S1, Smv.Osm.S2);
             }
-            public static string EccStatesDeclaration(IEnumerable<ECState> states)
+            public string EccStatesDeclaration(IEnumerable<ECState> states)
             {
                 string eccStates = "";
                 foreach (var ecState in states)
@@ -48,18 +48,18 @@ namespace FB2SMV
                 return String.Format("VAR {0} : {{{1}}};\n", Smv.EccStateVar,
                     eccStates.TrimEnd(Smv.ModuleParameters.Splitter.ToCharArray()));
             }
-            public static string EcActionsCounterDeclaration(IEnumerable<ECState> states)
+            public string EcActionsCounterDeclaration(IEnumerable<ECState> states)
             {
                 return String.Format("VAR {0}: 0..{1};\n", Smv.EcActionsCounterVar, states.Max(state => state.ActionsCount));
             }
-            public static string AlgStepsCounterDeclaration(IEnumerable<TranslatedAlg> translatedAlgorithms)
+            public string AlgStepsCounterDeclaration(IEnumerable<TranslatedAlg> translatedAlgorithms)
             {
                 string output = "";
                 if (translatedAlgorithms.Any()) output += String.Format("VAR {0}: 0..{1};\n", Smv.AlgStepsCounterVar, translatedAlgorithms.Max(alg => alg.Lines.Max(line => line.NI)));
                 else output += String.Format("VAR {0}: 0..{1};\n", Smv.AlgStepsCounterVar, "1");
                 return output;
             }
-            public static string EcStateChangeBlock(IEnumerable<ECTransition> transitions, IEnumerable<Event> events)
+            public string EcStateChangeBlock(IEnumerable<ECTransition> transitions, IEnumerable<Event> events)
             {
                 string ecTransitionsSmv = "";
 
@@ -80,7 +80,7 @@ namespace FB2SMV
                 }
                 return String.Format("\n" + Smv.NextCaseBlock + "\n", Smv.EccStateVar, ecTransitionsSmv);
             }
-            public static string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
+            public string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
             {
                 string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
                 string rformat = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar +
@@ -105,7 +105,7 @@ namespace FB2SMV
 
                 return String.Format(Smv.NextCaseBlock, Smv.EcActionsCounterVar, rules);
             }
-            public static string AlgStepsCounterChangeBlock(IEnumerable<ECState> states, IEnumerable<ECAction> actions, IEnumerable<TranslatedAlg> algorithms)
+            public string AlgStepsCounterChangeBlock(IEnumerable<ECState> states, IEnumerable<ECAction> actions, IEnumerable<TranslatedAlg> algorithms)
             {
                 //if (!algorithms.Any()) return "";
                 string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + ": 1;\n";
@@ -153,7 +153,7 @@ namespace FB2SMV
 
                 return String.Format(Smv.NextCaseBlock, Smv.AlgStepsCounterVar, rules);
             }
-            public static string ModuleVariablesInitBlock(IEnumerable<Variable> variables)
+            public string ModuleVariablesInitBlock(IEnumerable<Variable> variables)
             {
                 string varsInit = "-- _moduleVariablesInitBlock\n";
                 foreach (var variable in variables)
@@ -173,7 +173,7 @@ namespace FB2SMV
                 }
                 return varsInit;
             }
-            public static string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve, bool useProcesses)
+            public string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve, bool useProcesses)
             {
                 string rules = "";
                 string commonResetRule = Smv.OsmStateVar + "=" + Smv.Osm.S1;
@@ -201,7 +201,7 @@ namespace FB2SMV
                 return rules;
             }
 
-            public static string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
+            public string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
             {
 
                 string varChangeBlocks = "";
@@ -223,14 +223,14 @@ namespace FB2SMV
                 return varChangeBlocks;
             }
 
-            private static string _modulo_range(string statement, int rangeBegin, int rangeEnd)//y= ((x-c) mod d) + c
+            private string _modulo_range(string statement, int rangeBegin, int rangeEnd)//y= ((x-c) mod d) + c
             {
                 int c = (rangeBegin + rangeEnd)/2;
                 int d = (rangeEnd - rangeBegin)/2 + 1;
                 return String.Format("(({0} - {1}) mod {2}) + {1}", statement, c, d);
             }
 
-            private static string _getVarChangingRules(Variable variable, IEnumerable<AlgorithmLine> currrentVarLines, IEnumerable<ECAction> actions, Settings settings)
+            private string _getVarChangingRules(Variable variable, IEnumerable<AlgorithmLine> currrentVarLines, IEnumerable<ECAction> actions, Settings settings)
             {
                 string rules = "";
                 foreach (AlgorithmLine line in currrentVarLines)
@@ -272,7 +272,7 @@ namespace FB2SMV
                 }
                 return rules;
             }
-            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
+            public string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
             {
                 string varChangeBlocks = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output || v.Direction == Direction.Internal))
@@ -298,7 +298,7 @@ namespace FB2SMV
                 }
                 return varChangeBlocks;
             }
-            public static string OutputEventsSettingRules(IEnumerable<Event> events, IEnumerable<ECAction> actions, bool useProcesses)
+            public string OutputEventsSettingRules(IEnumerable<Event> events, IEnumerable<ECAction> actions, bool useProcesses)
             {
                 string eventChangeString = "";
                 foreach (Event ev in events.Where(ev => ev.Direction == Direction.Output))
@@ -326,7 +326,7 @@ namespace FB2SMV
                 }
                 return eventChangeString;
             }
-            public static string SetOutputVarBuffers(IEnumerable<Variable> variables, IEnumerable<Event> events, IEnumerable<ECAction> actions, IEnumerable<WithConnection> withConnections, ShowMessageDelegate showMessage)
+            public string SetOutputVarBuffers(IEnumerable<Variable> variables, IEnumerable<Event> events, IEnumerable<ECAction> actions, IEnumerable<WithConnection> withConnections, ShowMessageDelegate showMessage)
             {
                 string outVarsChangeString = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output))
@@ -362,7 +362,7 @@ namespace FB2SMV
                 }
                 return outVarsChangeString;
             }
-            public static string SetServiceSignals(bool useProcesses)
+            public string SetServiceSignals(bool useProcesses)
             {
                 string ruleTemplate = "\t({0} & {1}={2} & !{3} | {1}={4} & {5})";
                 string rule = String.Format(ruleTemplate,
@@ -383,7 +383,7 @@ namespace FB2SMV
                     return String.Format(Smv.DefineBlock, "alpha_reset", rule) + String.Format(Smv.DefineBlock, "beta_set", rule); ;
                 }
             }
-            public static string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions)
+            public string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions)
             {
                 string ecTran = "";
                 foreach (ECState state in states)
@@ -426,7 +426,7 @@ namespace FB2SMV
                 return FbSmvCommon.DefineExistsInputEvent(events) + existsEnabledECTran + absentsEnabledECTran; // + alphabeta;
             }
 
-            private static string _translateEventNames(string str, IEnumerable<Event> events)
+            private string _translateEventNames(string str, IEnumerable<Event> events)
             {
                 Console.WriteLine("\n\n" + str);
 
@@ -444,7 +444,7 @@ namespace FB2SMV
                 }
                 return String.Concat(strSplit);
             }
-            private static void _addCounterRules(ref string rule1, ref string rule2, ECState state, int algsCount, ECAction action)
+            private void _addCounterRules(ref string rule1, ref string rule2, ECState state, int algsCount, ECAction action)
             {
                 string add = "(";
                 add += Smv.EccStateVar + "=" + Smv.EccState(state.Name);
@@ -457,7 +457,7 @@ namespace FB2SMV
                 rule1 += String.Format(add, "<");
                 rule2 += String.Format(add, "=");
             }
-            private static IEnumerable<ECAction> _findActionsByAlgorithmName(IEnumerable<ECAction> actions, string algorithmName)
+            private IEnumerable<ECAction> _findActionsByAlgorithmName(IEnumerable<ECAction> actions, string algorithmName)
             {
                 return actions.Where(act => act.Algorithm == algorithmName);
             }

@@ -134,6 +134,7 @@ namespace FB2SMV
             public string TranslateBasicFB(FBType fbType, bool eventSignalResetSolve = true, bool showUnconditionalTransitions = false)
             {
                 string smvModule = "";
+                BasicFbSmv FBCodeSMV = new BasicFbSmv();
 
                 ExecutionModel executionModel = _executionModels.FirstOrDefault(em => em.FBTypeName == fbType.Name);
                 var events = _storage.Events.Where(ev => ev.FBType == fbType.Name);
@@ -145,34 +146,34 @@ namespace FB2SMV
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var transitions = _storage.EcTransitions.Where(tr => tr.FBType == fbType.Name);
 
-                smvModule += BasicFbSmv.ModuleHeader(events, variables, fbType.Name);
+                smvModule += FBCodeSMV.ModuleHeader(events, variables, fbType.Name);
 
-                smvModule += BasicFbSmv.OsmStatesDeclaration();
-                smvModule += BasicFbSmv.EccStatesDeclaration(states) + "\n";
-                smvModule += BasicFbSmv.EcActionsCounterDeclaration(states);
-                smvModule += BasicFbSmv.AlgStepsCounterDeclaration(smvAlgs);
+                smvModule += FBCodeSMV.OsmStatesDeclaration();
+                smvModule += FBCodeSMV.EccStatesDeclaration(states) + "\n";
+                smvModule += FBCodeSMV.EcActionsCounterDeclaration(states);
+                smvModule += FBCodeSMV.AlgStepsCounterDeclaration(smvAlgs);
 
                 smvModule += Smv.Assign;
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EccStateVar, Smv.EccState(states.First(s => true).Name));
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.OsmStateVar, Smv.Osm.S0);
-                smvModule += BasicFbSmv.ModuleVariablesInitBlock(variables) + "\n";
+                smvModule += FBCodeSMV.ModuleVariablesInitBlock(variables) + "\n";
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EcActionsCounterVar, "0");
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.AlgStepsCounterVar, "0");
 
-                smvModule += BasicFbSmv.EcStateChangeBlock(transitions, events);
+                smvModule += FBCodeSMV.EcStateChangeBlock(transitions, events);
                 smvModule += Smv.OsmStateChangeBlock + "\n";
-                smvModule += BasicFbSmv.EcActionsCounterChangeBlock(states) + "\n";
-                smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
+                smvModule += FBCodeSMV.EcActionsCounterChangeBlock(states) + "\n";
+                smvModule += FBCodeSMV.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
 
-                smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
-                smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
-                smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
-                smvModule += BasicFbSmv.SetServiceSignals(_settings.UseProcesses) + "\n";
+                smvModule += FBCodeSMV.InputVariablesSampleBasic(variables, withConnections) + "\n";
+                smvModule += FBCodeSMV.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
+                smvModule += FBCodeSMV.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
+                smvModule += FBCodeSMV.SetServiceSignals(_settings.UseProcesses) + "\n";
 
-                smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
-                smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
+                smvModule += FBCodeSMV.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
+                smvModule += FBCodeSMV.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
 
-                smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
+                smvModule += FBCodeSMV.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
 
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 return smvModule;
