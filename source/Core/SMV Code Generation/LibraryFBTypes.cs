@@ -8,9 +8,14 @@ namespace FB2SMV
 {
     namespace Core
     {
-        static class LibraryFBTypes
+        class LibraryFBTypes
         {
-            private static string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string rule)
+            public LibraryFBTypes(FbSmvCommon commonRules)
+            {
+                FbSmvCommon = commonRules;
+            }
+            private FbSmvCommon FbSmvCommon;
+            private string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string rule)
             {
                 string smvModule = "";
                 var events = storage.Events.Where(ev => ev.FBType == fbTypeName);
@@ -33,20 +38,20 @@ namespace FB2SMV
                 return smvModule;
             }
 
-            public static string EDelayFBModule(Storage storage, Settings settings)
+            public string EDelayFBModule(Storage storage, Settings settings)
             {
                 string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
                 return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, rule);
             }
 
-            public static string ECycleFBModule(Storage storage, Settings settings)
+            public string ECycleFBModule(Storage storage, Settings settings)
             {
                 string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
                 return _timeDelayModule(storage, settings, LibraryTypes.E_CYCLE, rule);
             }
 
 
-            public static string ESplitFBModule(Storage storage, Settings settings)
+            public string ESplitFBModule(Storage storage, Settings settings)
             {
                 string smvModule = "";
                 var events = storage.Events.Where(ev => ev.FBType == LibraryTypes.E_SPLIT);

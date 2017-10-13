@@ -27,19 +27,6 @@ namespace FB2SMV
                 _smvPattern = smvPattern;
             }
 
-            public static string OsmStateChangeBlock 
-            {
-                get
-                {
-                    //TODO: move code into pattern
-                    string rules = "\t" + _smvPattern.Alpha + " & " + _smvPattern.OsmStateVar + "=" + Osm.S0 + " & " + _smvPattern.ExistsInputEvent + ": " + Osm.S1 + ";\n";
-                    rules += "\t" + _smvPattern.OsmStateVar + "=" + Osm.S1 + " & " + _smvPattern.ExistsEnabledEcTran + ": " + Osm.S2 + ";\n";
-                    rules += "\t" + _smvPattern.OsmStateVar + "=" + Osm.S2 + " & " + _smvPattern.EcActionsCounterVar + "=0 : " + Osm.S1 + ";\n";
-                    rules += "\t" + _smvPattern.OsmStateVar + "=" + Osm.S1 + " & " + _smvPattern.AbsentsEnabledEcTran + ": " + Osm.S0 + ";\n";
-                    return String.Format(_smvPattern.NextCaseBlock, _smvPattern.OsmStateVar, rules);
-                }
-            }
-
             public static string True
             {
                 get { return _smvPattern.True; }
@@ -433,6 +420,7 @@ namespace FB2SMV
             }
 
             public static char[] OrTrimChars = {' ', '|'};
+            public static char[] AndTrimChars = { ' ', '&' };
         }
     }
 }

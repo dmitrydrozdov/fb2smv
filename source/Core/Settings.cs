@@ -13,6 +13,7 @@ namespace FB2SMV
             public bool UseProcesses = false;
             public bool GenerateDummyProperty = true;
             public bool nuXmvInfiniteDataTypes = true;
+            public bool useDispatcher = false;
         }
     }
 }

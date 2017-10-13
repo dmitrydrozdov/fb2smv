@@ -10,9 +10,39 @@ namespace FB2SMV
 {
     namespace Core
     {
+        internal class BasicFbSmvAsynch : BasicFbSmv
+        {
+            public BasicFbSmvAsynch(FbSmvCommon commonRules) : base(commonRules)
+            { }
+
+            public override string SetServiceSignals(bool useProcesses)
+            {
+                return "";
+            }
+
+            protected override string _singleEventResetRule(string priorityResetRule, string commonResetRule)
+            {
+                return String.Format("\t({0}) | ({1})", priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
+            }
+
+            public override string OsmStateChangeBlock()
+            {
+                //TODO: move code into pattern
+                string rules = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S0 + " & " + Smv.ExistsInputEvent + ": " + Smv.Osm.S1 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + " & " + Smv.ExistsEnabledEcTran + ": " + Smv.Osm.S2 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.EcActionsCounterVar + "=0 : " + Smv.Osm.S1 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + " & " + Smv.AbsentsEnabledEcTran + ": " + Smv.Osm.S0 + ";\n";
+                return String.Format(Smv.NextCaseBlock, Smv.OsmStateVar, rules);
+            }
+        }
         internal class BasicFbSmv
         {
-            public string ModuleHeader(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
+            public BasicFbSmv(FbSmvCommon commonRules)
+            {
+                FbSmvCommon = commonRules;
+            }
+            private FbSmvCommon FbSmvCommon;
+            public virtual string ModuleHeader(IEnumerable<Event> events, IEnumerable<Variable> variables, string fbTypeName)
             {
                 string outp = "";
                 outp += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
@@ -37,6 +67,15 @@ namespace FB2SMV
             public string OsmStatesDeclaration()
             {
                 return String.Format("VAR {0} : {{{1}, {2}, {3}}};\n", Smv.OsmStateVar, Smv.Osm.S0, Smv.Osm.S1, Smv.Osm.S2);
+            }
+            public virtual string OsmStateChangeBlock()
+            {
+                //TODO: move code into pattern
+                string rules = "\t" + Smv.Alpha + " & " + Smv.OsmStateVar + "=" + Smv.Osm.S0 + " & " + Smv.ExistsInputEvent + ": " + Smv.Osm.S1 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + " & " + Smv.ExistsEnabledEcTran + ": " + Smv.Osm.S2 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.EcActionsCounterVar + "=0 : " + Smv.Osm.S1 + ";\n";
+                rules += "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S1 + " & " + Smv.AbsentsEnabledEcTran + ": " + Smv.Osm.S0 + ";\n";
+                return String.Format(Smv.NextCaseBlock, Smv.OsmStateVar, rules);
             }
             public string EccStatesDeclaration(IEnumerable<ECState> states)
             {
@@ -191,7 +230,7 @@ namespace FB2SMV
                     }
                     else
                     {
-                        string rule = String.Format("\t({0} & ({1})) | ({2})", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
+                        string rule = _singleEventResetRule(priorityResetRule, commonResetRule);
                         if (useProcesses) rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule + String.Format(setValue, Smv.False));
                         else rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Value.Name) + "_reset", rule);
                     }
@@ -199,6 +238,11 @@ namespace FB2SMV
                     priorityResetRule += Smv.ModuleParameters.Event(ev.Value.Name) + " | ";
                 }
                 return rules;
+            }
+
+            protected virtual string _singleEventResetRule(string priorityResetRule, string commonResetRule)
+            {
+                return String.Format("\t({0} & ({1})) | ({2})", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
             }
 
             public string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
@@ -362,7 +406,7 @@ namespace FB2SMV
                 }
                 return outVarsChangeString;
             }
-            public string SetServiceSignals(bool useProcesses)
+            public virtual string SetServiceSignals(bool useProcesses)
             {
                 string ruleTemplate = "\t({0} & {1}={2} & !{3} | {1}={4} & {5})";
                 string rule = String.Format(ruleTemplate,

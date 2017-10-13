@@ -44,6 +44,12 @@ namespace GUI
             Program.Settings.UseProcesses = useProcessesCheckBox.Checked;
             Program.Settings.GenerateDummyProperty = generateDummyPropertyCheckBox.Checked;
             Program.Settings.nuXmvInfiniteDataTypes = intRealCheckBox.Checked;
+            Program.Settings.useDispatcher = !(asynchCheckBox.Checked);
+        }
+
+        private void intRealCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

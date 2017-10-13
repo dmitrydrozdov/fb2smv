@@ -34,14 +34,16 @@
             this.useProcessesCheckBox = new System.Windows.Forms.CheckBox();
             this.generateDummyPropertyCheckBox = new System.Windows.Forms.CheckBox();
             this.intRealCheckBox = new System.Windows.Forms.CheckBox();
+            this.asynchCheckBox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // saveButton
             // 
             this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.Location = new System.Drawing.Point(134, 109);
+            this.saveButton.Location = new System.Drawing.Point(201, 252);
+            this.saveButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.saveButton.Name = "saveButton";
-            this.saveButton.Size = new System.Drawing.Size(75, 23);
+            this.saveButton.Size = new System.Drawing.Size(112, 35);
             this.saveButton.TabIndex = 0;
             this.saveButton.Text = "Save";
             this.saveButton.UseVisualStyleBackColor = true;
@@ -51,9 +53,10 @@
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(215, 109);
+            this.cancelButton.Location = new System.Drawing.Point(322, 252);
+            this.cancelButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(75, 23);
+            this.cancelButton.Size = new System.Drawing.Size(112, 35);
             this.cancelButton.TabIndex = 1;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
@@ -62,9 +65,10 @@
             // modCheckBox
             // 
             this.modCheckBox.AutoSize = true;
-            this.modCheckBox.Location = new System.Drawing.Point(13, 13);
+            this.modCheckBox.Location = new System.Drawing.Point(20, 20);
+            this.modCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.modCheckBox.Name = "modCheckBox";
-            this.modCheckBox.Size = new System.Drawing.Size(112, 17);
+            this.modCheckBox.Size = new System.Drawing.Size(165, 24);
             this.modCheckBox.TabIndex = 2;
             this.modCheckBox.Text = "Modular arithmetic";
             this.modCheckBox.UseVisualStyleBackColor = true;
@@ -72,9 +76,10 @@
             // useProcessesCheckBox
             // 
             this.useProcessesCheckBox.AutoSize = true;
-            this.useProcessesCheckBox.Location = new System.Drawing.Point(13, 37);
+            this.useProcessesCheckBox.Location = new System.Drawing.Point(20, 57);
+            this.useProcessesCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.useProcessesCheckBox.Name = "useProcessesCheckBox";
-            this.useProcessesCheckBox.Size = new System.Drawing.Size(96, 17);
+            this.useProcessesCheckBox.Size = new System.Drawing.Size(141, 24);
             this.useProcessesCheckBox.TabIndex = 3;
             this.useProcessesCheckBox.Text = "Use processes";
             this.useProcessesCheckBox.UseVisualStyleBackColor = true;
@@ -82,9 +87,10 @@
             // generateDummyPropertyCheckBox
             // 
             this.generateDummyPropertyCheckBox.AutoSize = true;
-            this.generateDummyPropertyCheckBox.Location = new System.Drawing.Point(13, 61);
+            this.generateDummyPropertyCheckBox.Location = new System.Drawing.Point(20, 94);
+            this.generateDummyPropertyCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.generateDummyPropertyCheckBox.Name = "generateDummyPropertyCheckBox";
-            this.generateDummyPropertyCheckBox.Size = new System.Drawing.Size(169, 17);
+            this.generateDummyPropertyCheckBox.Size = new System.Drawing.Size(251, 24);
             this.generateDummyPropertyCheckBox.TabIndex = 4;
             this.generateDummyPropertyCheckBox.Text = "Generate dummy LTL property";
             this.generateDummyPropertyCheckBox.UseVisualStyleBackColor = true;
@@ -92,26 +98,40 @@
             // intRealCheckBox
             // 
             this.intRealCheckBox.AutoSize = true;
-            this.intRealCheckBox.Location = new System.Drawing.Point(12, 84);
+            this.intRealCheckBox.Location = new System.Drawing.Point(20, 128);
+            this.intRealCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.intRealCheckBox.Name = "intRealCheckBox";
-            this.intRealCheckBox.Size = new System.Drawing.Size(152, 17);
+            this.intRealCheckBox.Size = new System.Drawing.Size(225, 24);
             this.intRealCheckBox.TabIndex = 4;
             this.intRealCheckBox.Text = "Integers and Reals in SMV";
             this.intRealCheckBox.UseVisualStyleBackColor = true;
+            this.intRealCheckBox.CheckedChanged += new System.EventHandler(this.intRealCheckBox_CheckedChanged);
+            // 
+            // asynchCheckBox
+            // 
+            this.asynchCheckBox.AutoSize = true;
+            this.asynchCheckBox.Location = new System.Drawing.Point(20, 160);
+            this.asynchCheckBox.Name = "asynchCheckBox";
+            this.asynchCheckBox.Size = new System.Drawing.Size(208, 24);
+            this.asynchCheckBox.TabIndex = 5;
+            this.asynchCheckBox.Text = "Asynchronous execution";
+            this.asynchCheckBox.UseVisualStyleBackColor = true;
             // 
             // SettingsWindow
             // 
             this.AcceptButton = this.saveButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(302, 144);
+            this.ClientSize = new System.Drawing.Size(453, 306);
+            this.Controls.Add(this.asynchCheckBox);
             this.Controls.Add(this.intRealCheckBox);
             this.Controls.Add(this.generateDummyPropertyCheckBox);
             this.Controls.Add(this.useProcessesCheckBox);
             this.Controls.Add(this.modCheckBox);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.saveButton);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SettingsWindow";
@@ -131,5 +151,6 @@
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.CheckBox generateDummyPropertyCheckBox;
         private System.Windows.Forms.CheckBox intRealCheckBox;
+        private System.Windows.Forms.CheckBox asynchCheckBox;
     }
 }

@@ -45,7 +45,7 @@
     <Compile Include="Comparisions.cs" />
     <Compile Include="SMV Code Generation\CompositeFbSmv.cs" />
     <Compile Include="Intermediate model\ExecutionModel.cs" />
-    <Compile Include="FbSmvCommon.cs" />
+    <Compile Include="SMV Code Generation\FbSmvCommon.cs" />
     <Compile Include="IEC61499.cs" />
     <Compile Include="ISmvPattern.cs" />
     <Compile Include="SMV Code Generation\LibraryFBTypes.cs" />
