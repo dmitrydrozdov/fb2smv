@@ -196,6 +196,7 @@ namespace FB2SMV
 
                     if (!_processedTypes.Contains(fbInstance.Type) && !_newTypes.Contains(fbInstance.Type))
                     {
+                        // TODO: exclude HMI here
                         if (!IsLibraryType(fbInstance.Type))
                         {
                             _newTypes.Enqueue(fbInstance.Type);
