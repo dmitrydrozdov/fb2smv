@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE FBType SYSTEM "../LibraryElement.dtd">
+<FBType GUID="C06095D605E13FFD" Name="TimeTest" Comment="Composite Function Block Type" Namespace="Main">
+  <Attribute Name="Configuration.FB.IDCounter" Value="13" />
+  <Identification Standard="61499-2" />
+  <VersionInfo Organization="nxtControl GmbH" Version="0.0" Author="DiM" Date="4/20/2016" Remarks="template" />
+  <InterfaceList>
+    <EventInputs>
+      <Event Name="INIT" Comment="Initialization Request" />
+      <Event Name="REQ" Comment="Normal Execution Request" />
+    </EventInputs>
+    <EventOutputs>
+      <Event Name="COMPLETE" Comment="Initialization Confirm">
+        <With Var="XO" />
+      </Event>
+    </EventOutputs>
+    <OutputVars>
+      <VarDeclaration Name="XO" Type="DINT" Comment="Output event qualifier" />
+    </OutputVars>
+  </InterfaceList>
+  <FBNetwork>
+    <FB ID="9" Name="FB1" Type="E_DELAY" x="1480" y="440" Namespace="IEC61499.Standard">
+      <Parameter Name="DT" Value="t#2ms" />
+    </FB>
+    <FB ID="11" Name="FB3" Type="TimeBlock" x="740" y="600" Namespace="Main">
+      <Parameter Name="Tmax" Value="20" />
+    </FB>
+    <FB ID="12" Name="FB2" Type="TimeBlock" x="2180" y="600" Namespace="Main">
+      <Parameter Name="Tmax" Value="20" />
+    </FB>
+    <Input Name="INIT" x="80" y="292" Type="Event" />
+    <Input Name="REQ" x="100" y="872" Type="Event" />
+    <Output Name="COMPLETE" x="2800" y="571.8542" Type="Event" />
+    <Output Name="XO" x="2800" y="1072" Type="Data" />
+    <EventConnections>
+      <Connection Source="INIT" Destination="FB3.INIT" dx1="61.41669">
+        <AvoidsNodes>false</AvoidsNodes>
+      </Connection>
+      <Connection Source="FB3.CNF" Destination="FB1.START" dx1="50" />
+      <Connection Source="FB1.EO" Destination="FB2.REQ" dx1="48.5" />
+      <Connection Source="INIT" Destination="FB2.INIT" dx1="1811.417">
+        <AvoidsNodes>false</AvoidsNodes>
+      </Connection>
+      <Connection Source="REQ" Destination="FB3.REQ" dx1="49.54169" />
+      <Connection Source="FB2.CNF" Destination="FB3.REQ" dx1="48.625" dx2="30" dy="520">
+        <AvoidsNodes>false</AvoidsNodes>
+      </Connection>
+      <Connection Source="FB2.COMPLETE" Destination="COMPLETE" dx1="50" />
+    </EventConnections>
+    <DataConnections>
+      <Connection Source="FB3.XO" Destination="FB2.X" />
+      <Connection Source="FB2.XO" Destination="FB3.X" dx1="48.625" dx2="30" dy="480">
+        <AvoidsNodes>false</AvoidsNodes>
+      </Connection>
+      <Connection Source="FB2.XO" Destination="XO" dx1="48.625" />
+    </DataConnections>
+  </FBNetwork>
+</FBType>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE FBType SYSTEM "../LibraryElement.dtd">
+<FBType GUID="86D0A635AFF56A93" Name="TimeBlock" Comment="Basic Function Block Type" Namespace="Main">
+  <Attribute Name="Configuration.FB.IDCounter" Value="0" />
+  <Identification Standard="61499-2" />
+  <VersionInfo Organization="nxtControl GmbH" Version="0.0" Author="vshatrov" Date="3/2/2019" Remarks="Template" />
+  <InterfaceList>
+    <EventInputs>
+      <Event Name="INIT" Comment="Initialization Request">
+        <With Var="X" />
+        <With Var="Tmax" />
+      </Event>
+      <Event Name="REQ" Comment="Normal Execution Request">
+        <With Var="X" />
+      </Event>
+    </EventInputs>
+    <EventOutputs>
+      <Event Name="COMPLETE" Comment="Initialization Confirm">
+        <With Var="XO" />
+      </Event>
+      <Event Name="CNF" Comment="Execution Confirmation">
+        <With Var="XO" />
+      </Event>
+    </EventOutputs>
+    <InputVars>
+      <VarDeclaration Name="X" Type="DINT" Comment="Input event qualifier" />
+      <VarDeclaration Name="Tmax" Type="DINT" InitialValue="20" />
+    </InputVars>
+    <OutputVars>
+      <VarDeclaration Name="XO" Type="DINT" Comment="Output event qualifier" />
+    </OutputVars>
+  </InterfaceList>
+  <BasicFB>
+    <Attribute Name="FBType.Basic.Algorithm.Order" Value="INIT,REQ" />
+    <InternalVars>
+      <VarDeclaration Name="stop" Type="BOOL" />
+    </InternalVars>
+    <ECC>
+      <ECState Name="START" Comment="Initial State" x="984.9412" y="693.4117" />
+      <ECState Name="INIT" Comment="Initialization" x="923.5294" y="141.1765">
+        <ECAction Algorithm="INIT" />
+      </ECState>
+      <ECState Name="REQ" Comment="Normal execution" x="1237.647" y="936.9412">
+        <ECAction Algorithm="REQ" Output="CNF" />
+      </ECState>
+      <ECState Name="COMPLETE" x="928.0001" y="1340">
+        <ECAction Output="COMPLETE" />
+      </ECState>
+      <ECTransition Source="START" Destination="INIT" Condition="INIT" x="951.5849" y="492.2942">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="239.9989,147.9848,236.1187,110.6623" />
+      </ECTransition>
+      <ECTransition Source="INIT" Destination="START" Condition="1" x="1035.31" y="409.0048">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="261.3304,82.89914,265.4809,120.2217" />
+      </ECTransition>
+      <ECTransition Source="START" Destination="REQ" Condition="REQ" x="1178.256" y="757.1522">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="289.1543,179.9941,301.1884,191.5911" />
+      </ECTransition>
+      <ECTransition Source="REQ" Destination="START" Condition="NOT stop" x="1102.181" y="896.8737">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="283.8406,234.5927,271.8065,222.9956" />
+      </ECTransition>
+      <ECTransition Source="REQ" Destination="COMPLETE" Condition="stop" x="1155.042" y="1166.687">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="300.212,281.6711,282.5149,306.3749" />
+      </ECTransition>
+      <ECTransition Source="COMPLETE" Destination="START" Condition="1" x="919.4953" y="1099.073">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="225.7608,304.5509,229.5646,258.7137" />
+      </ECTransition>
+    </ECC>
+    <Algorithm Name="INIT" Comment="Initialization algorithm">
+      <ST Text=";&#xD;&#xA;stop := FALSE;" />
+    </Algorithm>
+    <Algorithm Name="REQ" Comment="Normally executed algorithm">
+      <ST Text=";&#xD;&#xA;&#xD;&#xA;XO := X + 1;&#xD;&#xA;IF (INVOKEDBY.ts_last - INVOKEDBY.ts_born &gt; Tmax) THEN &#xD;&#xA;	stop := TRUE;&#xD;&#xA;END_IF;&#xD;&#xA;	" />
+    </Algorithm>
+  </BasicFB>
+</FBType>
