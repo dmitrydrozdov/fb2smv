@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -100,7 +100,7 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.FbInstances(instances, _storage.Events, _storage.Variables, connections, _settings) + "\n";
                 smvModule += CompositeFbSmv.InternalBuffersDeclaration(instances, connections, _storage.Events, _storage.Variables) + "\n";
                 smvModule += Smv.Assign;
-                smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, connections, _storage.Events, _storage.Variables, instanceParameters) + "\n";
+                smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, connections, _storage.Variables, instanceParameters) + "\n";
 
                 if (_settings.UseProcesses)
                 {
@@ -123,7 +123,7 @@ namespace FB2SMV
                 smvModule += FbSmvCommon.DefineExistsInputEvent(events) + "\n";
                 smvModule += CompositeFbSmv.DefineOmega(connections) + "\n";
                 smvModule += CompositeFbSmv.DefinePhi(instances, _storage.Events) + "\n"; //phi variable for timed models
-
+                smvModule += FbSmvCommon.ModuleDefines();
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 //smvModule += Smv.AlphaBetaRules;
 
@@ -163,6 +163,7 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.EcActionsCounterChangeBlock(states) + "\n";
                 smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
 
+                smvModule += FbSmvCommon.InvokedByRules(events) + "\n";
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
@@ -172,6 +173,7 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
 
                 smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
+                smvModule += FbSmvCommon.ModuleDefines();
 
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 return smvModule;
@@ -207,6 +209,12 @@ namespace FB2SMV
                 return ts.GetSMVCode(_storage.Tmax);
             }
 
+            public string GetEventModule()
+            {
+                EventModule em = new EventModule(_storage.TimeSMVType);
+                return em.GetSMVCode();
+            }
+
             public string GenerateMain()
             {
                 string mainModule = "";
@@ -232,7 +240,7 @@ namespace FB2SMV
                     mainModule += String.Format(Smv.VarInitializationBlock, "false_var", Smv.False);
                     mainModule += String.Format(Smv.NextVarAssignment, "false_var", Smv.False);
                 }
-                mainModule += CompositeFbSmv.InternalBuffersInitialization(instanceList, connections, _storage.Events, _storage.Variables, instanceParameters, true) + "\n";
+                mainModule += CompositeFbSmv.InternalBuffersInitialization(instanceList, connections, _storage.Variables, instanceParameters, true) + "\n";
                 
                 mainModule += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Alpha, Smv.True);
                 mainModule += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + Smv.Beta, Smv.False);
@@ -257,7 +265,7 @@ namespace FB2SMV
                 }
                 foreach (Event ev in _storage.Events.Where(ev => ev.FBType == topLevelFbType.Name))
                 {
-                    string smvVariable = instance.Name + "_" + ev.Name;
+                    string smvVariable = instance.Name + "_" + ev.Name + ".value";
                     string nextRule = "";
                     if (ev.Direction == Direction.Output)
                         nextRule = instance.Name + "." + "event_" + ev.Name + "_set : " + Smv.True + ";\n";

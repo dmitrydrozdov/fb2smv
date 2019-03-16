@@ -17,13 +17,16 @@ namespace FB2SMV
                 var variables = storage.Variables.Where(v => v.FBType == fbTypeName);
 
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
+                smvModule += String.Format(Smv.VarDeclarationBlock, "INVOKEDBY", EventInstance.SmvType("FALSE", TimeScheduler.TGlobal));
                 smvModule += Smv.Assign;
 
                 smvModule += String.Format(Smv.VarInitializationBlock, "Do_", "-1");
                 smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
-
+                smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_last", "systemclock");
+                smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_born", "systemclock");
+                smvModule += String.Format(Smv.DefineBlock, "systemclock", "TGlobal");
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);
-                smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START))");
+                smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START.value))");
                 smvModule += String.Format(Smv.DefineBlock, "event_EO_set", "(alpha & Di_=0)");
 
                 smvModule += String.Format(Smv.DefineBlock, "alpha_reset", Smv.Alpha);
@@ -35,13 +38,13 @@ namespace FB2SMV
 
             public static string EDelayFBModule(Storage storage, Settings settings)
             {
-                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
+                string rule = "\n\talpha & event_START.value : Dt_;\n\talpha & event_STOP.value : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
                 return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, rule);
             }
 
             public static string ECycleFBModule(Storage storage, Settings settings)
             {
-                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
+                string rule = "\n\talpha & event_START.value : Dt_;\n\talpha & event_STOP.value : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
                 return _timeDelayModule(storage, settings, LibraryTypes.E_CYCLE, rule);
             }
 

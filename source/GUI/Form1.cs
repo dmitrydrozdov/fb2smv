@@ -292,10 +292,19 @@ namespace GUI
                     return;
                 }
 
-                _selectedVariable.SmvType = new Smv.DataTypes.RangeSmvType(Convert.ToInt32(rangeSplit[0]), Convert.ToInt32(rangeSplit[1]));
-                foreach (Variable variable in _connectedVars)
+                try
                 {
-                    variable.SmvType = new Smv.DataTypes.RangeSmvType((Smv.DataTypes.RangeSmvType)_selectedVariable.SmvType);
+                    var rangeStart = Convert.ToInt32(rangeSplit[0]);
+                    var rangeEnd = Convert.ToInt32(rangeSplit[1]);
+                    var smvType = _selectedVariable.SmvType = new Smv.DataTypes.RangeSmvType(rangeStart, rangeEnd);
+                    foreach (Variable variable in _connectedVars)
+                    {
+                        variable.SmvType = new Smv.DataTypes.RangeSmvType((Smv.DataTypes.RangeSmvType)_selectedVariable.SmvType);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception);
                 }
             }
         }
@@ -327,6 +336,8 @@ namespace GUI
             if (_parcer == null) return;
             SmvCodeGenerator translator = new SmvCodeGenerator(_parcer.Storage, _executionModels, Program.Settings, ShowMessage);
             translator.Check();
+            
+            smvCodeRichTextBox.Text += translator.GetEventModule();
             foreach (string fbSmv in translator.TranslateAll())
             {
                 smvCodeRichTextBox.Text += fbSmv;

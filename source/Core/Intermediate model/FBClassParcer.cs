@@ -14,8 +14,6 @@ namespace FB2SMV
 {
     namespace Core
     {
-        public delegate void ShowMessageDelegate(string message);
-
         public static class LibraryTypes
         {
             public static string E_SPLIT = "E_SPLIT";

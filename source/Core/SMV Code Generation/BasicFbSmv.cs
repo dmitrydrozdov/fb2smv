@@ -16,6 +16,9 @@ namespace FB2SMV
             {
                 string outp = "";
                 outp += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
+
+                outp += String.Format(Smv.VarDeclarationBlock, "INVOKEDBY", EventInstance.SmvType("FALSE", TimeScheduler.TGlobal));
+                
                 foreach (var variable in variables)
                 {
                     if (variable.ArraySize == 0)
@@ -186,17 +189,17 @@ namespace FB2SMV
                     {
                         string rule = "\t" + commonResetRule;
 
-                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule + String.Format(setValue, Smv.False));
-                        else rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Value.Name) + "_reset", rule);
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Value.Name), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Value.Name) + "_reset", rule);
                     }
                     else
                     {
                         string rule = String.Format("\t({0} & ({1})) | ({2})", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
-                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Value.Name), rule + String.Format(setValue, Smv.False));
-                        else rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Value.Name) + "_reset", rule);
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Value.Name), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Value.Name) + "_reset", rule);
                     }
 
-                    priorityResetRule += Smv.ModuleParameters.Event(ev.Value.Name) + " | ";
+                    priorityResetRule += EventInstance.Value(ev.Value.Name) + " | ";
                 }
                 return rules;
             }
@@ -315,13 +318,13 @@ namespace FB2SMV
                     if (eventSignalSet)
                     {
                         rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars));
-                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), rule + String.Format(setValue, Smv.True));
-                        else eventChangeString += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Name) + "_set", rule);
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Name), rule + String.Format(setValue, Smv.True));
+                        else eventChangeString += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Name) + "_set", rule);
                     }
                     else
                     {
-                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), "");
-                        else eventChangeString += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Name) + "_set", Smv.False);
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Name), "");
+                        else eventChangeString += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Name) + "_set", Smv.False);
                     }
                 }
                 return eventChangeString;
@@ -439,7 +442,7 @@ namespace FB2SMV
                     var foundEvent = events.FirstOrDefault(ev => ev.Name == strSplit[i]);
                     if (foundEvent != null)
                     {
-                        strSplit[i] = Smv.ModuleParameters.Event(foundEvent.Name);
+                        strSplit[i] = EventInstance.Value(foundEvent.Name);
                     }
                 }
                 return String.Concat(strSplit);

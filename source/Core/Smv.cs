@@ -377,6 +377,11 @@ namespace FB2SMV
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..500]", varType));
                         return new RangeSmvType(0, 500);
                     }
+                    if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.DATE_AND_TIME)) //Костыль
+                    {
+                        showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to range [0..500]", varType));
+                        return new RangeSmvType(0, 500);
+                    }
                     if (IEC61499.DataTypeMatch(varType, IEC61499.DataTypes.STRING)) //Костыль
                     {
                         showMessage(String.Format("Warning! Unsupported data type \"{0}\" will be changed to bool", varType));
@@ -398,15 +403,8 @@ namespace FB2SMV
             public static class ModuleParameters
             {
                 public static string Splitter = ", ";
-                public static string EventPreffix = "event_";
                 public static string VariablePreffix = "";
-                public static string EventSuffix = "";
                 public static string VariableSuffix = "_";
-
-                public static string Event(string name)
-                {
-                    return EventPreffix + name + EventSuffix;
-                }
 
                 public static string Variable(string name)
                 {
