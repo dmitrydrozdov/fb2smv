@@ -117,12 +117,28 @@ namespace FB2SMV
                 return buffers;
             }
 
-            internal static string NonConnectedEventInputs(IEnumerable<Connection> connections, List<Event> events, IEnumerable<FBInstance> instances, ShowMessageDelegate showMessage)
+            internal static string NonConnectedEvents(IEnumerable<Connection> connections, List<Event> events, IEnumerable<FBInstance> instances, ShowMessageDelegate showMessage)
             {
+                 
                 string ret = "";
+                
+                string HandleNotConnectedEvent(Event nonConnectedEvent, FBInstance instance)
+                {
+                    showMessage(String.Format("Warning! Event {0} in {1}:{2} is not connected!", nonConnectedEvent.Name, instance.Name,
+                        instance.FBType));
+                    var eventValue = instance.Name + "_" + nonConnectedEvent.Name + ".value";
+                    var eventTsLast = instance.Name + "_" + nonConnectedEvent.Name + ".ts_last";
+                    var eventTsBorn = instance.Name + "_" + nonConnectedEvent.Name + ".ts_born";
+                    ret += String.Format(Smv.NextVarAssignment, eventValue, eventValue);
+                    ret += String.Format(Smv.NextVarAssignment, eventTsLast, eventTsLast);
+                    ret += String.Format(Smv.NextVarAssignment, eventTsBorn, eventTsBorn);
+                    return ret;
+                }
+
                 foreach (FBInstance instance in instances)
                 {
                     var instanceInputEvents = events.Where(ev => ev.FBType == instance.InstanceType && ev.Direction == Direction.Input);
+                    var instanceOutputEvents = events.Where(ev => ev.FBType == instance.InstanceType && ev.Direction == Direction.Output);
 
                     foreach (Event inputEvent in instanceInputEvents)
                     {
@@ -130,17 +146,22 @@ namespace FB2SMV
                         Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
                         if (connection == null)
                         {
-                            showMessage(String.Format("Warning! Input event {0} in {1}:{2} is not connected!", inputEvent.Name, instance.Name, instance.FBType));
-                            var eventValue = instance.Name + "_" + inputEvent.Name + ".value";
-                            var eventTsLast = instance.Name + "_" + inputEvent.Name + ".ts_last";
-                            var eventTsBorn = instance.Name + "_" + inputEvent.Name  + ".ts_born";
-                            ret += String.Format(Smv.NextVarAssignment, eventValue, eventValue);
-                            ret += String.Format(Smv.NextVarAssignment, eventTsLast, eventTsLast);
-                            ret += String.Format(Smv.NextVarAssignment, eventTsBorn, eventTsBorn);
+                            ret = HandleNotConnectedEvent(inputEvent, instance);
+                        }
+                    }
+                    
+                    foreach (Event outputEvent in instanceOutputEvents)
+                    {
+                        string connectionNodeName = instance.Name + "." + outputEvent.Name;
+                        Connection connection = connections.FirstOrDefault(conn => conn.Source == connectionNodeName);
+                        if (connection == null)
+                        {
+                            ret = HandleNotConnectedEvent(outputEvent, instance);
                         }
                     }
                 }
                 return ret;
+               
             }
 
             private static bool _isInputFromComponent(FBInterface instanceParameter, IEnumerable<Connection> connections, string instanceName, out Connection inputConnection)
@@ -270,42 +291,61 @@ namespace FB2SMV
                     bool dstComponent;
                     string dstSmvVar = Smv.ConvertConnectionVariableName(dst, EventInstance.Name, out dstComponent);
 
-                    string srcString = "\t("; //+ srcSmvVar + " : " + Smv.True + ";\n";
-                    foreach (string src in eventConnectionsMap[dst])
+                    if (dstComponent)
                     {
-                        bool srcComponent;
-                        string srcSmvVar = Smv.ConvertConnectionVariableName(src, EventInstance.Name, out srcComponent) + ".value";
-                        if (srcComponent) srcString += srcSmvVar + " | ";
-                        else srcString += String.Format("({0} & {1}) | ", srcSmvVar, Smv.Alpha);
-                    }
-
-                    srcString = srcString.TrimEnd(Smv.OrTrimChars) + ")";
-                    if (useProcesses)
-                    {
-                        srcString += " : " + Smv.True + ";\n";
-                        eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".value", srcString);
-                    }
-                    else
-                    {
-                        string reset_string;
-                        if (dstComponent)
+                        string valueString = "";
+                        string tsbornString = "";
+                        string tsLastString = "";
+                        foreach (string src in eventConnectionsMap[dst])
                         {
-                            string[] connectionDst = Smv.SplitConnectionVariableName(dst);
-                            reset_string = String.Format("\t({0}.{1}_reset) : {2};\n", connectionDst[0], EventInstance.Name(connectionDst[1]), Smv.False);
-                            srcString += " : " + Smv.True + ";\n";
-                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".value", srcString + reset_string);
+                            string srcString = "\t";
+                            bool srcComponent;
+                            string srcSmvVar = Smv.ConvertConnectionVariableName(src, EventInstance.Name, out srcComponent);
+                        
+                            if (srcComponent) srcString += srcSmvVar + ".value";
+                            else srcString += $"({srcSmvVar}.value & {Smv.Alpha})";
+                        
+                            tsbornString += $"{srcString} : {srcSmvVar}.ts_born;\n";
+                            tsLastString += $"{srcString} : {srcSmvVar}.ts_last;\n";
+                            valueString  += $"{srcString} : {srcSmvVar}.value;\n";  
+                        }
+                    
+                        if (useProcesses)
+                        {
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".value", valueString);
                         }
                         else
                         {
-                            //reset_string = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
-                            //srcString = srcString.TrimEnd(Smv.OrTrimChars) + ") : " + Smv.True + ";\n";
-                            //eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
-                            dstSmvVar += "_set";
-                            definesList.Add(String.Format(Smv.DefineBlock, dstSmvVar, srcString));
+                            string reset_string;
+                            string[] connectionDst = Smv.SplitConnectionVariableName(dst);
+                            reset_string = String.Format("\t({0}.{1}_reset) : {2};\n", connectionDst[0], EventInstance.Name(connectionDst[1]), Smv.False);
+                          
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".value", valueString + reset_string);
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".ts_born", tsbornString);
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + ".ts_last", tsLastString);   
                         }
-                        
                     }
+                    else
+                    {
+                        string srcString = "\t";
+                        foreach (string src in eventConnectionsMap[dst])
+                        {
+                            bool srcComponent;
+                            var srcSmvVar = Smv.ConvertConnectionVariableName(src, EventInstance.Name, out srcComponent);
+                        
+                            if (srcComponent) srcString += srcSmvVar + ".value | ";
+                            else srcString += $"({srcSmvVar}.value & {Smv.Alpha}) | ";
+                            srcString = srcString.TrimEnd(Smv.OrTrimChars);
+                        }
 
+                        //reset_string = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
+                        //srcString = srcString.TrimEnd(Smv.OrTrimChars) + ") : " + Smv.True + ";\n";
+                        //eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
+                        dstSmvVar += "_set";
+                        definesList.Add(String.Format(Smv.DefineBlock, dstSmvVar, srcString));
+                    }
+                    
+                    
                 }
 
                 foreach (string def in definesList)

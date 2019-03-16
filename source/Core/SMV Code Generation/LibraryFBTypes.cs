@@ -22,8 +22,9 @@ namespace FB2SMV
 
                 smvModule += String.Format(Smv.VarInitializationBlock, "Do_", "-1");
                 smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
+                smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.value", "event_START.value");
                 smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_last", "systemclock");
-                smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_born", "systemclock");
+                smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_born", "event_START.ts_born");
                 smvModule += String.Format(Smv.DefineBlock, "systemclock", "TGlobal");
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);
                 smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START.value))");

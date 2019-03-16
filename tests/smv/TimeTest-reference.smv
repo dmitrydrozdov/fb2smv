@@ -115,7 +115,7 @@ DEFINE event_COMPLETE_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=COMPLETE_ecc & NA=1))
 DEFINE event_CNF_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=REQ_ecc & NA=1));
 
 DEFINE ExistsInputEvent:= event_INIT.value | event_REQ.value;
-DEFINE ExistsEnabledECTran:= (Q_smv=START_ecc  & ((event_INIT.value) | (event_REQ.value))) | (Q_smv=INIT_ecc) | (Q_smv=REQ_ecc) | (Q_smv=COMPLETE_ecc);
+DEFINE ExistsEnabledECTran:= (Q_smv=START_ecc  & ((event_INIT.value) | (event_REQ.value))) | (Q_smv=INIT_ecc) | (Q_smv=REQ_ecc  & (( ! stop) | (stop))) | (Q_smv=COMPLETE_ecc);
 
 
 DEFINE systemclock:= TGlobal;
@@ -170,6 +170,9 @@ init(FB2_beta):= FALSE;
 next(FB1_STOP.value) := FB1_STOP.value;
 next(FB1_STOP.ts_last) := FB1_STOP.ts_last;
 next(FB1_STOP.ts_born) := FB1_STOP.ts_born;
+next(FB3_COMPLETE.value) := FB3_COMPLETE.value;
+next(FB3_COMPLETE.ts_last) := FB3_COMPLETE.ts_last;
+next(FB3_COMPLETE.ts_born) := FB3_COMPLETE.ts_born;
 -- _internalDataConnections
 next(XO_):= case
 	(FB2_COMPLETE.value) : FB2_XO;
@@ -226,18 +229,6 @@ next(FB2_COMPLETE.ts_born):= case
 	FB2.event_COMPLETE_set : FB2.INVOKEDBY.ts_born;
 	TRUE : FB2_COMPLETE.ts_born;
 esac;
-next(FB3_COMPLETE.value):= case
-	FB3.event_COMPLETE_set : TRUE;
-	TRUE : FALSE;
-esac;
-next(FB3_COMPLETE.ts_last):= case
-	FB3.event_COMPLETE_set : systemclock;
-	TRUE : FB3_COMPLETE.ts_last;
-esac;
-next(FB3_COMPLETE.ts_born):= case
-	FB3.event_COMPLETE_set : FB3.INVOKEDBY.ts_born;
-	TRUE : FB3_COMPLETE.ts_born;
-esac;
 
 
 -- ---DISPATCHER--- --
@@ -280,90 +271,89 @@ ASSIGN
 
 -- _internalEventConnections
 next(FB3_INIT.value):= case
-	((event_INIT.value & alpha)) : TRUE;
+	(event_INIT.value & alpha) : event_INIT.value;
 	(FB3.event_INIT_reset) : FALSE;
 	TRUE : FB3_INIT.value;
 esac;
 
 next(FB3_INIT.ts_born):= case
-	((event_INIT.value & alpha)) : event_INIT.ts_born;
+	(event_INIT.value & alpha) : event_INIT.ts_born;
 	TRUE : FB3_INIT.ts_born;
 esac;
 
 next(FB3_INIT.ts_last):= case
-	((event_INIT.value & alpha)) : event_INIT.ts_last;
+	(event_INIT.value & alpha) : event_INIT.ts_last;
 	TRUE : FB3_INIT.ts_last;
 esac;
 
 next(FB1_START.value):= case
-	(FB3_CNF.value) : TRUE;
+	FB3_CNF.value : FB3_CNF.value;
 	(FB1.event_START_reset) : FALSE;
 	TRUE : FB1_START.value;
 esac;
 
 next(FB1_START.ts_born):= case
-	(FB3_CNF.value) : FB3_CNF.ts_born;
+	FB3_CNF.value : FB3_CNF.ts_born;
 	TRUE : FB1_START.ts_born;
 esac;
 
 next(FB1_START.ts_last):= case
-	(FB3_CNF.value) : FB3_CNF.ts_last;
+	FB3_CNF.value : FB3_CNF.ts_last;
 	TRUE : FB1_START.ts_last;
 esac;
 
 next(FB2_REQ.value):= case
-	(FB1_EO.value) : TRUE;
+	FB1_EO.value : FB1_EO.value;
 	(FB2.event_REQ_reset) : FALSE;
 	TRUE : FB2_REQ.value;
 esac;
 
 next(FB2_REQ.ts_born):= case
-	(FB1_EO.value) : FB1_EO.ts_born;
+	FB1_EO.value : FB1_EO.ts_born;
 	TRUE : FB2_REQ.ts_born;
 esac;
 
 next(FB2_REQ.ts_last):= case
-	(FB1_EO.value) : FB1_EO.ts_last;
+	FB1_EO.value : FB1_EO.ts_last;
 	TRUE : FB2_REQ.ts_last;
 esac;
 
 next(FB2_INIT.value):= case
-	((event_INIT.value & alpha)) : TRUE;
+	(event_INIT.value & alpha) : event_INIT.value;
 	(FB2.event_INIT_reset) : FALSE;
 	TRUE : FB2_INIT.value;
 esac;
 
 next(FB2_INIT.ts_born):= case
-	((event_INIT.value & alpha)) : event_INIT.ts_born;
+	(event_INIT.value & alpha) : event_INIT.ts_born;
 	TRUE : FB2_INIT.ts_born;
 esac;
 
 next(FB2_INIT.ts_last):= case
-	((event_INIT.value & alpha)) : event_INIT.ts_last;
+	(event_INIT.value & alpha) : event_INIT.ts_last;
 	TRUE : FB2_INIT.ts_last;
 esac;
 
 next(FB3_REQ.value):= case
-	((event_REQ.value & alpha) | FB2_CNF.value) : TRUE;
+	(event_REQ.value & alpha) : event_REQ.value;
+	FB2_CNF.value : FB2_CNF.value;
 	(FB3.event_REQ_reset) : FALSE;
 	TRUE : FB3_REQ.value;
 esac;
 
 next(FB3_REQ.ts_born):= case
 	(event_REQ.value & alpha) : event_REQ.ts_born;
-	(FB2_CNF.value) : FB2_CNF.ts_born;
+	FB2_CNF.value : FB2_CNF.ts_born;
 	TRUE : FB3_REQ.ts_born;
 esac;
 
 next(FB3_REQ.ts_last):= case
 	(event_REQ.value & alpha) : event_REQ.ts_last;
-	(FB2_CNF.value) : FB2_CNF.ts_last;
+	FB2_CNF.value : FB2_CNF.ts_last;
 	TRUE : FB3_REQ.ts_last;
 esac;
 
-
-
-DEFINE event_COMPLETE_set:= 	(FB2_COMPLETE.value);
+DEFINE event_COMPLETE_set:= 	FB2_COMPLETE.value;
 
 DEFINE event_INIT_reset:= alpha;
 DEFINE event_REQ_reset:= alpha;
@@ -453,23 +443,23 @@ next(TimeTest_inst_INIT.value):= case
 	TimeTest_inst.event_INIT_reset : FALSE;
 	TRUE : TimeTest_inst_INIT.value;
 esac;
-next(TimeTest_inst_INIT.ts_born):= 0;
-next(TimeTest_inst_INIT.ts_last):= TimeTest_inst_INIT.ts_last;
+next(TimeTest_inst_INIT.ts_born) := TimeTest_inst_INIT.ts_born;
+next(TimeTest_inst_INIT.ts_last) := TimeTest_inst_INIT.ts_last;
 
 next(TimeTest_inst_REQ.value):= case
 	TimeTest_inst.event_REQ_reset : FALSE;
 	gamma & TGlobal = 0 : TRUE; -- trigger REQ event
 	TRUE : TimeTest_inst_REQ.value;
 esac;
-next(TimeTest_inst_REQ.ts_born):= TimeTest_inst_REQ.ts_born;
-next(TimeTest_inst_REQ.ts_last):= TimeTest_inst_REQ.ts_last;
+next(TimeTest_inst_REQ.ts_born) := TimeTest_inst_REQ.ts_born;
+next(TimeTest_inst_REQ.ts_last) := TimeTest_inst_REQ.ts_last;
 
 next(TimeTest_inst_COMPLETE.value):= case
 	TimeTest_inst.event_COMPLETE_set : TRUE;
 	TRUE : TimeTest_inst_COMPLETE.value;
 esac;
-next(TimeTest_inst_COMPLETE.ts_born):= TimeTest_inst_COMPLETE.ts_born;
-next(TimeTest_inst_COMPLETE.ts_last):= TimeTest_inst_COMPLETE.ts_last;
+next(TimeTest_inst_COMPLETE.ts_born) := TimeTest_inst_COMPLETE.ts_born;
+next(TimeTest_inst_COMPLETE.ts_last) := TimeTest_inst_COMPLETE.ts_last;
 
 next(TimeTest_inst_alpha):= case
 	TimeTest_inst_beta : TRUE;

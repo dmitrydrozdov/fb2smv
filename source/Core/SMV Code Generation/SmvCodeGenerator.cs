@@ -109,7 +109,7 @@ namespace FB2SMV
                 }
                 //smvModule += _moduleVariablesInitBlock(variables) + "\n";
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
-                smvModule += CompositeFbSmv.NonConnectedEventInputs(connections, _storage.Events, instances, _showMessage);
+                smvModule += CompositeFbSmv.NonConnectedEvents(connections, _storage.Events, instances, _showMessage);
                 smvModule += CompositeFbSmv.NonConnectedInputs(connections, _storage.Variables, instances);
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
                 smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
@@ -265,13 +265,16 @@ namespace FB2SMV
                 }
                 foreach (Event ev in _storage.Events.Where(ev => ev.FBType == topLevelFbType.Name))
                 {
-                    string smvVariable = instance.Name + "_" + ev.Name + ".value";
-                    string nextRule = "";
+                    string smvVariable = instance.Name + "_" + ev.Name;
+                    string nextRule = "\t" + instance.Name + "." + "event_" + ev.Name ;
                     if (ev.Direction == Direction.Output)
-                        nextRule = instance.Name + "." + "event_" + ev.Name + "_set : " + Smv.True + ";\n";
+                        nextRule += "_set : " + Smv.True + ";\n";
                     else
-                        nextRule = instance.Name + "." + "event_"+ev.Name+"_reset : "+Smv.False + ";\n";
-                    mainModule += String.Format(Smv.NextCaseBlock, smvVariable, nextRule);
+                        nextRule += "_reset : " + Smv.False + ";\n";
+                    mainModule += String.Format(Smv.NextCaseBlock, $"{smvVariable}.value", nextRule);
+                    mainModule += String.Format(Smv.NextVarAssignment, $"{smvVariable}.ts_born", $"{smvVariable}.ts_born");
+                    mainModule += String.Format(Smv.NextVarAssignment, $"{smvVariable}.ts_last", $"{smvVariable}.ts_last");
+                    mainModule += "\n";
                 }
 
                 string alphaRule = "\t" + instance.Name + "_" + Smv.Beta + " : " + Smv.True + ";\n" +
