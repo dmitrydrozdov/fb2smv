@@ -196,6 +196,7 @@ namespace FB2SMV
             private Storage _storage;
             private IEnumerable<ExecutionModel> _executionModels;
             private Settings _settings;
+            private TimeScheduler timeScheduler;
 
             public string GetTimeScheduler()
             {
@@ -207,8 +208,10 @@ namespace FB2SMV
                 {
                     timeLocalRangeTop = Convert.ToInt32(timeRangeSplit[1]);
                 }
-                TimeScheduler ts = new TimeScheduler(_storage.TimersCount, smvType, timeLocalRangeTop);
-                return ts.GetSMVCode(_storage.Tmax);
+
+                var timers = _storage.Instances.Where(i => i.InstanceType == "E_DELAY" || i.InstanceType == "E_CYCLE");
+                timeScheduler = new TimeScheduler(timers, smvType, timeLocalRangeTop);
+                return timeScheduler.GetSMVCode(_storage.Tmax);
             }
 
             public string GetEventModule()
