@@ -66,22 +66,16 @@ esac;
 next(INVOKEDBY.value):= case
 	event_INIT.value : event_INIT.value;
 	event_REQ.value : event_REQ.value;
-	event_COMPLETE.value : event_COMPLETE.value;
-	event_CNF.value : event_CNF.value;
 	TRUE : INVOKEDBY.value;
 esac;
 next(INVOKEDBY.ts_last):= case
 	event_INIT.value : event_INIT.ts_last;
 	event_REQ.value : event_REQ.ts_last;
-	event_COMPLETE.value : event_COMPLETE.ts_last;
-	event_CNF.value : event_CNF.ts_last;
 	TRUE : INVOKEDBY.ts_last;
 esac;
 next(INVOKEDBY.ts_born):= case
 	event_INIT.value : event_INIT.ts_born;
 	event_REQ.value : event_REQ.ts_born;
-	event_COMPLETE.value : event_COMPLETE.ts_born;
-	event_CNF.value : event_CNF.ts_born;
 	TRUE : INVOKEDBY.ts_born;
 esac;
 
@@ -124,6 +118,7 @@ FAIRNESS (beta)
 
 
 MODULE TimeTest(event_INIT, event_REQ, event_COMPLETE, XO_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
 VAR FB1 : E_DELAY (FB1_START, FB1_STOP, FB1_EO, FB1_Dt, FB1_Di, FB1_Do, TGlobal, FB1_alpha, FB1_beta);
 VAR FB3 : TimeBlock (FB3_INIT, FB3_REQ, FB3_COMPLETE, FB3_CNF, FB2_XO, FB3_XO, TGlobal, FB3_alpha, FB3_beta);
 VAR FB2 : TimeBlock (FB2_INIT, FB2_REQ, FB2_COMPLETE, FB2_CNF, FB3_XO, FB2_XO, TGlobal, FB2_alpha, FB2_beta);
@@ -173,6 +168,22 @@ next(FB1_STOP.ts_born) := FB1_STOP.ts_born;
 next(FB3_COMPLETE.value) := FB3_COMPLETE.value;
 next(FB3_COMPLETE.ts_last) := FB3_COMPLETE.ts_last;
 next(FB3_COMPLETE.ts_born) := FB3_COMPLETE.ts_born;
+next(INVOKEDBY.value):= case
+	event_INIT.value : event_INIT.value;
+	event_REQ.value : event_REQ.value;
+	TRUE : INVOKEDBY.value;
+esac;
+next(INVOKEDBY.ts_last):= case
+	event_INIT.value : event_INIT.ts_last;
+	event_REQ.value : event_REQ.ts_last;
+	TRUE : INVOKEDBY.ts_last;
+esac;
+next(INVOKEDBY.ts_born):= case
+	event_INIT.value : event_INIT.ts_born;
+	event_REQ.value : event_REQ.ts_born;
+	TRUE : INVOKEDBY.ts_born;
+esac;
+
 -- _internalDataConnections
 next(XO_):= case
 	(FB2_COMPLETE.value) : FB2_XO;

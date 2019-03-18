@@ -96,10 +96,11 @@ namespace FB2SMV
 
             public static string InvokedByRules(IEnumerable<Event> events)
             {
+                var inputEvents = events.Where(e => e.Direction == Direction.Input);
                 string rules = "";
-                var valueRules = events.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.Value(ev.Name) + ";\n");
-                var tsLastRules = events.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSLast(ev.Name) + ";\n");
-                var tsBornRules = events.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSBorn(ev.Name) + ";\n");
+                var valueRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.Value(ev.Name) + ";\n");
+                var tsLastRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSLast(ev.Name) + ";\n");
+                var tsBornRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSBorn(ev.Name) + ";\n");
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.value", valueRules);
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.ts_last", tsLastRules);
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.ts_born", tsBornRules);

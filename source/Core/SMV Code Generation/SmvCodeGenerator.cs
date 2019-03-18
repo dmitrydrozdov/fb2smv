@@ -97,6 +97,7 @@ namespace FB2SMV
 
                 //smvModule += _moduleHeader(events, variables, fbType.Name) + "\n";
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbType.Name);
+                smvModule += String.Format(Smv.VarDeclarationBlock, "INVOKEDBY", EventInstance.SmvType("FALSE", TimeScheduler.TGlobal));
                 smvModule += CompositeFbSmv.FbInstances(instances, _storage.Events, _storage.Variables, connections, _settings) + "\n";
                 smvModule += CompositeFbSmv.InternalBuffersDeclaration(instances, connections, _storage.Events, _storage.Variables) + "\n";
                 smvModule += Smv.Assign;
@@ -111,6 +112,7 @@ namespace FB2SMV
                 //smvModule += _inputVariablesSampleComposite(variables, withConnections) + "\n";
                 smvModule += CompositeFbSmv.NonConnectedEvents(connections, _storage.Events, instances, _showMessage);
                 smvModule += CompositeFbSmv.NonConnectedInputs(connections, _storage.Variables, instances);
+                smvModule += FbSmvCommon.InvokedByRules(events) + "\n";
                 smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
                 smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
                 //smvModule += _eventInputsResetRules(events) + "\n";
