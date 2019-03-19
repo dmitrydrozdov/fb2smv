@@ -113,17 +113,17 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.NonConnectedEvents(connections, _storage.Events, instances, _showMessage);
                 smvModule += CompositeFbSmv.NonConnectedInputs(connections, _storage.Variables, instances);
                 smvModule += FbSmvCommon.InvokedByRules(events) + "\n";
-                smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage.Variables, instances) + "\n";
-                smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _settings.UseProcesses) + "\n";
+                smvModule += CompositeFbSmv.InternalDataConnections(connections, withConnections, _storage) + "\n";
+                smvModule += CompositeFbSmv.ComponentEventOutputs(connections, _storage, _settings.UseProcesses) + "\n";
                 //smvModule += _eventInputsResetRules(events) + "\n";
                 smvModule += "\n-- ---DISPATCHER--- --\n";
                 smvModule += "-- *************** --\n";
                 smvModule += dispatcher.GetSmvCode(_settings.UseProcesses) + "\n";
 
-                smvModule += CompositeFbSmv.InternalEventConnections(connections, _settings.UseProcesses) + "\n";
+                smvModule += CompositeFbSmv.InternalEventConnections(connections, _storage,  _settings.UseProcesses) + "\n";
                 smvModule += CompositeFbSmv.InputEventsResetRules(events, _settings.UseProcesses);
                 smvModule += FbSmvCommon.DefineExistsInputEvent(events) + "\n";
-                smvModule += CompositeFbSmv.DefineOmega(connections) + "\n";
+                smvModule += CompositeFbSmv.DefineOmega(connections, _storage) + "\n";
                 smvModule += CompositeFbSmv.DefinePhi(instances, _storage.Events) + "\n"; //phi variable for timed models
                 smvModule += FbSmvCommon.ModuleDefines();
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
@@ -166,7 +166,7 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.AlgStepsCounterChangeBlock(states, actions, smvAlgs) + "\n";
 
                 smvModule += FbSmvCommon.InvokedByRules(events) + "\n";
-                smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections) + "\n";
+                smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections, events) + "\n";
                 smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
                 smvModule += BasicFbSmv.SetServiceSignals(_settings.UseProcesses) + "\n";
@@ -270,15 +270,18 @@ namespace FB2SMV
                 }
                 foreach (Event ev in _storage.Events.Where(ev => ev.FBType == topLevelFbType.Name))
                 {
-                    string smvVariable = instance.Name + "_" + ev.Name;
-                    string nextRule = "\t" + instance.Name + "." + "event_" + ev.Name ;
+                    var eventInstance = new EventInstance(ev, instance);
+                    string nextRule = "\t" + instance.Name + "." + eventInstance.ParameterName();
                     if (ev.Direction == Direction.Output)
                         nextRule += "_set : " + Smv.True + ";\n";
                     else
                         nextRule += "_reset : " + Smv.False + ";\n";
-                    mainModule += String.Format(Smv.NextCaseBlock, $"{smvVariable}.value", nextRule);
-                    mainModule += String.Format(Smv.NextVarAssignment, $"{smvVariable}.ts_born", $"{smvVariable}.ts_born");
-                    mainModule += String.Format(Smv.NextVarAssignment, $"{smvVariable}.ts_last", $"{smvVariable}.ts_last");
+                    mainModule += String.Format(Smv.NextCaseBlock, eventInstance.Value(), nextRule);
+                    if (eventInstance.Event.Timed)
+                    {
+                        mainModule += String.Format(Smv.NextVarAssignment, eventInstance.TSBorn(), eventInstance.TSBorn());
+                        mainModule += String.Format(Smv.NextVarAssignment, eventInstance.TSLast(), eventInstance.TSLast());   
+                    }
                     mainModule += "\n";
                 }
 

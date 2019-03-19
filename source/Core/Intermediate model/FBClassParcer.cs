@@ -231,9 +231,9 @@ namespace FB2SMV
                 }
                 else if (fbType == LibraryTypes.E_DELAY || fbType == LibraryTypes.E_CYCLE)
                 {
-                    Storage.PutEvent(new FBCollections.Event("START", "", fbType, Direction.Input));
-                    Storage.PutEvent(new FBCollections.Event("STOP", "", fbType, Direction.Input));
-                    Storage.PutEvent(new FBCollections.Event("EO", "", fbType, Direction.Output));
+                    Storage.PutEvent(new FBCollections.Event("START", "", fbType, Direction.Input, true));
+                    Storage.PutEvent(new FBCollections.Event("STOP", "", fbType, Direction.Input, true));
+                    Storage.PutEvent(new FBCollections.Event("EO", "", fbType, Direction.Output, true));
 
                     Storage.PutVariable(new Variable("Dt", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "666", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                     Storage.PutVariable(new Variable("Di", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));

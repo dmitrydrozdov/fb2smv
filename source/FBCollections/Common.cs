@@ -79,13 +79,15 @@ namespace FB2SMV
         [Serializable]
         public class Event : FBInterface
         {
-            public Event(string name, string comment, string fbType, Direction direction)
+            public bool Timed;
+            public Event(string name, string comment, string fbType, Direction direction, bool timed = false)
             {
                 if (direction == Direction.Internal) throw new Exception("Event cannot be internal.");
                 Name = name;
                 Comment = comment;
                 FBType = fbType;
                 Direction = direction;
+                Timed = timed;
             }
 
             public Event()

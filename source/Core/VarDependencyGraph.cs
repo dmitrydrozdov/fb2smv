@@ -24,18 +24,15 @@ namespace Core
             return _storage.Variables.FirstOrDefault(v => v.FBType == keySplit[0] && v.Name == keySplit[1]);
         }
 
-        private string GetConnectionNodeKey(string connectionNodeString, string fbType)
+        private string GetConnectionNodeKey(ConnectionNode connectionNode, string fbType)
         {
             string nodeKey;
-            string[] srcSplit = connectionNodeString.Split('.');
-            if (srcSplit.Count() == 0) throw new ArgumentNullException();
-            else if (srcSplit.Count() == 1) nodeKey = fbType + '.' + connectionNodeString;
-            else if (srcSplit.Count() == 2)
+            if (connectionNode.InstanceName == "") nodeKey = fbType + '.' + connectionNode.Variable;
+            else 
             {
-                var instance = _storage.Instances.FirstOrDefault(inst => inst.Name == srcSplit[0] && inst.FBType == fbType);
-                nodeKey = instance.InstanceType + '.' + srcSplit[1];
+                var instance = _storage.Instances.FirstOrDefault(inst => inst.Name == connectionNode.InstanceName && inst.FBType == fbType);
+                nodeKey = instance.InstanceType + '.' + connectionNode.Variable;
             }
-            else throw new FormatException();
 
             return nodeKey;
         }

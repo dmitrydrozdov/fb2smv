@@ -269,23 +269,13 @@ namespace FB2SMV
 
             public delegate string ProccessingFunc(string name);
 
-            public static string ConvertConnectionVariableName(string name, ProccessingFunc moduleParamNameConversionFunc, out bool componentVar)
+            public static string ConvertConnectionVariableName(ConnectionNode connectionNode, ProccessingFunc moduleParamNameConversionFunc)
             {
-                string[] splitArr = name.Split(_smvPattern.ConnectionNameSeparator);
-                string converted = "";
-                if (splitArr.Count() == 0) throw new Exception("No connection var name");
-                else if (splitArr.Count() == 1)
+                if (connectionNode.IsComponentVar())
                 {
-                    converted = moduleParamNameConversionFunc(splitArr[0]);
-                    componentVar = false;
+                    return connectionNode.InstanceName + "_" + connectionNode.Variable;    
                 }
-                else if (splitArr.Count() == 2)
-                {
-                    converted = splitArr[0] + "_" + splitArr[1];
-                    componentVar = true;
-                }
-                else throw new Exception("Unknown var name: " + name);
-                return converted;
+                return moduleParamNameConversionFunc(connectionNode.Variable);
             }
 
             /// <summary>

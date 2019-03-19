@@ -185,26 +185,28 @@ namespace FB2SMV
                 const string setValue = " : {0};\n";
                 foreach (PriorityEvent ev in executionModel.InputEventsPriorities/*events.Where(ev => ev.Direction == Direction.Input)*/)
                 {
+                    
+                    var eventInstance = new EventInstance(ev.Value, null);
                     if (priorityResetRule == "")
                     {
                         string rule = "\t" + commonResetRule;
 
-                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Value.Name), rule + String.Format(setValue, Smv.False));
-                        else rules += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Value.Name) + "_reset", rule);
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, eventInstance.SmvName(), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, eventInstance.SmvName() + "_reset", rule);
                     }
                     else
                     {
                         string rule = String.Format("\t({0} & ({1})) | ({2})", Smv.Alpha, priorityResetRule.Trim(Smv.OrTrimChars), commonResetRule);
-                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Value.Name), rule + String.Format(setValue, Smv.False));
-                        else rules += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Value.Name) + "_reset", rule);
+                        if (useProcesses) rules += String.Format(Smv.NextCaseBlock, eventInstance.SmvName(), rule + String.Format(setValue, Smv.False));
+                        else rules += String.Format(Smv.DefineBlock, eventInstance.SmvName() + "_reset", rule);
                     }
 
-                    priorityResetRule += EventInstance.Value(ev.Value.Name) + " | ";
+                    priorityResetRule += eventInstance.Value() + " | ";
                 }
                 return rules;
             }
 
-            public static string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections)
+            public static string InputVariablesSampleBasic(IEnumerable<Variable> variables, IEnumerable<WithConnection> withConnections, IEnumerable<Event> events)
             {
 
                 string varChangeBlocks = "";
@@ -213,12 +215,12 @@ namespace FB2SMV
                     if (!variable.IsConstant)
                     {
                         if (variable.ArraySize == 0)
-                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true));
+                            varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, FbSmvCommon.VarSamplingRule(variable.Name, withConnections, events, true));
                         else
                         {
                             for (int i = 0; i < variable.ArraySize; i++)
                             {
-                                varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), FbSmvCommon.VarSamplingRule(variable.Name, withConnections, true, i));
+                                varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), FbSmvCommon.VarSamplingRule(variable.Name, withConnections, events, true, i));
                             }
                         }
                     }
@@ -306,6 +308,7 @@ namespace FB2SMV
                 string eventChangeString = "";
                 foreach (Event ev in events.Where(ev => ev.Direction == Direction.Output))
                 {
+                    var eventInstance = new EventInstance(ev, null);
                     string rule = "\t" + Smv.OsmStateVar + "=" + Smv.Osm.S2 + " & " + Smv.AlgStepsCounterVar + "=0" + " & ({0})";
                     const string setValue = " : {0};\n";
                     string outCond = "";
@@ -318,13 +321,13 @@ namespace FB2SMV
                     if (eventSignalSet)
                     {
                         rule = String.Format(rule, outCond.TrimEnd(Smv.OrTrimChars));
-                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Name), rule + String.Format(setValue, Smv.True));
-                        else eventChangeString += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Name) + "_set", rule);
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, eventInstance.SmvName(), rule + String.Format(setValue, Smv.True));
+                        else eventChangeString += String.Format(Smv.DefineBlock, eventInstance.SmvName() + "_set", rule);
                     }
                     else
                     {
-                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, EventInstance.Name(ev.Name), "");
-                        else eventChangeString += String.Format(Smv.DefineBlock, EventInstance.Name(ev.Name) + "_set", Smv.False);
+                        if (useProcesses) eventChangeString += String.Format(Smv.NextCaseBlock, eventInstance.SmvName(), "");
+                        else eventChangeString += String.Format(Smv.DefineBlock, eventInstance.SmvName() + "_set", Smv.False);
                     }
                 }
                 return eventChangeString;
@@ -442,7 +445,8 @@ namespace FB2SMV
                     var foundEvent = events.FirstOrDefault(ev => ev.Name == strSplit[i]);
                     if (foundEvent != null)
                     {
-                        strSplit[i] = EventInstance.Value(foundEvent.Name);
+                        
+                        strSplit[i] = new EventInstance(foundEvent, null).Value();
                     }
                 }
                 return String.Concat(strSplit);

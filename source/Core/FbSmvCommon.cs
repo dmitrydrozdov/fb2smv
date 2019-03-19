@@ -15,8 +15,9 @@ namespace FB2SMV
                 string moduleParameters = "";
                 foreach (Event ev in events)
                 {
+                    
                     if (preffix == null)
-                        moduleParameters += EventInstance.Name(ev.Name) + Smv.ModuleParameters.Splitter;
+                        moduleParameters += new EventInstance(ev, null).SmvName() + Smv.ModuleParameters.Splitter;
                     else moduleParameters += preffix + "_" + ev.Name + Smv.ModuleParameters.Splitter;
                 }
                 foreach (Variable variable in variables)
@@ -44,13 +45,14 @@ namespace FB2SMV
                 return moduleParameters.TrimEnd(Smv.ModuleParameters.Splitter.ToCharArray());
             }
 
-            public static string VarSamplingRule(string varName, IEnumerable<WithConnection> withConnections, bool basic, int arrayIndex = -1)
+            public static string VarSamplingRule(string varName, IEnumerable<WithConnection> withConnections, IEnumerable<Event> events, bool basic, int arrayIndex = -1)
             {
                 string samplingEvents = "";
                 //string rules = "";
                 foreach (WithConnection connection in withConnections.Where(conn => conn.Var == varName))
                 {
-                    samplingEvents += EventInstance.Value(connection.Event) + " | ";
+                    var ev = events.First(e => e.Name == connection.Event && e.FBType == connection.FBType);
+                    samplingEvents += new EventInstance(ev, null).Value() + " | ";
                 }
                 string rule = "\t" + Smv.Alpha;
                 if (basic) rule += " & " + Smv.OsmStateVar + "=" + Smv.Osm.S0;
@@ -63,7 +65,8 @@ namespace FB2SMV
 
             public static string DefineExistsInputEvent(IEnumerable<Event> events)
             {
-                string inputEvents = events.Where(ev => ev.Direction == Direction.Input).Aggregate("", (current, ev) => current + (EventInstance.Value(ev.Name) + " | "));
+                string inputEvents = events.Where(ev => ev.Direction == Direction.Input)
+                    .Aggregate("", (current, ev) => current + new EventInstance(ev, null).Value() + " | ");
                 if (inputEvents == "") inputEvents = Smv.False;
                 return String.Format(Smv.DefineBlock, Smv.ExistsInputEvent, inputEvents.Trim(Smv.OrTrimChars));
             }
@@ -96,11 +99,11 @@ namespace FB2SMV
 
             public static string InvokedByRules(IEnumerable<Event> events)
             {
-                var inputEvents = events.Where(e => e.Direction == Direction.Input);
+                var inputEvents = events.Where(e => e.Direction == Direction.Input).Select(ev => new EventInstance(ev, null));
                 string rules = "";
-                var valueRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.Value(ev.Name) + ";\n");
-                var tsLastRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSLast(ev.Name) + ";\n");
-                var tsBornRules = inputEvents.Aggregate("", (current, ev) => current + "\t" + EventInstance.Value(ev.Name) + " : " + EventInstance.TSBorn(ev.Name) + ";\n");
+                var valueRules = inputEvents.Aggregate("", (current, ei) => current + "\t" + ei.Value() + " : " + ei.Value() + ";\n");
+                var tsLastRules = inputEvents.Where(ei => ei.Event.Timed).Aggregate("", (current, ei) => current + "\t" + ei.Value() + " : " + ei.TSLast() + ";\n");
+                var tsBornRules = inputEvents.Where(ei => ei.Event.Timed).Aggregate("", (current, ei) => current + "\t" + ei.Value() + " : " + ei.TSBorn() + ";\n");
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.value", valueRules);
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.ts_last", tsLastRules);
                 rules += String.Format(Smv.NextCaseBlock, "INVOKEDBY.ts_born", tsBornRules);

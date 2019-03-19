@@ -1,8 +1,5 @@
 ﻿using FB2SMV.FBCollections;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace FB2SMV.Core
 { 
@@ -37,34 +34,86 @@ namespace FB2SMV.Core
         
     }
 
-    public static class EventInstance
+    public class EventInstance
     {
-        public static string EventPreffix = "event_";
-        public static string EventSuffix = "";
+        public const string EventPreffix = "event_";
+        public const string EventSuffix = "";
 
-        public static string Name(string name)
+        public readonly FBInstance Instance;
+        public readonly Event Event;
+
+        public EventInstance(Event ev, FBInstance instance)
         {
-            return EventPreffix + name + EventSuffix;
+            Event = ev;
+            Instance = instance;
         }
 
-        public static string Value(string name)
+        public bool IsComponentVar()
         {
-            return Name(name) + ".value";
+            return Instance != null;
+        }
+
+        public string SmvName()
+        {
+            if (Instance != null)
+            {
+                return Instance.Name + "_" + Event.Name;
+            }
+
+            return ParameterName();
+        }
+
+        public string ParameterName()
+        {
+            return EventPreffix + Event.Name + EventSuffix;
+        }
+
+        public string Value()
+        {
+            return SmvName() + (Event.Timed ? ".value" : "");
         }
         
-        public static string TSLast(string name)
+        public string TSLast()
         {
-            return Name(name) + ".ts_last";
+            return SmvName() + ".ts_last";
         }
         
-        public static string TSBorn(string name)
+        public string TSBorn()
         {
-            return Name(name) + ".ts_born";
+            return SmvName() + ".ts_born";
         }
 
         public static string SmvType(string value, string timestamp)
         {
             return String.Format("Event({0}, {1})", value, timestamp);
+        }
+
+        public static string SmvType(Event ev)
+        {
+            return ev.Timed 
+                ? SmvType("FALSE", TimeScheduler.TGlobal) 
+                : Smv.DataTypes.BoolType;
+        }
+
+        protected bool Equals(EventInstance other)
+        {
+            return Equals(Instance, other.Instance) && Equals(Event, other.Event);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((EventInstance) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Instance != null ? Instance.GetHashCode() : 0) * 397) ^ (Event != null ? Event.GetHashCode() : 0);
+            }
         }
     }
     
