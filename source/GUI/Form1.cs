@@ -26,6 +26,7 @@ namespace GUI
         FBClassParcer _parcer;
         private string _selectedFbType;
         private Variable _selectedVariable = null;
+        private Event _selectedEvent = null;
         private IEnumerable<Variable> _connectedVars;
         private VarDependencyGraph varDependencyGraph;
         //private List<IDispatcher> _dispatchers = null;
@@ -49,8 +50,14 @@ namespace GUI
         private void resetWorkspace()
         {
             _parcer = new FBClassParcer(ShowMessage, Program.Settings);
+            reset();
+        }
+
+        private void reset()
+        {
             _selectedFbType = null;
             _selectedVariable = null;
+            _selectedEvent = null;
             fbTypesView.Nodes.Clear();
             smvCodeRichTextBox.Text = "";
             messagesRichTextBox.Text = "";
@@ -60,11 +67,7 @@ namespace GUI
         {
             _executionModels = project.ExecutionModels;
             _parcer = new FBClassParcer(project.Storage, ShowMessage);
-            _selectedFbType = null;
-            _selectedVariable = null;
-            fbTypesView.Nodes.Clear();
-            smvCodeRichTextBox.Text = "";
-            messagesRichTextBox.Text = "";
+            reset();
         }
 
         private void loadFbSystem(string filename)
@@ -498,6 +501,25 @@ namespace GUI
             _parcer.Storage.TimersCount = Convert.ToInt32(timersTextBox.Text);
             _parcer.Storage.TimeSMVType = timetypeTextBox.Text;
             _parcer.Storage.Tmax = Convert.ToInt32(tmaxTextBox.Text);
+        }
+
+        private void timedCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+
+            if (_selectedEvent != null)
+            {
+                _selectedEvent.Timed = timedCheckBox.Checked;
+            }
+            
+        }
+
+        private void eventsTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            _selectedEvent = _parcer.Storage.Events.FirstOrDefault(ev => ev.FBType == _selectedFbType && ev.Name == eventsTreeView.SelectedNode.Name);
+            if (_selectedEvent != null)
+            {
+                timedCheckBox.Checked = _selectedEvent.Timed;
+            }
         }
     }
 }
