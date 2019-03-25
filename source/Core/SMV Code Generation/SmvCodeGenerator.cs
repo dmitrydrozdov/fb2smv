@@ -26,6 +26,7 @@ namespace FB2SMV
                 _executionModels = executionModels;
                 _settings = settings;
                 _showMessage = showMessage;
+                _storage.TimeSMVType = _settings.nuXmvInfiniteDataTypes ? "integer" : "0..99";
             }
 
             public int fbTypeCompare(FBType a, FBType b)
