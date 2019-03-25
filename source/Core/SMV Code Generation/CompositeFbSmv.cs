@@ -436,10 +436,8 @@ namespace FB2SMV
                 return foundVar;
             }
 
-            // top level events
             private static EventInstance _findEvent(ConnectionNode connectionPoint, string currentFB, Storage _storage)
             {
-                
                 FBInstance fbInst = _storage.Instances.FirstOrDefault(inst => inst.Name == connectionPoint.InstanceName && inst.FBType == currentFB);
                 var fbType = fbInst?.InstanceType ?? currentFB;
                 Event foundEvent = _storage.Events.FirstOrDefault(e => e.FBType == fbType && e.Name == connectionPoint.Variable);

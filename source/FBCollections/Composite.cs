@@ -55,10 +55,10 @@ namespace FB2SMV
         [Serializable]
         public class Connection
         {
-            public Connection(string source, string destination, ConnectionType type, string fbType)
+            public Connection(ConnectionNode source, ConnectionNode destination, ConnectionType type, string fbType)
             {
-                Source = new ConnectionNode(fbType, source);
-                Destination = new ConnectionNode(fbType, destination);
+                Source = source;
+                Destination = destination;
                 Type = type;
                 FBType = fbType;
             }
@@ -76,7 +76,7 @@ namespace FB2SMV
         
         public class ConnectionNode
         {
-            public readonly string FbType; // todo: set to type of instance
+            public readonly string FbType;
             public readonly string InstanceName;
             public readonly string Variable;
 
@@ -87,26 +87,21 @@ namespace FB2SMV
                 Variable = variable;
             }
 
-            public ConnectionNode(string fbType, string connectionNodeName)
+            public static Tuple<string, string> splitConnectionName(string connectionNodeName)
             {
-                FbType = fbType;
                 var nameSplit = connectionNodeName.Split('.');
                 switch (nameSplit.Length)
                 {
                     case 1:
-                        InstanceName = "";
-                        Variable = nameSplit[0];
-                        break;
+                        return Tuple.Create("", nameSplit[0]);
                     case 2:
-                        InstanceName = nameSplit[0];
-                        Variable = nameSplit[1];
-                        break;
+                        return Tuple.Create(nameSplit[0], nameSplit[1]);
+                        
                     default:
                         throw new FormatException();
                 }
-               
             }
-            
+
             public override string ToString()
             {
                 var res = "";

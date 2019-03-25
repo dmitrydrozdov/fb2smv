@@ -8,6 +8,8 @@ using System.Xml.Serialization;
 using FB2SMV.FBCollections;
 using FB2SMV.FBXML;
 using FB2SMV.ST;
+using Connection = FB2SMV.FBXML.Connection;
+using FBInstance = FB2SMV.FBXML.FBInstance;
 using FBType = FB2SMV.FBCollections.FBType;
 
 namespace FB2SMV
@@ -208,15 +210,27 @@ namespace FB2SMV
                     }
 
                 }
+
+
+                void CreateConnection(Connection connection, ConnectionType connectionType)
+                {
+                    var srcInstanceAndVar = ConnectionNode.splitConnectionName(connection.Source);
+                    var dstInstanceAndVar = ConnectionNode.splitConnectionName(connection.Destination);
+                    var srcType = fbNetwork.FB.FirstOrDefault(inst => inst.Name == srcInstanceAndVar.Item1)?.Type ?? fbTypeName;
+                    var dstType = fbNetwork.FB.FirstOrDefault(inst => inst.Name == dstInstanceAndVar.Item1)?.Type ?? fbTypeName;
+                    var source = new ConnectionNode(srcType, srcInstanceAndVar.Item1, srcInstanceAndVar.Item2);
+                    var destination = new ConnectionNode(dstType, dstInstanceAndVar.Item1, dstInstanceAndVar.Item2);
+
+                    Storage.PutConnection(new FB2SMV.FBCollections.Connection(source, destination, connectionType, fbTypeName));
+                }
+
                 foreach (var connection in fbNetwork.DataConnections)
                 {
-                    Storage.PutConnection(new FB2SMV.FBCollections.Connection(connection.Source, connection.Destination,
-                        ConnectionType.Data, fbTypeName));
+                    CreateConnection(connection, ConnectionType.Data);
                 }
                 foreach (var connection in fbNetwork.EventConnections)
                 {
-                    Storage.PutConnection(new FB2SMV.FBCollections.Connection(connection.Source, connection.Destination,
-                        ConnectionType.Event, fbTypeName));
+                    CreateConnection(connection, ConnectionType.Event);
                 }
 
             }

@@ -29,6 +29,7 @@ namespace GUI
         private Event _selectedEvent = null;
         private IEnumerable<Variable> _connectedVars;
         private VarDependencyGraph varDependencyGraph;
+        private TimeEventChains eventChains;
         //private List<IDispatcher> _dispatchers = null;
         private List<ExecutionModel> _executionModels = null;
         private IDispatcher _currentDisp = null;
@@ -131,8 +132,11 @@ namespace GUI
 
                 try
                 {
+                    eventChains = new TimeEventChains(_parcer.Storage);
+                    eventChains.Construct();
                     varDependencyGraph = new VarDependencyGraph(_parcer.Storage);
                     varDependencyGraph.Construct();
+                    
                 }
                 catch (KeyNotFoundException ex)
                 {
