@@ -74,6 +74,7 @@ namespace FB2SMV
             }
         }
         
+        [Serializable]
         public class ConnectionNode
         {
             public readonly string FbType;
