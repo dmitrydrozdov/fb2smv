@@ -604,6 +604,18 @@ namespace FB2SMV
                 }
                 return ret;
             }
+
+            public static string InitNonTimedEvents(IEnumerable<Event> events)
+            {
+                string result = "";
+                foreach (Event ev in events.Where(ev => !ev.Timed))
+                {
+                    result += String.Format(Smv.VarInitializationBlock, EventInstance.ParameterName(ev), Smv.False);
+                }
+
+
+                return result;
+            }
         }
 
     }

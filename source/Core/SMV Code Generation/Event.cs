@@ -60,12 +60,13 @@ namespace FB2SMV.Core
                 return Instance.Name + "_" + Event.Name;
             }
 
-            return ParameterName();
+            return ParameterName(Event);
         }
 
-        public string ParameterName()
+
+        public static string ParameterName(Event ev)
         {
-            return EventPreffix + Event.Name + EventSuffix;
+            return EventPreffix + ev.Name + EventSuffix;
         }
 
         public string Value()

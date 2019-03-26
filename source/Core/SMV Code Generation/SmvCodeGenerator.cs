@@ -102,6 +102,7 @@ namespace FB2SMV
                 smvModule += CompositeFbSmv.FbInstances(instances, _storage.Events, _storage.Variables, connections, _settings) + "\n";
                 smvModule += CompositeFbSmv.InternalBuffersDeclaration(instances, connections, _storage.Events, _storage.Variables) + "\n";
                 smvModule += Smv.Assign;
+                smvModule += CompositeFbSmv.InitNonTimedEvents(events);
                 smvModule += CompositeFbSmv.InternalBuffersInitialization(instances, connections, _storage.Variables, instanceParameters) + "\n";
 
                 if (_settings.UseProcesses)
