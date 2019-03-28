@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SMV Code Generation\LibraryFunctions.cs" />
     <Compile Include="TimeEventChains.cs" />
     <Compile Include="Intermediate model\ShowMessageDelegate.cs" />
     <Compile Include="SMV Code Generation\BasicFbSmv.cs" />

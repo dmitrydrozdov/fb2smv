@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
+using Core.SMV_Code_Generation;
 using FB2SMV.FBCollections;
 using FB2SMV.ST;
 using FB2SMV.ServiceClasses;
@@ -147,15 +148,17 @@ namespace FB2SMV
                 var actions = _storage.EcActions.Where(act => act.FBType == fbType.Name);
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var transitions = _storage.EcTransitions.Where(tr => tr.FBType == fbType.Name);
-
+                var limits = LibraryFunctions.findLimits(smvAlgs);
+                
                 smvModule += BasicFbSmv.ModuleHeader(events, variables, fbType.Name);
-
+                smvModule += LibraryFunctions.addLimitDeclarations(limits);
                 smvModule += BasicFbSmv.OsmStatesDeclaration();
                 smvModule += BasicFbSmv.EccStatesDeclaration(states) + "\n";
                 smvModule += BasicFbSmv.EcActionsCounterDeclaration(states);
                 smvModule += BasicFbSmv.AlgStepsCounterDeclaration(smvAlgs);
 
                 smvModule += Smv.Assign;
+                smvModule += LibraryFunctions.addLimits(limits);
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EccStateVar, Smv.EccState(states.First(s => true).Name));
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.OsmStateVar, Smv.Osm.S0);
                 smvModule += BasicFbSmv.ModuleVariablesInitBlock(variables) + "\n";
@@ -169,7 +172,7 @@ namespace FB2SMV
 
                 smvModule += FbSmvCommon.InvokedByRules(events) + "\n";
                 smvModule += BasicFbSmv.InputVariablesSampleBasic(variables, withConnections, events) + "\n";
-                smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, _storage.AlgorithmLines.Where(line => line.FBType == fbType.Name), _settings) + "\n";
+                smvModule += BasicFbSmv.OutputVariablesChangingRules(variables, actions, smvAlgs.SelectMany(alg => alg.Lines), _settings) + "\n";
                 smvModule += BasicFbSmv.SetOutputVarBuffers(variables, events, actions, withConnections, _showMessage) + "\n";
                 smvModule += BasicFbSmv.SetServiceSignals(_settings.UseProcesses) + "\n";
 

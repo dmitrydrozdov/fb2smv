@@ -14,6 +14,7 @@ namespace FB2SMV
             public string Variable;
             public string Condition;
             public string Value;
+            public string AlgorithmName;
 
             public OutputLine(int counter, string variable, string condition, string value)
             {

@@ -235,10 +235,10 @@ namespace FB2SMV
                 return String.Format("(({0} - {1}) mod {2}) + {1}", statement, c, d);
             }
 
-            private static string _getVarChangingRules(Variable variable, IEnumerable<AlgorithmLine> currrentVarLines, IEnumerable<ECAction> actions, Settings settings)
+            private static string _getVarChangingRules(Variable variable, IEnumerable<OutputLine> currrentVarLines, IEnumerable<ECAction> actions, Settings settings)
             {
                 string rules = "";
-                foreach (AlgorithmLine line in currrentVarLines)
+                foreach (OutputLine line in currrentVarLines)
                 {
                     foreach (ECAction action in _findActionsByAlgorithmName(actions, line.AlgorithmName))
                     {
@@ -277,14 +277,14 @@ namespace FB2SMV
                 }
                 return rules;
             }
-            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<AlgorithmLine> lines, Settings settings)
+            public static string OutputVariablesChangingRules(IEnumerable<Variable> variables, IEnumerable<ECAction> actions, IEnumerable<OutputLine> lines, Settings settings)
             {
                 string varChangeBlocks = "";
                 foreach (Variable variable in variables.Where(v => v.Direction == Direction.Output || v.Direction == Direction.Internal))
                 {
                     if (variable.ArraySize == 0)
                     {
-                        IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
+                        IEnumerable<OutputLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
 
                         string rules = _getVarChangingRules(variable, currrentVarLines, actions, settings);
                         varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, rules);
@@ -294,7 +294,7 @@ namespace FB2SMV
                         for (int i = 0; i < variable.ArraySize; i++)
                         {
                             string arrayElementVar = String.Format("{0}[{1}]", variable.Name, i);
-                            IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == arrayElementVar);
+                            IEnumerable<OutputLine> currrentVarLines = lines.Where(line => line.Variable == arrayElementVar);
 
                             string rules = _getVarChangingRules(variable, currrentVarLines, actions, settings);
                             varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name + Smv.ArrayIndex(i), rules);
