@@ -72,7 +72,8 @@ namespace FB2SMV
             {
                 foreach (Connection conn in connections)
                 {
-                    if ((conn.Source == instanceName + "." + ev.Name) || (conn.Destination == instanceName + "." + ev.Name))
+                    if (conn.Source.InstanceName == instanceName && conn.Source.Variable == ev.Name 
+                       || conn.Destination.InstanceName == instanceName && conn.Destination.Variable == ev.Name)
                         return false;
                 }
                 return true;
@@ -86,13 +87,12 @@ namespace FB2SMV
                     var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal && !v.IsConstant);
                     var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
 
-
                     foreach (Event ev in instanceEvents)
                     {
                         //Connection inputConnection;
                         //if (! _isInputFromComponent(ev, connections, instance.Name, out inputConnection))
                         //{
-                        buffers += String.Format(Smv.VarDeclarationBlock, instance.Name + "_" + ev.Name, Smv.DataTypes.BoolType);
+                        buffers += String.Format(Smv.VarDeclarationBlock, instance.Name + "_" + ev.Name, EventInstance.SmvType(ev));
                         //}
                     }
                     foreach (Variable variable in instanceVariables)
@@ -118,25 +118,53 @@ namespace FB2SMV
                 return buffers;
             }
 
-            internal static string NonConnectedEventInputs(IEnumerable<Connection> connections, List<Event> events, IEnumerable<FBInstance> instances, ShowMessageDelegate showMessage)
+            internal static string NonConnectedEvents(IEnumerable<Connection> connections, List<Event> events, IEnumerable<FBInstance> instances, ShowMessageDelegate showMessage)
             {
+                 
                 string ret = "";
+                
+                string HandleNotConnectedEvent(EventInstance nonConnectedEvent)
+                {
+                    showMessage(String.Format("Warning! Event {0} in {1}:{2} is not connected!",
+                        nonConnectedEvent.Event.Name, nonConnectedEvent.Instance.Name , nonConnectedEvent.Instance.FBType));
+
+                    ret += String.Format(Smv.NextVarAssignment, nonConnectedEvent.Value(), nonConnectedEvent.Value());
+                    if (nonConnectedEvent.Event.Timed)
+                    {
+                        ret += String.Format(Smv.NextVarAssignment, nonConnectedEvent.TSLast(), nonConnectedEvent.TSLast());
+                        ret += String.Format(Smv.NextVarAssignment, nonConnectedEvent.TSBorn(), nonConnectedEvent.TSBorn());     
+                    }
+                   
+                    return ret;
+                }
+
                 foreach (FBInstance instance in instances)
                 {
                     var instanceInputEvents = events.Where(ev => ev.FBType == instance.InstanceType && ev.Direction == Direction.Input);
+                    var instanceOutputEvents = events.Where(ev => ev.FBType == instance.InstanceType && ev.Direction == Direction.Output);
 
                     foreach (Event inputEvent in instanceInputEvents)
                     {
-                        string connectionNodeName = instance.Name + "." + inputEvent.Name;
-                        Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
+                        Connection connection = connections.FirstOrDefault(conn => conn.Destination.InstanceName == instance.Name
+                                                                                   && conn.Destination.Variable == inputEvent.Name);
                         if (connection == null)
                         {
-                            showMessage(String.Format("Warning! Input event {0} in {1}:{2} is not connected!", inputEvent.Name, instance.Name, instance.FBType));
-                            ret += String.Format(Smv.NextVarAssignment, instance.Name + "_" + inputEvent.Name, instance.Name + "_" + inputEvent.Name);
+                            ret = HandleNotConnectedEvent(new EventInstance(inputEvent, instance));
+                        }
+                    }
+                    
+                    foreach (Event outputEvent in instanceOutputEvents)
+                    {
+                        Connection connection = connections.FirstOrDefault(conn => conn.Source.InstanceName == instance.Name 
+                                                                                   && conn.Source.Variable == outputEvent.Name);
+                        if (connection == null)
+                        {
+                            ret = HandleNotConnectedEvent(new EventInstance(outputEvent, instance));
                         }
                     }
                 }
                 return ret;
+               
             }
 
             private static bool _isInputFromComponent(FBInterface instanceParameter, IEnumerable<Connection> connections, string instanceName, out Connection inputConnection)
@@ -146,8 +174,9 @@ namespace FB2SMV
 
                 if (instanceParameter.Direction == Direction.Input)
                 {
-                    inputConnection = connections.FirstOrDefault(conn => conn.Destination == instanceName + "." + instanceParameter.Name);
-                    if (inputConnection != null) Smv.ConvertConnectionVariableName(inputConnection.Source, Smv.ModuleParameters.Event, out srcComponent);
+                    inputConnection = connections.FirstOrDefault(conn => conn.Destination.InstanceName == instanceName 
+                                                                        && conn.Destination.Variable == instanceParameter.Name);
+                    if (inputConnection != null) srcComponent = inputConnection.Source.IsComponentVar();
                 }
 
                 return srcComponent;
@@ -155,15 +184,12 @@ namespace FB2SMV
 
             private static string _getInstanceParameterString(FBInterface instanceParameter, IEnumerable<Connection> connections, string instanceName)
             {
-                Connection inputConnection;
-                if (_isInputFromComponent(instanceParameter, connections, instanceName, out inputConnection))
+                if (_isInputFromComponent(instanceParameter, connections, instanceName, out var inputConnection))
                 {
-                    return (inputConnection.Source.Replace('.', '_'));
+                    return inputConnection.Source.InstanceName + "_" + inputConnection.Source.Variable;
                 }
-                else
-                {
-                    return (instanceName + "_" + instanceParameter.Name);
-                }
+
+                return instanceName + "_" + instanceParameter.Name;
             }
             public static string InstanceParametersString(IEnumerable<Event> events, IEnumerable<Variable> variables, IEnumerable<Connection> connections, string instanceName)
             {
@@ -181,6 +207,7 @@ namespace FB2SMV
                     }
                 }
 
+                moduleParameters += "TGlobal" + Smv.ModuleParameters.Splitter;
                 moduleParameters += instanceName + "_" + Smv.Alpha + Smv.ModuleParameters.Splitter;
                 moduleParameters += instanceName + "_" + Smv.Beta + Smv.ModuleParameters.Splitter;
 
@@ -205,21 +232,12 @@ namespace FB2SMV
                 if (delayBlocks.Contains(variable.FBType) && delayDataIOs.Contains(variable.Name)) return true;
                 else return false;
             }
-            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Event> nonFilteredEvents, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters, bool mainModule = false)
+            public static string InternalBuffersInitialization(IEnumerable<FBInstance> instances, IEnumerable<Connection> connections, IEnumerable<Variable> nonFilteredVariables, IEnumerable<InstanceParameter> instanceParameters, bool mainModule = false)
             {
                 string buffersInit = "";
                 foreach (FBInstance instance in instances)
                 {
                     var instanceVariables = nonFilteredVariables.Where(v => v.FBType == instance.InstanceType && v.Direction != Direction.Internal && !v.IsConstant);
-                    var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
-                    foreach (Event ev in instanceEvents)
-                    {
-                        //Connection inputConnection;
-                        //if (!_isInputFromComponent(ev, connections, instance.Name, out inputConnection))
-                        //{
-                        buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + ev.Name, Smv.False);
-                        //}
-                    }
                     foreach (Variable variable in instanceVariables)
                     {
                         Connection inputConnection;
@@ -263,53 +281,64 @@ namespace FB2SMV
                 }
                 return buffersInit;
             }
-            public static string InternalEventConnections(IEnumerable<Connection> internalBuffers, bool useProcesses)
+            public static string InternalEventConnections(IEnumerable<Connection> internalBuffers, Storage _storage, bool useProcesses)
             {
                 string eventConnections = "-- _internalEventConnections\n";
-                MultiMap<string> eventConnectionsMap = _getEventConnectionsMap(internalBuffers);
-                List<string> definesList = new List<string>();
-                foreach (string dst in eventConnectionsMap.Keys)
+                var eventConnectionsMap = _getEventConnectionsMap(internalBuffers, _storage);
+                var definesList = new List<string>();
+                foreach (EventInstance dst in eventConnectionsMap.Keys)
                 {
 
-                    bool dstComponent;
-                    string dstSmvVar = Smv.ConvertConnectionVariableName(dst, Smv.ModuleParameters.Event, out dstComponent);
-
-                    string srcString = "\t("; //+ srcSmvVar + " : " + Smv.True + ";\n";
-                    foreach (string src in eventConnectionsMap[dst])
+                    if (dst.IsComponentVar())
                     {
-                        bool srcComponent;
-                        string srcSmvVar = Smv.ConvertConnectionVariableName(src, Smv.ModuleParameters.Event, out srcComponent);
-                        if (srcComponent) srcString += srcSmvVar + " | ";
-                        else srcString += String.Format("({0} & {1}) | ", srcSmvVar, Smv.Alpha);
-                    }
-
-                    srcString = srcString.TrimEnd(Smv.OrTrimChars) + ")";
-                    if (useProcesses)
-                    {
-                        srcString += " : " + Smv.True + ";\n";
-                        eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar, srcString);
-                    }
-                    else
-                    {
-                        string reset_string;
-                        if (dstComponent)
+                        string valueString = "";
+                        string tsbornString = "";
+                        string tsLastString = "";
+                        foreach (EventInstance src in eventConnectionsMap[dst])
                         {
-                            string[] connectionDst = Smv.SplitConnectionVariableName(dst);
-                            reset_string = String.Format("\t({0}.{1}_reset) : {2};\n", connectionDst[0], Smv.ModuleParameters.Event(connectionDst[1]), Smv.False);
-                            srcString += " : " + Smv.True + ";\n";
-                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
+                            string srcString = "\t";
+                            if (src.IsComponentVar()) srcString += src.Value();
+                            else srcString += $"({src.Value()} & {Smv.Alpha})";
+                            valueString  += $"{srcString} : {src.Value()};\n";
+                            tsbornString += $"{srcString} : {src.TSBorn()};\n";
+                            tsLastString += $"{srcString} : {src.TSLast()};\n";
+                        }
+                    
+                        if (useProcesses)
+                        {
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dst.Value(), valueString);
                         }
                         else
                         {
-                            //reset_string = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
-                            //srcString = srcString.TrimEnd(Smv.OrTrimChars) + ") : " + Smv.True + ";\n";
-                            //eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
-                            dstSmvVar += "_set";
-                            definesList.Add(String.Format(Smv.DefineBlock, dstSmvVar, srcString));
+                            string reset_string;
+                            reset_string = String.Format("\t({0}.{1}_reset) : {2};\n", dst.Instance.Name, dst.ParameterName(), Smv.False);
+                          
+                            eventConnections += String.Format(Smv.NextCaseBlock + "\n", dst.Value(), valueString + reset_string);
+                            if (dst.Event.Timed)
+                            {
+                                eventConnections += String.Format(Smv.NextCaseBlock + "\n", dst.TSBorn(), tsbornString);
+                                eventConnections += String.Format(Smv.NextCaseBlock + "\n", dst.TSLast(), tsLastString);   
+                            }   
                         }
-                        
                     }
+                    else
+                    {
+                        string srcString = "\t";
+                        foreach (EventInstance src in eventConnectionsMap[dst])
+                        {   
+                            if (src.IsComponentVar()) srcString += src.Value();
+                            else srcString += $"({src.Value()} & {Smv.Alpha})";
+                            srcString += " | ";
+                        }
+                        srcString = srcString.TrimEnd(Smv.OrTrimChars);
 
+                        //reset_string = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
+                        //srcString = srcString.TrimEnd(Smv.OrTrimChars) + ") : " + Smv.True + ";\n";
+                        //eventConnections += String.Format(Smv.EmptyNextCaseBlock + "\n", dstSmvVar, srcString + reset_string);
+                        definesList.Add(String.Format(Smv.DefineBlock, dst.ParameterName() + "_set", srcString));
+                    }
+                    
+                    
                 }
 
                 foreach (string def in definesList)
@@ -318,15 +347,18 @@ namespace FB2SMV
                 }
                 return eventConnections;
             }
-            public static string InternalDataConnections(IEnumerable<Connection> internalBuffers, IEnumerable<WithConnection> withConnections, IEnumerable<Variable> allVariables, IEnumerable<FBInstance> instances)
+            public static string InternalDataConnections(
+                IEnumerable<Connection> internalBuffers, 
+                IEnumerable<WithConnection> withConnections,
+                Storage _storage)
             {
                 string dataConnections = "-- _internalDataConnections\n";
                 foreach (Connection connection in internalBuffers.Where(conn => conn.Type == ConnectionType.Data))
                 {
-                    bool srcComponent;
-                    bool dstComponent;
-                    string dstSmvVar = Smv.ConvertConnectionVariableName(connection.Destination, Smv.ModuleParameters.Variable, out dstComponent);
-                    string srcSmvVar = Smv.ConvertConnectionVariableName(connection.Source, Smv.ModuleParameters.Variable, out srcComponent);
+                    bool srcComponent = connection.Source.IsComponentVar();
+                    bool dstComponent = connection.Destination.IsComponentVar();
+                    string dstSmvVar = Smv.ConvertConnectionVariableName(connection.Destination, Smv.ModuleParameters.Variable);
+                    string srcSmvVar = Smv.ConvertConnectionVariableName(connection.Source, Smv.ModuleParameters.Variable);
                     string srcString = "";
                     /*if (srcComponent && dstComponent)
                     {
@@ -346,39 +378,38 @@ namespace FB2SMV
                     else */
                     if (!srcComponent && dstComponent)
                     {
-                        var dstVar = _findVariable(connection.Destination, allVariables, instances);
+                        Variable dstVar = _findVariable(connection.Destination, connection.FBType, _storage);
                         if (dstVar.ArraySize == 0)
                         {
-                            srcString = FbSmvCommon.VarSamplingRule(connection.Source, withConnections, false);
+                            srcString = FbSmvCommon.VarSamplingRule(connection.Source.Variable, withConnections, _storage.Events, false);
                             dataConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar, srcString);
                         }
                         else
                         {
                             for (int i = 0; i < dstVar.ArraySize; i++)
                             {
-                                srcString = FbSmvCommon.VarSamplingRule(connection.Source, withConnections, false, i);
+                                srcString = FbSmvCommon.VarSamplingRule(connection.Source.Variable, withConnections, _storage.Events, false, i);
                                 dataConnections += String.Format(Smv.NextCaseBlock + "\n", dstSmvVar + Smv.ArrayIndex(i), srcString);
                             }
                         }
                     }
                     else if (srcComponent && !dstComponent)
                     {
-                        IEnumerable<string> samplingEvents = _getSamplingEventNamesForVariable(connection.Destination, withConnections);
-                        MultiMap<string> eventConnectionsMap = _getEventConnectionsMap(internalBuffers);
+                        var samplingEvents = _getSamplingEventNamesForVariable(connection.Destination.Variable, withConnections, _storage.Events);
+                        var eventConnectionsMap = _getEventConnectionsMap(internalBuffers, _storage);
 
                         string eventSeed = "";
-                        foreach (string ev in samplingEvents)
+                        foreach (Event ev in samplingEvents)
                         {
                             string src = "";
-                            foreach (string parentEvent in eventConnectionsMap[ev])
+                            foreach (var parentEvent in eventConnectionsMap[new EventInstance(ev, null)])
                             {
-                                bool dontCare;
-                                src += Smv.ConvertConnectionVariableName(parentEvent, Smv.ModuleParameters.Event, out dontCare) + Smv.Or;
+                                src += parentEvent.Value() + Smv.Or;
                             }
                             eventSeed += String.Format("({0}){1}", src.TrimEnd(Smv.OrTrimChars), Smv.Or);
                         }
 
-                        var srcVar = _findVariable(connection.Source, allVariables, instances);
+                        Variable srcVar = _findVariable(connection.Source, connection.FBType, _storage);
                         if (srcVar.ArraySize == 0)
                         {
                             srcString = String.Format("\t{0} : {1};\n", eventSeed.TrimEnd(Smv.OrTrimChars), srcSmvVar);
@@ -397,43 +428,62 @@ namespace FB2SMV
                 return dataConnections;
             }
 
-            private static Variable _findVariable(string connectionPoint, IEnumerable<Variable> allVariables, IEnumerable<FBInstance> instances)
+            private static Variable _findVariable(ConnectionNode connectionPoint, string currentFB, Storage _storage)  
             {
-                string[] nameSplit = Smv.SplitConnectionVariableName(connectionPoint);
-                FBInstance fbInst = instances.FirstOrDefault(inst => inst.Name == nameSplit[0]);
-                Variable foundVar = allVariables.FirstOrDefault(v => v.FBType == fbInst.InstanceType && v.Name == nameSplit[1]);
+                FBInstance fbInst = _storage.Instances.FirstOrDefault(inst => inst.Name == connectionPoint.InstanceName && inst.FBType == currentFB);
+                var fbType = fbInst.InstanceType ?? currentFB;
+                Variable foundVar = _storage.Variables.FirstOrDefault(v => v.FBType == fbType && v.Name == connectionPoint.Variable);
                 return foundVar;
             }
 
-            public static string ComponentEventOutputs(IEnumerable<Connection> connections, bool useProcesses)
+            private static EventInstance _findEvent(ConnectionNode connectionPoint, string currentFB, Storage _storage)
+            {
+                FBInstance fbInst = _storage.Instances.FirstOrDefault(inst => inst.Name == connectionPoint.InstanceName && inst.FBType == currentFB);
+                var fbType = fbInst?.InstanceType ?? currentFB;
+                Event foundEvent = _storage.Events.FirstOrDefault(e => e.FBType == fbType && e.Name == connectionPoint.Variable);
+                return new EventInstance(foundEvent, fbInst);
+            }
+
+            public static string ComponentEventOutputs(
+                IEnumerable<Connection> connections, 
+                Storage _storage,
+                bool useProcesses)
             {
                 string outputsString = "-- ComponentEventOutputs\n";
                 if (useProcesses)
                 {
-                    foreach (string output in _getInternalEventOutputStrings(connections))
+                    foreach (string output in _getInternalEventOutputStrings(connections, _storage))
                     {
                         outputsString += String.Format(Smv.NextVarAssignment, output, Smv.False);
                     }
                 }
                 else
                 {
-                    foreach (string output in _getInternalEventOutputs(connections))
+                    foreach (var output in _getInternalEventOutputs(connections, _storage))
                     {
-                        string[] outpSplit = Smv.SplitConnectionVariableName(output);
-                        bool alreadyChecked;
-                        string varName = Smv.ConvertConnectionVariableName(output, Smv.ModuleParameters.Event, out alreadyChecked);
-
-                        string setRule = String.Format("\t{0}.{1}_set : {2};\n", outpSplit[0], Smv.ModuleParameters.Event(outpSplit[1]), Smv.True);
+                        string setRule = String.Format("\t{0}.{1}_set : {2};\n", output.Instance.Name, output.ParameterName(), Smv.True);
                         string resetRule = String.Format("\t{0} : {1};\n", Smv.True, Smv.False);
-                        outputsString += String.Format(Smv.EmptyNextCaseBlock, varName, setRule + resetRule);
+                        outputsString += String.Format(Smv.EmptyNextCaseBlock, output.Value(), setRule + resetRule);
+
+                        if (output.Event.Timed)
+                        {
+                            string setLastRule = String.Format("\t{0}.{1}_set : {2};\n", output.Instance.Name, output.ParameterName(), "systemclock");
+                            string resetLastRule = String.Format("\t{0} : {1};\n", Smv.True, output.TSLast());
+                            outputsString += String.Format(Smv.EmptyNextCaseBlock, output.TSLast(), setLastRule + resetLastRule);
+                        
+                            string setBornRule = String.Format("\t{0}.{1}_set : {0}.INVOKEDBY.ts_born;\n", output.Instance.Name, output.ParameterName());
+                            string resetBornRule = String.Format("\t{0} : {1};\n", Smv.True, output.TSBorn());
+                            outputsString += String.Format(Smv.EmptyNextCaseBlock, output.TSBorn(), setBornRule + resetBornRule);
+
+                        }   
                     }
                 }
                 return outputsString;
             }
-            public static string DefineOmega(IEnumerable<Connection> internalBuffers)
+            public static string DefineOmega(IEnumerable<Connection> internalBuffers, Storage storage)
             {
                 string omega = "";
-                foreach (string output in _getInternalEventOutputStrings(internalBuffers))
+                foreach (string output in _getInternalEventOutputStrings(internalBuffers, storage))
                 {
                     omega += output + Smv.Or;
                 }
@@ -449,7 +499,7 @@ namespace FB2SMV
                     var instanceEvents = nonFilteredEvents.Where(ev => ev.FBType == instance.InstanceType && ev.Direction != Direction.Internal);
                     foreach (Event ev in instanceEvents)
                     {
-                        phiEvents += instance.Name + "_" + ev.Name + Smv.Or;
+                        phiEvents += new EventInstance(ev, instance).Value() + Smv.Or;
                     }
                 }
                 phi += String.Format("({0}({1}))", Smv.Not, phiEvents.Trim(Smv.OrTrimChars));
@@ -460,62 +510,66 @@ namespace FB2SMV
                 string rules = "";
                 foreach (Event ev in events.Where(ev => ev.Direction == Direction.Input))
                 {
+                    EventInstance eventInstance = new EventInstance(ev, null);   
                     if (useProcesses)
                     {
                         string resetRule = "\t" + Smv.Alpha + " : " + Smv.False + ";\n";
-                        rules += String.Format(Smv.NextCaseBlock, Smv.ModuleParameters.Event(ev.Name), resetRule);
+                        rules += String.Format(Smv.NextCaseBlock, eventInstance.Value(), resetRule);
                     }
                     else
                     {
-                        rules += String.Format(Smv.DefineBlock, Smv.ModuleParameters.Event(ev.Name) + "_reset", Smv.Alpha);
+                        rules += String.Format(Smv.DefineBlock, eventInstance.SmvName() + "_reset", Smv.Alpha);
                     }
                 }
                 return rules;
             }
 
-            private static MultiMap<string> _getEventConnectionsMap(IEnumerable<Connection> internalBuffers)
+            private static MultiMap<EventInstance, EventInstance> _getEventConnectionsMap(IEnumerable<Connection> internalBuffers, Storage _storage)
             {
-                MultiMap<string> eventConnectionsMap = new MultiMap<string>();
+                var eventConnectionsMap = new MultiMap<EventInstance, EventInstance>();
                 foreach (Connection connection in internalBuffers.Where(conn => conn.Type == ConnectionType.Event))
                 {
-                    eventConnectionsMap.Add(connection.Destination, connection.Source);
+                    
+                    var dst = _findEvent(connection.Destination, connection.FBType, _storage);
+                    var src = _findEvent(connection.Source, connection.FBType, _storage);
+                    eventConnectionsMap.Add(dst, src);
                 }
                 return eventConnectionsMap;
             }
-            private static IEnumerable<string> _getSamplingEventNamesForVariable(string varName, IEnumerable<WithConnection> withConnections)
+            private static IEnumerable<Event> _getSamplingEventNamesForVariable(
+                string varName,
+                IEnumerable<WithConnection> withConnections,
+                IEnumerable<Event> events)
             {
-                List<string> output = new List<string>();
-                foreach (WithConnection conn in withConnections.Where(c => c.Var == varName))
-                {
-                    output.Add(conn.Event);
-                }
-                return output;
+                return withConnections.Where(c => c.Var == varName)
+                    .Select(conn => events.FirstOrDefault(e => e.Name == conn.Event && e.FBType == conn.FBType))
+                    .ToList();
             }
-            private static IEnumerable<string> _getInternalEventOutputStrings(IEnumerable<Connection> internalBuffers)
+            private static IEnumerable<string> _getInternalEventOutputStrings(IEnumerable<Connection> internalBuffers,
+                Storage storage)
             {
                 HashSet<string> internalEventOutputs = new HashSet<string>();
                 foreach (Connection connection in internalBuffers.Where(conn => conn.Type == ConnectionType.Event))
                 {
-                    bool srcComponent;
-                    string srcSmvVar = Smv.ConvertConnectionVariableName(connection.Source, Smv.ModuleParameters.Event, out srcComponent);
-                    if (!internalEventOutputs.Contains(srcSmvVar))
+                    EventInstance srcEvent = _findEvent(connection.Source, connection.FBType, storage);
+                    string srcSmvVar = srcEvent.Value();
+                    if (!internalEventOutputs.Contains(srcSmvVar) && srcEvent.IsComponentVar())
                     {
-                        if (srcComponent) internalEventOutputs.Add(srcSmvVar);
+                        internalEventOutputs.Add(srcSmvVar);
                     }
                 }
                 return internalEventOutputs;
             }
 
-            private static IEnumerable<string> _getInternalEventOutputs(IEnumerable<Connection> internalBuffers)
+            private static IEnumerable<EventInstance> _getInternalEventOutputs(IEnumerable<Connection> internalBuffers, Storage _storage)
             {
-                HashSet<string> internalEventOutputs = new HashSet<string>();
+                var internalEventOutputs = new HashSet<EventInstance>();
                 foreach (Connection connection in internalBuffers.Where(conn => conn.Type == ConnectionType.Event))
                 {
-                    bool srcComponent;
-                    Smv.ConvertConnectionVariableName(connection.Source, Smv.ModuleParameters.Event, out srcComponent);
-                    if (!internalEventOutputs.Contains(connection.Source))
+                    var eventInstance = _findEvent(connection.Source, connection.FBType, _storage);
+                    if (!internalEventOutputs.Contains(eventInstance) && eventInstance.IsComponentVar())
                     {
-                        if (srcComponent) internalEventOutputs.Add(connection.Source);
+                        internalEventOutputs.Add(eventInstance);
                     }
                 }
                 return internalEventOutputs;
@@ -531,8 +585,8 @@ namespace FB2SMV
                     foreach (Variable variable in instanceVariables)
                     {
                         if (_nonInitializableVar(variable)) continue; // do not add "next" statement for FB_DELAY and E_CYCLE data IOs
-                        string connectionNodeName = instance.Name + "." + variable.Name;
-                        Connection connection = connections.FirstOrDefault(conn => conn.Destination == connectionNodeName);
+                        Connection connection = connections.FirstOrDefault(conn => conn.Destination.InstanceName == instance.Name 
+                                                                                   && conn.Destination.Variable == variable.Name);
                         if (connection != null) continue;
 
                         if (variable.ArraySize == 0)
@@ -549,6 +603,18 @@ namespace FB2SMV
                     }
                 }
                 return ret;
+            }
+
+            public static string InitNonTimedEvents(IEnumerable<Event> events)
+            {
+                string result = "";
+                foreach (Event ev in events.Where(ev => !ev.Timed))
+                {
+                    result += String.Format(Smv.VarInitializationBlock, EventInstance.ParameterName(ev), Smv.False);
+                }
+
+
+                return result;
             }
         }
 

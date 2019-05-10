@@ -1,0 +1,452 @@
+MODULE Event(valueI, timestamp)
+VAR value : boolean;
+VAR ts_last : 0..20;
+VAR ts_born : 0..20;
+
+ASSIGN
+init(value):= valueI;
+init(ts_last):= timestamp;
+init(ts_born):= timestamp;
+
+MODULE TimeBlock(event_INIT, event_REQ, event_COMPLETE, event_CNF, CNT_, CNT_O_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+VAR CNT : 0..20;
+DEFINE Tmax:= 5;
+VAR CNT_O : 0..20;
+VAR stop : boolean;
+VAR S_smv : {s0_osm, s1_osm, s2_osm};
+VAR Q_smv : {START_ecc, INIT_ecc, REQ_ecc, COMPLETE_ecc, CNF_ecc};
+
+VAR NA: 0..1;
+VAR NI: 0..2;
+
+ASSIGN
+init(Q_smv):= START_ecc;
+init(S_smv):= s0_osm;
+-- _moduleVariablesInitBlock
+init(CNT):= 0;
+init(CNT_O):= 0;
+init(stop):= FALSE;
+
+init(NA):= 0;
+init(NI):= 0;
+
+next(Q_smv):= case
+	Q_smv=START_ecc & S_smv=s1_osm & event_INIT : INIT_ecc;
+	Q_smv=INIT_ecc & S_smv=s1_osm : START_ecc;
+	Q_smv=START_ecc & S_smv=s1_osm & event_REQ.value : REQ_ecc;
+	Q_smv=REQ_ecc & S_smv=s1_osm &  ! stop : CNF_ecc;
+	Q_smv=REQ_ecc & S_smv=s1_osm & stop : COMPLETE_ecc;
+	Q_smv=COMPLETE_ecc & S_smv=s1_osm : START_ecc;
+	Q_smv=CNF_ecc & S_smv=s1_osm : START_ecc;
+	TRUE : Q_smv;
+esac;
+
+next(S_smv):= case
+	alpha & S_smv=s0_osm & ExistsInputEvent: s1_osm;
+	S_smv=s1_osm & ExistsEnabledECTran: s2_osm;
+	S_smv=s2_osm & NA=0 : s1_osm;
+	S_smv=s1_osm & (!ExistsEnabledECTran): s0_osm;
+	TRUE : S_smv;
+esac;
+
+next(NA):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA < 1) | (Q_smv=INIT_ecc & NA < 1) | (Q_smv=REQ_ecc & NA < 1) | (Q_smv=COMPLETE_ecc & NA < 1) | (Q_smv=CNF_ecc & NA < 1)): (NA + 1) mod 2;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA = 1) | (Q_smv=INIT_ecc & NA = 1) | (Q_smv=REQ_ecc & NA = 1) | (Q_smv=COMPLETE_ecc & NA = 1) | (Q_smv=CNF_ecc & NA = 1)):  0 ;
+	TRUE : NA;
+esac;
+
+next(NI):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI < 1) | (Q_smv=INIT_ecc & NA = 1 & NI < 1) | (Q_smv=REQ_ecc & NA = 1 & NI < 2) | (Q_smv=COMPLETE_ecc & NA = 1 & NI < 1) | (Q_smv=CNF_ecc & NA = 1 & NI < 1)):(NI + 1) mod 3;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI = 1) | (Q_smv=INIT_ecc & NA = 1 & NI = 1) | (Q_smv=REQ_ecc & NA = 1 & NI = 2) | (Q_smv=COMPLETE_ecc & NA = 1 & NI = 1) | (Q_smv=CNF_ecc & NA = 1 & NI = 1)): 0 ;
+	TRUE : NI;
+esac;
+
+next(INVOKEDBY.value):= case
+	event_REQ.value : event_REQ.value;
+	TRUE : INVOKEDBY.value;
+esac;
+next(INVOKEDBY.ts_last):= case
+	event_REQ.value : event_REQ.ts_last;
+	TRUE : INVOKEDBY.ts_last;
+esac;
+next(INVOKEDBY.ts_born):= case
+	event_REQ.value : event_REQ.ts_born;
+	TRUE : INVOKEDBY.ts_born;
+esac;
+
+next(CNT):= case
+	alpha & S_smv=s0_osm & (event_INIT | event_REQ.value) : CNT_ ;
+	TRUE : CNT;
+esac;
+
+next(CNT_O):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=1 : (((CNT + 1 - 10) mod 11) + 10);
+	TRUE : CNT_O;
+esac;
+next(stop):= case
+	S_smv=s2_osm & Q_smv=INIT_ecc & NA=1 & NI=1 : (FALSE);
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=2 & (((INVOKEDBY.ts_last - INVOKEDBY.ts_born > Tmax))) : (TRUE);
+	TRUE : stop;
+esac;
+
+next(CNT_O_):= case
+S_smv=s2_osm & NI=0 & ((Q_smv=COMPLETE_ecc & NA=1) | (Q_smv=CNF_ecc & NA=1)) : CNT_O;
+	TRUE : CNT_O_;
+esac;
+
+DEFINE alpha_reset:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+DEFINE beta_set:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+
+DEFINE event_INIT_reset:= 	S_smv=s1_osm;
+DEFINE event_REQ_reset:= 	(alpha & (event_INIT)) | (S_smv=s1_osm);
+
+DEFINE event_COMPLETE_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=COMPLETE_ecc & NA=1));
+DEFINE event_CNF_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=CNF_ecc & NA=1));
+
+DEFINE ExistsInputEvent:= event_INIT | event_REQ.value;
+DEFINE ExistsEnabledECTran:= (Q_smv=START_ecc  & ((event_INIT) | (event_REQ.value))) | (Q_smv=INIT_ecc) | (Q_smv=REQ_ecc  & (( ! stop) | (stop))) | (Q_smv=COMPLETE_ecc) | (Q_smv=CNF_ecc);
+
+
+DEFINE systemclock:= TGlobal;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE TimeTest(event_INIT, event_REQ, event_COMPLETE, XO_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+VAR Delay : E_DELAY (Delay_START, Delay_STOP, Delay_EO, Delay_Dt, Delay_Di, Delay_Do, TGlobal, Delay_alpha, Delay_beta);
+VAR counter1 : TimeBlock (counter1_INIT, counter1_REQ, counter1_COMPLETE, counter1_CNF, counter2_CNT_O, counter1_CNT_O, TGlobal, counter1_alpha, counter1_beta);
+VAR counter2 : TimeBlock (counter2_INIT, counter2_REQ, counter2_COMPLETE, counter2_CNF, counter1_CNT_O, counter2_CNT_O, TGlobal, counter2_alpha, counter2_beta);
+
+VAR Delay_START : Event(FALSE, TGlobal);
+VAR Delay_STOP : Event(FALSE, TGlobal);
+VAR Delay_EO : Event(FALSE, TGlobal);
+VAR Delay_Di : -10..10;
+VAR Delay_Do : -1..10;
+VAR Delay_alpha : boolean;
+VAR Delay_beta : boolean;
+
+VAR counter1_INIT : boolean;
+VAR counter1_REQ : Event(FALSE, TGlobal);
+VAR counter1_COMPLETE : boolean;
+VAR counter1_CNF : Event(FALSE, TGlobal);
+VAR counter1_CNT_O : 0..20;
+VAR counter1_alpha : boolean;
+VAR counter1_beta : boolean;
+
+VAR counter2_INIT : boolean;
+VAR counter2_REQ : Event(FALSE, TGlobal);
+VAR counter2_COMPLETE : boolean;
+VAR counter2_CNF : Event(FALSE, TGlobal);
+VAR counter2_CNT_O : 0..20;
+VAR counter2_alpha : boolean;
+VAR counter2_beta : boolean;
+
+DEFINE Delay_Dt := 1;
+
+ASSIGN
+init(Delay_alpha):= FALSE;
+init(Delay_beta):= FALSE;
+
+init(counter1_CNT_O):= 0;
+init(counter1_alpha):= FALSE;
+init(counter1_beta):= FALSE;
+
+init(counter2_CNT_O):= 0;
+init(counter2_alpha):= FALSE;
+init(counter2_beta):= FALSE;
+
+
+next(Delay_STOP.value) := Delay_STOP.value;
+next(Delay_STOP.ts_last) := Delay_STOP.ts_last;
+next(Delay_STOP.ts_born) := Delay_STOP.ts_born;
+next(counter1_COMPLETE) := counter1_COMPLETE;
+next(INVOKEDBY.value):= case
+	event_INIT : event_INIT;
+	event_REQ.value : event_REQ.value;
+	TRUE : INVOKEDBY.value;
+esac;
+next(INVOKEDBY.ts_last):= case
+	event_REQ.value : event_REQ.ts_last;
+	TRUE : INVOKEDBY.ts_last;
+esac;
+next(INVOKEDBY.ts_born):= case
+	event_REQ.value : event_REQ.ts_born;
+	TRUE : INVOKEDBY.ts_born;
+esac;
+
+-- _internalDataConnections
+next(XO_):= case
+	(counter2_COMPLETE) : counter2_CNT_O;
+	TRUE : XO_;
+esac;
+
+
+-- ComponentEventOutputs
+next(counter1_CNF.value):= case
+	counter1.event_CNF_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(counter1_CNF.ts_last):= case
+	counter1.event_CNF_set : systemclock;
+	TRUE : counter1_CNF.ts_last;
+esac;
+next(counter1_CNF.ts_born):= case
+	counter1.event_CNF_set : counter1.INVOKEDBY.ts_born;
+	TRUE : counter1_CNF.ts_born;
+esac;
+next(Delay_EO.value):= case
+	Delay.event_EO_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(Delay_EO.ts_last):= case
+	Delay.event_EO_set : systemclock;
+	TRUE : Delay_EO.ts_last;
+esac;
+next(Delay_EO.ts_born):= case
+	Delay.event_EO_set : Delay.INVOKEDBY.ts_born;
+	TRUE : Delay_EO.ts_born;
+esac;
+next(counter2_CNF.value):= case
+	counter2.event_CNF_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(counter2_CNF.ts_last):= case
+	counter2.event_CNF_set : systemclock;
+	TRUE : counter2_CNF.ts_last;
+esac;
+next(counter2_CNF.ts_born):= case
+	counter2.event_CNF_set : counter2.INVOKEDBY.ts_born;
+	TRUE : counter2_CNF.ts_born;
+esac;
+next(counter2_COMPLETE):= case
+	counter2.event_COMPLETE_set : TRUE;
+	TRUE : FALSE;
+esac;
+
+
+-- ---DISPATCHER--- --
+-- *************** --
+next(Delay_alpha):= case
+	alpha & omega & !ExistsInputEvent : TRUE;
+	Delay.alpha_reset : FALSE;
+	TRUE : Delay_alpha;
+esac;
+next(Delay_beta):= case
+	Delay_beta & omega : FALSE;
+	Delay.beta_set : TRUE;
+	TRUE : Delay_beta;
+esac;
+next(counter1_alpha):= case
+	Delay_beta & omega : TRUE;
+	counter1.alpha_reset : FALSE;
+	TRUE : counter1_alpha;
+esac;
+next(counter1_beta):= case
+	counter1_beta & omega : FALSE;
+	counter1.beta_set : TRUE;
+	TRUE : counter1_beta;
+esac;
+next(counter2_alpha):= case
+	counter1_beta & omega : TRUE;
+	counter2.alpha_reset : FALSE;
+	TRUE : counter2_alpha;
+esac;
+next(counter2_beta):= case
+	counter2_beta & omega : FALSE;
+	counter2.beta_set : TRUE;
+	TRUE : counter2_beta;
+esac;
+DEFINE beta_set:= counter2_beta & omega;
+DEFINE alpha_reset:= alpha & omega & !ExistsInputEvent;
+
+ASSIGN
+
+
+-- _internalEventConnections
+next(counter1_INIT):= case
+	(event_INIT & alpha) : event_INIT;
+	(counter1.event_INIT_reset) : FALSE;
+	TRUE : counter1_INIT;
+esac;
+
+next(Delay_START.value):= case
+	counter1_CNF.value : counter1_CNF.value;
+	(Delay.event_START_reset) : FALSE;
+	TRUE : Delay_START.value;
+esac;
+
+next(Delay_START.ts_born):= case
+	counter1_CNF.value : counter1_CNF.ts_born;
+	TRUE : Delay_START.ts_born;
+esac;
+
+next(Delay_START.ts_last):= case
+	counter1_CNF.value : counter1_CNF.ts_last;
+	TRUE : Delay_START.ts_last;
+esac;
+
+next(counter2_REQ.value):= case
+	Delay_EO.value : Delay_EO.value;
+	(counter2.event_REQ_reset) : FALSE;
+	TRUE : counter2_REQ.value;
+esac;
+
+next(counter2_REQ.ts_born):= case
+	Delay_EO.value : Delay_EO.ts_born;
+	TRUE : counter2_REQ.ts_born;
+esac;
+
+next(counter2_REQ.ts_last):= case
+	Delay_EO.value : Delay_EO.ts_last;
+	TRUE : counter2_REQ.ts_last;
+esac;
+
+next(counter2_INIT):= case
+	(event_INIT & alpha) : event_INIT;
+	(counter2.event_INIT_reset) : FALSE;
+	TRUE : counter2_INIT;
+esac;
+
+next(counter1_REQ.value):= case
+	(event_REQ.value & alpha) : event_REQ.value;
+	counter2_CNF.value : counter2_CNF.value;
+	(counter1.event_REQ_reset) : FALSE;
+	TRUE : counter1_REQ.value;
+esac;
+
+next(counter1_REQ.ts_born):= case
+	(event_REQ.value & alpha) : event_REQ.ts_born;
+	counter2_CNF.value : counter2_CNF.ts_born;
+	TRUE : counter1_REQ.ts_born;
+esac;
+
+next(counter1_REQ.ts_last):= case
+	(event_REQ.value & alpha) : event_REQ.ts_last;
+	counter2_CNF.value : counter2_CNF.ts_last;
+	TRUE : counter1_REQ.ts_last;
+esac;
+
+DEFINE event_COMPLETE_set:= 	counter2_COMPLETE;
+
+DEFINE event_INIT_reset:= alpha;
+DEFINE event_REQ_reset:= alpha;
+DEFINE ExistsInputEvent:= event_INIT | event_REQ.value;
+
+DEFINE omega:= !(counter1_CNF.value | Delay_EO.value | counter2_CNF.value | counter2_COMPLETE);
+
+DEFINE phi:= (!ExistsInputEvent) & (!(Delay_START.value | Delay_STOP.value | Delay_EO.value | counter1_INIT | counter1_REQ.value | counter1_COMPLETE | counter1_CNF.value | counter2_INIT | counter2_REQ.value | counter2_COMPLETE | counter2_CNF.value));
+
+DEFINE systemclock:= TGlobal;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE E_DELAY(event_START, event_STOP, event_EO, Dt_, Di_, Do_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+
+ASSIGN
+init(Do_):= -1;
+next(Do_):= case
+
+	alpha & event_START.value : Dt_;
+	alpha & event_STOP.value : -1;
+	alpha & Di_ = 0 : -1;
+	Di_ >= 0 : Di_;
+	TRUE: Do_; 	TRUE : Do_;
+esac;
+next(INVOKEDBY.value) := event_START.value;
+next(INVOKEDBY.ts_last) := systemclock;
+next(INVOKEDBY.ts_born) := event_START.ts_born;
+DEFINE systemclock:= TGlobal;
+DEFINE event_START_reset:= alpha;
+DEFINE event_STOP_reset:= (alpha & (event_START.value));
+DEFINE event_EO_set:= (alpha & Di_=0);
+DEFINE alpha_reset:= alpha;
+DEFINE beta_set:= alpha;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE TimeScheduler(D1i, D1o, beta, gamma)
+VAR V1 : 0..10;
+VAR DMin : 0..10;
+VAR TGlobal : 0..20;
+
+ASSIGN
+
+init(TGlobal):= 0;
+V1:=case
+	D1o >= 0 : D1o;
+	TRUE: 10;
+esac;
+DMin:= V1;
+
+D1i:= case
+	(TGlobal < Tmax) & beta & gamma & D1o > 0 : D1o - DMin;
+	TRUE: D1o;
+esac;
+next(TGlobal):= case
+	(TGlobal < Tmax) & beta & gamma & (D1o > 0) : TGlobal + DMin;
+	TRUE : TGlobal;
+esac;
+DEFINE Tmax:= 10;
+MODULE main()
+VAR TimeTest_inst : TimeTest (TimeTest_inst_INIT, TimeTest_inst_REQ, TimeTest_inst_COMPLETE, TimeTest_inst_XO, TGlobal, TimeTest_inst_alpha, TimeTest_inst_beta);
+VAR TimeSched : TimeScheduler(TimeTest_inst.Delay_Di, TimeTest_inst.Delay_Do, TimeTest_inst_beta, gamma);
+VAR TimeTest_inst_INIT : boolean;
+VAR TimeTest_inst_REQ : Event(FALSE, TGlobal);
+VAR TimeTest_inst_COMPLETE : boolean;
+VAR TimeTest_inst_XO : 0..20;
+VAR TimeTest_inst_alpha : boolean;
+VAR TimeTest_inst_beta : boolean;
+
+
+VAR false_var : boolean;
+DEFINE TGlobal:= TimeSched.TGlobal;
+
+ASSIGN
+init(false_var):= TRUE;
+next(false_var) := FALSE;
+init(TimeTest_inst_XO):= 0;
+
+
+init(TimeTest_inst_INIT) := TRUE;  -- trigger INIT event
+init(TimeTest_inst_alpha):= TRUE;
+init(TimeTest_inst_beta):= FALSE;
+next(TimeTest_inst_INIT):= case
+	TimeTest_inst.event_INIT_reset : FALSE;
+	TRUE : TimeTest_inst_INIT;
+esac;
+
+next(TimeTest_inst_REQ.value):= case
+	TimeTest_inst.event_REQ_reset : FALSE;
+	gamma & TGlobal = 0 : TRUE; -- trigger REQ event
+	TRUE : TimeTest_inst_REQ.value;
+esac;
+next(TimeTest_inst_REQ.ts_born) := TimeTest_inst_REQ.ts_born;
+next(TimeTest_inst_REQ.ts_last) := TimeTest_inst_REQ.ts_last;
+
+next(TimeTest_inst_COMPLETE):= case
+	TimeTest_inst.event_COMPLETE_set : TRUE;
+	TRUE : TimeTest_inst_COMPLETE;
+esac;
+
+next(TimeTest_inst_alpha):= case
+	TimeTest_inst_beta : TRUE;
+	TimeTest_inst.alpha_reset : FALSE;
+	TRUE : TimeTest_inst_alpha;
+esac;
+next(TimeTest_inst_beta):= case
+	TimeTest_inst_beta : FALSE;
+	TimeTest_inst.beta_set : TRUE;
+	TRUE : TimeTest_inst_beta;
+esac;
+
+DEFINE gamma:= TimeTest_inst_beta & (!TimeTest_inst.ExistsInputEvent) & (TimeTest_inst.omega);
+
+
+LTLSPEC G (TimeTest_inst_COMPLETE = FALSE | TimeTest_inst_XO = 0)

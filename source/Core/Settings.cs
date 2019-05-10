@@ -9,6 +9,7 @@ namespace FB2SMV
     {
         public class Settings
         {
+            //todo: reload after settings change
             public bool ModularArithmetics = false;
             public bool UseProcesses = false;
             public bool GenerateDummyProperty = true;

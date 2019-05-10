@@ -10,12 +10,12 @@ namespace FB2SMV
 {
     namespace ServiceClasses
     {
-        public class MultiMap<V>
+        public class MultiMap<K, V>
         {
-            private Dictionary<string, List<V>> _dictionary =
-                new Dictionary<string, List<V>>();
+            private Dictionary<K, List<V>> _dictionary =
+                new Dictionary<K, List<V>>();
 
-            public void Add(string key, V value)
+            public void Add(K key, V value)
             {
                 List<V> list;
                 if (this._dictionary.TryGetValue(key, out list))
@@ -30,7 +30,7 @@ namespace FB2SMV
                 }
             }
 
-            public IEnumerable<string> Keys
+            public IEnumerable<K> Keys
             {
                 get
                 {
@@ -38,7 +38,7 @@ namespace FB2SMV
                 }
             }
 
-            public List<V> this[string key]
+            public List<V> this[K key]
             {
                 get
                 {

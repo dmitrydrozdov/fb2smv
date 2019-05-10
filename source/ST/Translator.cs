@@ -14,6 +14,10 @@ namespace FB2SMV
             {
                 Name = name;
                 Lines = lines;
+                foreach (OutputLine outputLine in lines)
+                {
+                    outputLine.AlgorithmName = name;
+                }
             }
 
             public readonly List<OutputLine> Lines;
