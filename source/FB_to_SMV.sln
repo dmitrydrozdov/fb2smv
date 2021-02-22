@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ST", "ST\ST.csproj", "{0CA2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{5C944686-ED97-4AE1-8414-2C2316E160ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI-Updated", "GUI\GUI-Updated.csproj", "{5C995D2E-DE48-43E3-AC6B-D89D6474F817}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{5C995D2E-DE48-43E3-AC6B-D89D6474F817}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuleVariablesTest", "..\tests\ModuleVariablesTest\ModuleVariablesTest.csproj", "{C59E7E26-6AE2-41C9-84F2-804E3BA8B34A}"
 EndProject
