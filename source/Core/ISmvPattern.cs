@@ -37,6 +37,8 @@ namespace FB2SMV
             string Or { get; }
             string Not { get; }
             string Fairness { get; }
+
+            string NdtInitializationBlock { get; }
         }
     }
 }

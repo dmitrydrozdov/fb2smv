@@ -19,12 +19,12 @@ namespace FB2SMV
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
                 smvModule += Smv.Assign;
 
-                smvModule += String.Format(Smv.VarInitializationBlock, "Do_", "-1");
-                smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
+                smvModule += String.Format(Smv.VarInitializationBlock, "DO_", "-1");
+                smvModule += String.Format(Smv.NextCaseBlock, "DO_", rule);
 
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);
                 smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START))");
-                smvModule += String.Format(Smv.DefineBlock, "event_EO_set", "(alpha & Di_=0)");
+                smvModule += String.Format(Smv.DefineBlock, "event_EO_set", "(alpha & DI_=0)");
 
                 smvModule += String.Format(Smv.DefineBlock, "alpha_reset", Smv.Alpha);
                 smvModule += String.Format(Smv.DefineBlock, "beta_set", Smv.Alpha);
@@ -35,7 +35,7 @@ namespace FB2SMV
 
             public static string EDelayFBModule(Storage storage, Settings settings)
             {
-                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
+                string rule = "\n\talpha & event_START : DT_;\n\talpha & event_STOP : -1;\n\talpha & DI_ = 0 : -1;\n\tDI_ >= 0 : DI_;\n\tTRUE: DO_; ";
                 return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, rule);
             }
 

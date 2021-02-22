@@ -28,8 +28,9 @@ namespace FB2SMV
                         for (int i = 0; i < variable.ArraySize; i++)
                         {
                             if (variable.IsConstant) outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.InitialValue); //TODO: parse initial values for arrays
-                            else outp += String.Format(Smv.VarDeclarationBlock, variable.Name + Smv.ArrayIndex(i), variable.SmvType);
                         }
+                        if (!variable.IsConstant)
+                            outp += String.Format(Smv.VarDeclarationBlock, variable.Name, " array " + "0.." + (variable.ArraySize - 1).ToString() + " of " + variable.SmvType);
                     }
                 }
                 return outp;
@@ -59,6 +60,14 @@ namespace FB2SMV
                 else output += String.Format("VAR {0}: 0..{1};\n", Smv.AlgStepsCounterVar, "1");
                 return output;
             }
+
+            public static string NdtDeclaration(Variable variable)
+            {
+                string outp = "";
+                if (variable.Name == "NDT") 
+                    outp += String.Format(Smv.VarDeclarationBlock, variable.Name, variable.SmvType);
+                return outp;
+            }
             public static string EcStateChangeBlock(IEnumerable<ECTransition> transitions, IEnumerable<Event> events)
             {
                 string ecTransitionsSmv = "";
@@ -79,6 +88,26 @@ namespace FB2SMV
                     ecTransitionsSmv += ";\n";
                 }
                 return String.Format("\n" + Smv.NextCaseBlock + "\n", Smv.EccStateVar, ecTransitionsSmv);
+            }
+
+            public static string NdtChangeBlock(IEnumerable<ECTransition> transitions)
+            {
+                string ecTransitionsSmv = "";
+
+                foreach (var transition in transitions)
+                {
+                    if (transition.Condition != null && transition.Condition != "1" && transition.Condition.Contains("NDT"))
+                    {
+                        ecTransitionsSmv += "\t";
+                        ecTransitionsSmv += Smv.EccStateVar + "=" + Smv.EccState(transition.Source);
+                        ecTransitionsSmv += " & ";
+                        ecTransitionsSmv += Smv.OsmStateVar + "=" + Smv.Osm.S1;
+                        ecTransitionsSmv += " : ";
+                        ecTransitionsSmv += "{TRUE,FALSE}";
+                        ecTransitionsSmv += ";\n";
+                    }
+                }
+                return String.Format("\n" + Smv.NextCaseBlock + "\n", "NDT", ecTransitionsSmv);
             }
             public static string EcActionsCounterChangeBlock(IEnumerable<ECState> states)
             {
@@ -171,6 +200,13 @@ namespace FB2SMV
                         }
                     }
                 }
+                return varsInit;
+            }
+
+            public static string NdtInitBlock(Variable variable)
+            {
+                string varsInit = "-- _NonDeterministicVariableInitBlock\n";
+                varsInit += String.Format(Smv.NdtInitializationBlock, variable.Name);
                 return varsInit;
             }
             public static string EventInputsResetRules(IEnumerable<Event> events, ExecutionModel executionModel, bool eventSignalResetSolve, bool useProcesses)
@@ -280,7 +316,6 @@ namespace FB2SMV
                     if (variable.ArraySize == 0)
                     {
                         IEnumerable<AlgorithmLine> currrentVarLines = lines.Where(line => line.Variable == variable.Name);
-
                         string rules = _getVarChangingRules(variable, currrentVarLines, actions, settings);
                         varChangeBlocks += String.Format(Smv.NextCaseBlock, variable.Name, rules);
                     }

@@ -42,6 +42,8 @@ namespace FB2SMV
             private static string _fairness = "FAIRNESS ({0})\n";
             private static string _running = "running";
 
+            private static string _ndtInitializationBlock = "init({0}):= {{ TRUE , FALSE }};\n";
+
             public string True
             {
                 get { return _true; }
@@ -156,6 +158,11 @@ namespace FB2SMV
             public string Fairness 
             {
                 get { return _fairness; }
+            }
+
+            public string NdtInitializationBlock
+            {
+                get { return _ndtInitializationBlock; }
             }
         }
     }

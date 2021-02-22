@@ -61,6 +61,8 @@ namespace FB2SMV
             [XmlArray] public List<VarDeclaration> InputVars;
 
             [XmlArray] public List<VarDeclaration> OutputVars;
+
+            public VarDeclaration NonDeterministicVariable;
         }
 
         public class VarDeclaration : NamedXmlDeclaration

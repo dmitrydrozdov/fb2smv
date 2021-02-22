@@ -20,6 +20,10 @@ namespace FB2SMV
                 Types.Add(fbType);
             }
 
+            public void PutNondeterminsticVariable(Variable variable)
+            {
+                Ndts.Add(variable);
+            }
             public void PutEvent(Event ev)
             {
                 Events.Add(ev);
@@ -115,7 +119,8 @@ namespace FB2SMV
             public readonly List<FBInstance> Instances = new List<FBInstance>();
             public readonly List<Connection> Connections = new List<Connection>();
             public readonly List<AlgorithmLine> AlgorithmLines = new List<AlgorithmLine>();
-            public readonly List<InstanceParameter> InstanceParameters = new List<InstanceParameter>(); 
+            public readonly List<InstanceParameter> InstanceParameters = new List<InstanceParameter>();
+            public readonly List<Variable> Ndts = new List<Variable>();
         }
     }
 }

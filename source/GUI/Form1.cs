@@ -262,7 +262,19 @@ namespace GUI
                 varTypeTextBox.Text = _selectedVariable.Type;
                 varArraySizeTextBox.Text = Convert.ToString(_selectedVariable.ArraySize);
                 varRangeTextBox.Text = _selectedVariable.SmvType.ToString();
-
+                if (Smv.DataTypes.IsSimple(_selectedVariable.SmvType))
+                {
+                    upperLimitTextBox.Text = "0";
+                    lowerLimitTextBox.Text = "0";
+                }
+                else
+                {
+                    string[] separator = { ".." };
+                    string[] rangeSplit = varRangeTextBox.Text.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+                    lowerLimitTextBox.Text = rangeSplit[0];
+                    upperLimitTextBox.Text = rangeSplit[1];
+                    
+                }
                 _connectedVars = varDependencyGraph.GetConnectedVariables(VarDependencyGraph.VariableKey(_selectedVariable));
 
                 varIsConstantCheckBox.Checked = _selectedVariable.IsConstant;
@@ -487,6 +499,37 @@ namespace GUI
             _parcer.Storage.TimersCount = Convert.ToInt32(timersTextBox.Text);
             _parcer.Storage.TimeSMVType = timetypeTextBox.Text;
             _parcer.Storage.Tmax = Convert.ToInt32(tmaxTextBox.Text);
+        }
+
+        private void updateButton_Click(object sender, EventArgs e)
+        {
+            /*
+            _selectedVariable.Name = varArraySizeTextBox.Text;
+            foreach (Variable variable in _connectedVars)
+            {
+                variable.Name = _selectedVariable.Name;
+            }
+            variablesTreeView.SelectedNode.Name = _selectedVariable.Name;
+            _parcer.Storage.Variables.FirstOrDefault(v => v.FBType == _selectedFbType && v.Name == varArraySizeTextBox.Text).Name = _selectedVariable.Name;
+            */
+            if (Smv.DataTypes.IsNumberType(_selectedVariable.SmvType))
+            {      
+                int lb = Convert.ToInt32(lowerLimitTextBox.Text);
+                int ub = Convert.ToInt32(upperLimitTextBox.Text);
+                if (lb < ub)
+                {
+                    _selectedVariable.SmvType = new Smv.DataTypes.RangeSmvType(lb, ub);
+                    foreach (Variable variable in _connectedVars)
+                    {
+                        variable.SmvType = new Smv.DataTypes.RangeSmvType((Smv.DataTypes.RangeSmvType)_selectedVariable.SmvType);
+                    }
+                }
+                else
+                {
+                    Program.ErrorMessage("Invalid range type!");
+                    return;
+                }
+            }
         }
     }
 }

@@ -42,18 +42,25 @@ namespace FB2SMV.Core
         private string _GetDMin()
         {
             string dMinRules = "";
-            for(int i = 1; i <= _inputs; i++)
+            if (_inputs == 1)
             {
-                string currentV = "V" + i.ToString();
-                string ruleLine = "";
-                for(int j = 1; j <= _inputs; j++)
+                return String.Format("DMin:=case\n\tTRUE: V{0};\nesac;\n", 1);
+            }
+            else
+            {
+                for (int i = 1; i <= _inputs; i++)
                 {
-                    if (j == i) continue;
-                    string comparedV = "V" + j.ToString();
-                    ruleLine += String.Format("({0}<={1}){2}", currentV, comparedV, Smv.And);
+                    string currentV = "V" + i.ToString();
+                    string ruleLine = "";
+                    for (int j = 1; j <= _inputs; j++)
+                    {
+                        if (j == i) continue;
+                        string comparedV = "V" + j.ToString();
+                        ruleLine += String.Format("({0}<={1}){2}", currentV, comparedV, Smv.And);
 
+                    }
+                    dMinRules += String.Format("\t{0} : {1};\n", ruleLine.Trim(Smv.AndTrimChars), currentV);
                 }
-                dMinRules += String.Format("\t{0} : {1};\n", ruleLine.Trim(Smv.AndTrimChars), currentV);
             }
             return String.Format("DMin:=case\n{0}\n\tTRUE: {1};esac;\n", dMinRules, 0);
         }
@@ -64,7 +71,7 @@ namespace FB2SMV.Core
             string ruleTemplate = _forAll((int i) => "D" + i.ToString() + "o {0} 0{1}");
             const string ruleFormat = "\t(TGlobal < Tmax) & beta & gamma & ({0}) : {1};\n";
             ruleTemplate = ruleTemplate.Substring(0, ruleTemplate.Length - 3); //remove last {1}
-            rules += String.Format(ruleFormat, String.Format(ruleTemplate, ">", Smv.Or), "TGlobal + DGmin");
+            rules += String.Format(ruleFormat, String.Format(ruleTemplate, ">", Smv.Or), "TGlobal + DMin");
             //rules += String.Format(ruleFormat, String.Format(ruleTemplate, "<", Smv.And), "TGlobal + 1"); //global time increment for test case
             return String.Format(Smv.NextCaseBlock, "TGlobal", rules);
         }
