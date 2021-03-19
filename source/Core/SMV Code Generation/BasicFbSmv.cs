@@ -418,7 +418,7 @@ namespace FB2SMV
                     return String.Format(Smv.DefineBlock, "alpha_reset", rule) + String.Format(Smv.DefineBlock, "beta_set", rule); ;
                 }
             }
-            public static string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions)
+            public static string BasicModuleDefines(IEnumerable<ECState> states, IEnumerable<Event> events, IEnumerable<ECTransition> transitions, bool showUnconditionalTransitions, bool NDT=false)
             {
                 string ecTran = "";
                 foreach (ECState state in states)
@@ -458,7 +458,7 @@ namespace FB2SMV
                 string absentsEnabledECTran = "\n";
 
                 //string alphabeta = "--alpha/beta\nDEFINE alpha_beta := ( (alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran)) );\n";
-                return FbSmvCommon.DefineExistsInputEvent(events) + existsEnabledECTran + absentsEnabledECTran; // + alphabeta;
+                return FbSmvCommon.DefineExistsInputEvent(events,NDT) + existsEnabledECTran + absentsEnabledECTran; // + alphabeta;
             }
 
             private static string _translateEventNames(string str, IEnumerable<Event> events)

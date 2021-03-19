@@ -15,14 +15,19 @@ namespace FB_to_nuSMV
         static void Main(string[] args)
         {
             string filename = args[0];
+            ShowMessageDelegate del = delegate (string message) { };
+            Settings s = new Settings();
 
-            FBClassParcer parcer = new FBClassParcer();
-            parcer.ParseRecursive(filename);
+            FBClassParcer parcer = new FBClassParcer(del,s);
+            parcer.ParseRecursive(filename,del);
 
             var compositeBlocks = parcer.Storage.Types.Where((fbType) => fbType.Type == FBClass.Composite);
-            bool solveDispatchingProblem = true;
-            IEnumerable<IDispatcher> dispatchers = DispatchersCreator.Create(compositeBlocks, parcer.Storage.Instances, solveDispatchingProblem);
-            SmvCodeGenerator translator = new SmvCodeGenerator(parcer.Storage, dispatchers);
+            //bool solveDispatchingProblem = true;
+            //IEnumerable<IDispatcher> dispatchers = DispatchersCreator.Create(compositeBlocks, parcer.Storage.Instances, solveDispatchingProblem);
+
+            List<ExecutionModel> executionModels = ExecutionModelsList.Generate(parcer, true);
+
+            SmvCodeGenerator translator = new SmvCodeGenerator(parcer.Storage,executionModels, s,del);
 
             string outFileName = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + ".smv");
             StreamWriter wr = new StreamWriter(outFileName);
@@ -32,5 +37,6 @@ namespace FB_to_nuSMV
             }
             wr.Close();
         }
+
     }
 }

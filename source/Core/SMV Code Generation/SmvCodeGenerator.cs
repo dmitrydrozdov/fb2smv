@@ -181,7 +181,10 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
                 smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
 
-                smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
+                if (ndt != null && ndt.Name == "NDT")
+                    smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions,true) + "\n";
+                else 
+                  smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
 
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 return smvModule;

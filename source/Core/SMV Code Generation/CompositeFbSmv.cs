@@ -217,7 +217,12 @@ namespace FB2SMV
                         //Connection inputConnection;
                         //if (!_isInputFromComponent(ev, connections, instance.Name, out inputConnection))
                         //{
-                        buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + ev.Name, Smv.False);
+                        if (mainModule)
+                        {
+                            buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + ev.Name, Smv.True);
+                        }
+                        else
+                            buffersInit += String.Format(Smv.VarInitializationBlock, instance.Name + "_" + ev.Name, Smv.False);
                         //}
                     }
                     foreach (Variable variable in instanceVariables)
