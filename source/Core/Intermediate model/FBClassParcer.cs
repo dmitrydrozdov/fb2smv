@@ -98,6 +98,17 @@ namespace FB2SMV
                 StreamReader sr = new StreamReader(filename);
                 FB2SMV.FBXML.FBType fb = (FB2SMV.FBXML.FBType) ser.Deserialize(sr);
                 sr.Close();
+                var itemToRemove = fb.InterfaceList.EventInputs.FindIndex(r => r.Name == "NDT");
+                if (itemToRemove != -1)
+                {
+                    fb.InterfaceList.EventInputs.RemoveAt(itemToRemove);
+                    VarDeclaration ndt = new VarDeclaration();
+                    ndt.Name = "NDT";
+                    ndt.Type = "NDT";
+                    ndt.ArraySize = 0;
+                    fb.InterfaceList.NonDeterministicVariable = ndt;
+                } 
+                    
                 return fb;
             }
 
@@ -185,6 +196,12 @@ namespace FB2SMV
                     Storage.PutVariable(new FB2SMV.FBCollections.Variable(outputVar.Name, outputVar.Comment, fbTypeName,
                         Direction.Output, outputVar.Type, outputVar.ArraySize, outputVar.InitialValue, Smv.DataTypes.GetType(outputVar.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
+                if (interfaceList.NonDeterministicVariable != null)
+                {
+                    Storage.PutNondeterminsticVariable(new FB2SMV.FBCollections.Variable(interfaceList.NonDeterministicVariable.Name, interfaceList.NonDeterministicVariable.Comment, fbTypeName,
+                        Direction.Output, interfaceList.NonDeterministicVariable.Type, interfaceList.NonDeterministicVariable.ArraySize, interfaceList.NonDeterministicVariable.InitialValue, Smv.DataTypes.GetType(interfaceList.NonDeterministicVariable.Type, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+
+                }
             }
 
             private void PutFBNetwork(FBNetwork fbNetwork, string fbTypeName, ShowMessageDelegate ShowMessage)
@@ -237,9 +254,9 @@ namespace FB2SMV
                     Storage.PutEvent(new FBCollections.Event("STOP", "", fbType, Direction.Input));
                     Storage.PutEvent(new FBCollections.Event("EO", "", fbType, Direction.Output));
 
-                    Storage.PutVariable(new Variable("Dt", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "666", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
-                    Storage.PutVariable(new Variable("Di", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
-                    Storage.PutVariable(new Variable("Do", "", fbType, Direction.Output, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                    Storage.PutVariable(new Variable("DT", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "666", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                    Storage.PutVariable(new Variable("DI", "", fbType, Direction.Input, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
+                    Storage.PutVariable(new Variable("DO", "", fbType, Direction.Output, IEC61499.DataTypes.INT, 0, "-1", Smv.DataTypes.GetType(IEC61499.DataTypes.INT, _showMessage, _settings.nuXmvInfiniteDataTypes)));
                 }
 
                 Storage.PutFBType(new FBType(fbType, "", FBClass.Library));

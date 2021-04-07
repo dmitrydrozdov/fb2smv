@@ -143,6 +143,7 @@ namespace FB2SMV
                 var actions = _storage.EcActions.Where(act => act.FBType == fbType.Name);
                 var withConnections = _storage.WithConnections.Where(conn => conn.FBType == fbType.Name);
                 var transitions = _storage.EcTransitions.Where(tr => tr.FBType == fbType.Name);
+                var ndt = _storage.Ndts.FirstOrDefault(ev => ev.FBType == fbType.Name);
 
                 smvModule += BasicFbSmv.ModuleHeader(events, variables, fbType.Name);
 
@@ -151,12 +152,21 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.EcActionsCounterDeclaration(states);
                 smvModule += BasicFbSmv.AlgStepsCounterDeclaration(smvAlgs);
 
+                if (ndt != null && ndt.Name == "NDT")
+                    smvModule += BasicFbSmv.NdtDeclaration(ndt);
+
                 smvModule += Smv.Assign;
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EccStateVar, Smv.EccState(states.First(s => true).Name));
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.OsmStateVar, Smv.Osm.S0);
                 smvModule += BasicFbSmv.ModuleVariablesInitBlock(variables) + "\n";
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.EcActionsCounterVar, "0");
                 smvModule += String.Format(Smv.VarInitializationBlock, Smv.AlgStepsCounterVar, "0");
+
+                if (ndt != null && ndt.Name == "NDT")
+                    smvModule += BasicFbSmv.NdtInitBlock(ndt);
+
+                if (ndt != null && ndt.Name == "NDT")
+                    smvModule += BasicFbSmv.NdtChangeBlock(transitions);
 
                 smvModule += BasicFbSmv.EcStateChangeBlock(transitions, events);
                 smvModule += Smv.OsmStateChangeBlock + "\n";
@@ -171,7 +181,10 @@ namespace FB2SMV
                 smvModule += BasicFbSmv.EventInputsResetRules(events, executionModel, eventSignalResetSolve, _settings.UseProcesses) + "\n";
                 smvModule += BasicFbSmv.OutputEventsSettingRules(events, actions, _settings.UseProcesses) + "\n";
 
-                smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
+                if (ndt != null && ndt.Name == "NDT")
+                    smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions,true) + "\n";
+                else 
+                  smvModule += BasicFbSmv.BasicModuleDefines(states, events, transitions, showUnconditionalTransitions) + "\n";
 
                 smvModule += FbSmvCommon.ModuleFooter(_settings) + "\n";
                 return smvModule;

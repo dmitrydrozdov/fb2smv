@@ -65,6 +65,10 @@ namespace FB2SMV
                 get { return _smvPattern.VarInitializationBlock; }
             }
 
+            public static string NdtInitializationBlock
+            {
+                get { return _smvPattern.NdtInitializationBlock; }
+            }
             public static string DefineBlock
             {
                 get { return _smvPattern.DefineBlock; }
@@ -207,6 +211,7 @@ namespace FB2SMV
                 if (variable.SmvType.GetType() == typeof(DataTypes.RangeSmvType))
                 {
                     if (val == "0.0") val = "0";
+                    val = Regex.Match(val, @"\d+").Value;
                     if (Convert.ToInt32(val) < ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin)
                         val = ((DataTypes.RangeSmvType)variable.SmvType).RangeBegin.ToString();
                     else if (Convert.ToInt32(val) > ((DataTypes.RangeSmvType)variable.SmvType).RangeEnd)
@@ -304,9 +309,24 @@ namespace FB2SMV
             {
                 public static bool IsSimple(ISmvType type)
                 {
-                    if (type is BoolSmvType || type is IntSmvType || type is RealSmvType) return true;
+                    if (type is BoolSmvType || type is IntSmvType || type is RealSmvType || type is NDTSmvType) return true;
                     else return false;
                 }
+
+                public static bool IsNumberType(ISmvType type)
+                {
+                    return type is IntSmvType || type is RealSmvType;
+                }
+
+                [Serializable]
+                public class NDTSmvType : ISmvType
+                {
+                    public override string ToString()
+                    {
+                        return "boolean";
+                    }
+                }
+
                 [Serializable]
                 public class BoolSmvType : ISmvType
                 {
@@ -390,8 +410,9 @@ namespace FB2SMV
                             return new RangeSmvType(0, 99);
                         }
                     }
+                    if (varType == "NDT")
+                        return new NDTSmvType();
                     throw new Exception(String.Format("Unsupported data type \"{0}\"!", varType));
-                    return null;
                 }
             }
 

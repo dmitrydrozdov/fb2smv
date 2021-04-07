@@ -55,6 +55,11 @@
             this.VariablesPage = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.updateButton = new System.Windows.Forms.Button();
+            this.upperLimitLabel = new System.Windows.Forms.Label();
+            this.lowerLimitLabel = new System.Windows.Forms.Label();
+            this.upperLimitTextBox = new System.Windows.Forms.TextBox();
+            this.lowerLimitTextBox = new System.Windows.Forms.TextBox();
             this.varIsConstantCheckBox = new System.Windows.Forms.CheckBox();
             this.eventsPage = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -63,6 +68,14 @@
             this.eventPriorityUp = new System.Windows.Forms.Button();
             this.eventsTreeView = new System.Windows.Forms.TreeView();
             this.DispatcherPage = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.tmaxTextBox = new System.Windows.Forms.TextBox();
+            this.timetypeTextBox = new System.Windows.Forms.TextBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.timersButton = new System.Windows.Forms.Button();
+            this.label6 = new System.Windows.Forms.Label();
+            this.timersTextBox = new System.Windows.Forms.TextBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.instancePriorityListBox = new System.Windows.Forms.ListBox();
@@ -78,14 +91,6 @@
             this.saveFileDialogSMV = new System.Windows.Forms.SaveFileDialog();
             this.splitContainer3 = new System.Windows.Forms.SplitContainer();
             this.messagesRichTextBox = new System.Windows.Forms.RichTextBox();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.timersTextBox = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.timersButton = new System.Windows.Forms.Button();
-            this.label7 = new System.Windows.Forms.Label();
-            this.label8 = new System.Windows.Forms.Label();
-            this.timetypeTextBox = new System.Windows.Forms.TextBox();
-            this.tmaxTextBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.VariablesPage.SuspendLayout();
@@ -97,6 +102,7 @@
             this.eventsPage.SuspendLayout();
             this.groupBox4.SuspendLayout();
             this.DispatcherPage.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.smvCodePage.SuspendLayout();
@@ -109,7 +115,6 @@
             this.splitContainer3.Panel1.SuspendLayout();
             this.splitContainer3.Panel2.SuspendLayout();
             this.splitContainer3.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -123,7 +128,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
-            this.menuStrip1.Size = new System.Drawing.Size(1151, 35);
+            this.menuStrip1.Size = new System.Drawing.Size(1151, 30);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -135,55 +140,55 @@
             this.generateSMVToolStripMenuItem,
             this.saveSMVCodeToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(50, 29);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(253, 30);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveProjectToolStripMenuItem
             // 
             this.saveProjectToolStripMenuItem.Name = "saveProjectToolStripMenuItem";
-            this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(253, 30);
+            this.saveProjectToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.saveProjectToolStripMenuItem.Text = "Save project";
             this.saveProjectToolStripMenuItem.Click += new System.EventHandler(this.saveProjectToolStripMenuItem_Click);
             // 
             // generateSMVToolStripMenuItem
             // 
             this.generateSMVToolStripMenuItem.Name = "generateSMVToolStripMenuItem";
-            this.generateSMVToolStripMenuItem.Size = new System.Drawing.Size(253, 30);
+            this.generateSMVToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.generateSMVToolStripMenuItem.Text = "Generate SMV code";
             this.generateSMVToolStripMenuItem.Click += new System.EventHandler(this.generateSMVToolStripMenuItem_Click);
             // 
             // saveSMVCodeToolStripMenuItem
             // 
             this.saveSMVCodeToolStripMenuItem.Name = "saveSMVCodeToolStripMenuItem";
-            this.saveSMVCodeToolStripMenuItem.Size = new System.Drawing.Size(253, 30);
+            this.saveSMVCodeToolStripMenuItem.Size = new System.Drawing.Size(223, 26);
             this.saveSMVCodeToolStripMenuItem.Text = "Save SMV Code";
             this.saveSMVCodeToolStripMenuItem.Click += new System.EventHandler(this.saveSMVCodeToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(88, 29);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(76, 24);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(74, 29);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(12, 29);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(14, 24);
             // 
             // openFileDialog1
             // 
@@ -196,17 +201,17 @@
             this.fbTypesView.Location = new System.Drawing.Point(0, 0);
             this.fbTypesView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.fbTypesView.Name = "fbTypesView";
-            this.fbTypesView.Size = new System.Drawing.Size(199, 638);
+            this.fbTypesView.Size = new System.Drawing.Size(199, 641);
             this.fbTypesView.TabIndex = 1;
             this.fbTypesView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.fbTypesView_AfterSelect);
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(9, 135);
+            this.label5.Location = new System.Drawing.Point(9, 131);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(46, 20);
+            this.label5.Size = new System.Drawing.Size(49, 20);
             this.label5.TabIndex = 12;
             this.label5.Text = "Array";
             // 
@@ -214,11 +219,10 @@
             // 
             this.varArraySizeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.varArraySizeTextBox.Enabled = false;
             this.varArraySizeTextBox.Location = new System.Drawing.Point(104, 125);
             this.varArraySizeTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.varArraySizeTextBox.Name = "varArraySizeTextBox";
-            this.varArraySizeTextBox.Size = new System.Drawing.Size(503, 26);
+            this.varArraySizeTextBox.Size = new System.Drawing.Size(493, 26);
             this.varArraySizeTextBox.TabIndex = 11;
             // 
             // varRangeTextBox
@@ -228,29 +232,27 @@
             this.varRangeTextBox.Location = new System.Drawing.Point(104, 85);
             this.varRangeTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.varRangeTextBox.Name = "varRangeTextBox";
-            this.varRangeTextBox.Size = new System.Drawing.Size(503, 26);
+            this.varRangeTextBox.Size = new System.Drawing.Size(493, 26);
             this.varRangeTextBox.TabIndex = 10;
             // 
             // varTypeTextBox
             // 
             this.varTypeTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.varTypeTextBox.Enabled = false;
             this.varTypeTextBox.Location = new System.Drawing.Point(104, 45);
             this.varTypeTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.varTypeTextBox.Name = "varTypeTextBox";
-            this.varTypeTextBox.Size = new System.Drawing.Size(503, 26);
+            this.varTypeTextBox.Size = new System.Drawing.Size(493, 26);
             this.varTypeTextBox.TabIndex = 9;
             // 
             // varNameTextBox
             // 
             this.varNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.varNameTextBox.Enabled = false;
             this.varNameTextBox.Location = new System.Drawing.Point(104, 5);
             this.varNameTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.varNameTextBox.Name = "varNameTextBox";
-            this.varNameTextBox.Size = new System.Drawing.Size(503, 26);
+            this.varNameTextBox.Size = new System.Drawing.Size(493, 26);
             this.varNameTextBox.TabIndex = 8;
             // 
             // connectedVarsTreeView
@@ -258,19 +260,19 @@
             this.connectedVarsTreeView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.connectedVarsTreeView.Location = new System.Drawing.Point(3, 318);
+            this.connectedVarsTreeView.Location = new System.Drawing.Point(3, 367);
             this.connectedVarsTreeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.connectedVarsTreeView.Name = "connectedVarsTreeView";
-            this.connectedVarsTreeView.Size = new System.Drawing.Size(603, 240);
+            this.connectedVarsTreeView.Size = new System.Drawing.Size(593, 194);
             this.connectedVarsTreeView.TabIndex = 7;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 294);
+            this.label3.Location = new System.Drawing.Point(9, 342);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(153, 20);
+            this.label3.Size = new System.Drawing.Size(161, 20);
             this.label3.TabIndex = 6;
             this.label3.Text = "Connected variables";
             // 
@@ -280,7 +282,7 @@
             this.label4.Location = new System.Drawing.Point(9, 95);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(82, 20);
+            this.label4.Size = new System.Drawing.Size(86, 20);
             this.label4.TabIndex = 5;
             this.label4.Text = "SMV Type";
             // 
@@ -290,7 +292,7 @@
             this.label2.Location = new System.Drawing.Point(9, 55);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(43, 20);
+            this.label2.Size = new System.Drawing.Size(45, 20);
             this.label2.TabIndex = 3;
             this.label2.Text = "Type";
             // 
@@ -300,7 +302,7 @@
             this.label1.Location = new System.Drawing.Point(9, 15);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(51, 20);
+            this.label1.Size = new System.Drawing.Size(53, 20);
             this.label1.TabIndex = 2;
             this.label1.Text = "Name";
             // 
@@ -310,14 +312,14 @@
             this.variablesTreeView.Location = new System.Drawing.Point(0, 0);
             this.variablesTreeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.variablesTreeView.Name = "variablesTreeView";
-            this.variablesTreeView.Size = new System.Drawing.Size(303, 566);
+            this.variablesTreeView.Size = new System.Drawing.Size(303, 569);
             this.variablesTreeView.TabIndex = 1;
             this.variablesTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.variablesTreeView_AfterSelect);
             // 
             // propChangeButton
             // 
             this.propChangeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.propChangeButton.Location = new System.Drawing.Point(487, 220);
+            this.propChangeButton.Location = new System.Drawing.Point(463, 279);
             this.propChangeButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.propChangeButton.Name = "propChangeButton";
             this.propChangeButton.Size = new System.Drawing.Size(122, 38);
@@ -338,7 +340,7 @@
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(946, 638);
+            this.tabControl1.Size = new System.Drawing.Size(946, 641);
             this.tabControl1.TabIndex = 3;
             // 
             // VariablesPage
@@ -349,7 +351,7 @@
             this.VariablesPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.VariablesPage.Name = "VariablesPage";
             this.VariablesPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.VariablesPage.Size = new System.Drawing.Size(938, 605);
+            this.VariablesPage.Size = new System.Drawing.Size(938, 608);
             this.VariablesPage.TabIndex = 0;
             this.VariablesPage.Text = "Variables";
             // 
@@ -361,7 +363,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.groupBox1.Size = new System.Drawing.Size(930, 595);
+            this.groupBox1.Size = new System.Drawing.Size(930, 598);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "<Block>";
@@ -379,6 +381,11 @@
             // 
             // splitContainer2.Panel2
             // 
+            this.splitContainer2.Panel2.Controls.Add(this.updateButton);
+            this.splitContainer2.Panel2.Controls.Add(this.upperLimitLabel);
+            this.splitContainer2.Panel2.Controls.Add(this.lowerLimitLabel);
+            this.splitContainer2.Panel2.Controls.Add(this.upperLimitTextBox);
+            this.splitContainer2.Panel2.Controls.Add(this.lowerLimitTextBox);
             this.splitContainer2.Panel2.Controls.Add(this.varIsConstantCheckBox);
             this.splitContainer2.Panel2.Controls.Add(this.label1);
             this.splitContainer2.Panel2.Controls.Add(this.propChangeButton);
@@ -391,18 +398,69 @@
             this.splitContainer2.Panel2.Controls.Add(this.connectedVarsTreeView);
             this.splitContainer2.Panel2.Controls.Add(this.varTypeTextBox);
             this.splitContainer2.Panel2.Controls.Add(this.varNameTextBox);
-            this.splitContainer2.Size = new System.Drawing.Size(922, 566);
+            this.splitContainer2.Size = new System.Drawing.Size(922, 569);
             this.splitContainer2.SplitterDistance = 303;
             this.splitContainer2.SplitterWidth = 6;
             this.splitContainer2.TabIndex = 3;
             // 
+            // updateButton
+            // 
+            this.updateButton.Location = new System.Drawing.Point(103, 278);
+            this.updateButton.Name = "updateButton";
+            this.updateButton.Size = new System.Drawing.Size(99, 39);
+            this.updateButton.TabIndex = 19;
+            this.updateButton.Text = "Update";
+            this.updateButton.UseVisualStyleBackColor = true;
+            this.updateButton.Click += new System.EventHandler(this.updateButton_Click);
+            // 
+            // upperLimitLabel
+            // 
+            this.upperLimitLabel.AutoSize = true;
+            this.upperLimitLabel.Location = new System.Drawing.Point(9, 200);
+            this.upperLimitLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.upperLimitLabel.Name = "upperLimitLabel";
+            this.upperLimitLabel.Size = new System.Drawing.Size(31, 20);
+            this.upperLimitLabel.TabIndex = 18;
+            this.upperLimitLabel.Text = "UL";
+            // 
+            // lowerLimitLabel
+            // 
+            this.lowerLimitLabel.AutoSize = true;
+            this.lowerLimitLabel.Location = new System.Drawing.Point(9, 167);
+            this.lowerLimitLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lowerLimitLabel.Name = "lowerLimitLabel";
+            this.lowerLimitLabel.Size = new System.Drawing.Size(29, 20);
+            this.lowerLimitLabel.TabIndex = 17;
+            this.lowerLimitLabel.Text = "LL";
+            // 
+            // upperLimitTextBox
+            // 
+            this.upperLimitTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.upperLimitTextBox.Location = new System.Drawing.Point(103, 197);
+            this.upperLimitTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.upperLimitTextBox.Name = "upperLimitTextBox";
+            this.upperLimitTextBox.Size = new System.Drawing.Size(493, 26);
+            this.upperLimitTextBox.TabIndex = 16;
+            // 
+            // lowerLimitTextBox
+            // 
+            this.lowerLimitTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lowerLimitTextBox.HideSelection = false;
+            this.lowerLimitTextBox.Location = new System.Drawing.Point(104, 164);
+            this.lowerLimitTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.lowerLimitTextBox.Name = "lowerLimitTextBox";
+            this.lowerLimitTextBox.Size = new System.Drawing.Size(493, 26);
+            this.lowerLimitTextBox.TabIndex = 15;
+            // 
             // varIsConstantCheckBox
             // 
             this.varIsConstantCheckBox.AutoSize = true;
-            this.varIsConstantCheckBox.Location = new System.Drawing.Point(104, 166);
+            this.varIsConstantCheckBox.Location = new System.Drawing.Point(104, 233);
             this.varIsConstantCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.varIsConstantCheckBox.Name = "varIsConstantCheckBox";
-            this.varIsConstantCheckBox.Size = new System.Drawing.Size(100, 24);
+            this.varIsConstantCheckBox.Size = new System.Drawing.Size(98, 24);
             this.varIsConstantCheckBox.TabIndex = 14;
             this.varIsConstantCheckBox.Text = "Constant";
             this.varIsConstantCheckBox.UseVisualStyleBackColor = true;
@@ -416,7 +474,7 @@
             this.eventsPage.Location = new System.Drawing.Point(4, 29);
             this.eventsPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.eventsPage.Name = "eventsPage";
-            this.eventsPage.Size = new System.Drawing.Size(1634, 650);
+            this.eventsPage.Size = new System.Drawing.Size(938, 608);
             this.eventsPage.TabIndex = 3;
             this.eventsPage.Text = "Events";
             // 
@@ -473,7 +531,7 @@
             this.eventsTreeView.Location = new System.Drawing.Point(0, 0);
             this.eventsTreeView.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.eventsTreeView.Name = "eventsTreeView";
-            this.eventsTreeView.Size = new System.Drawing.Size(247, 650);
+            this.eventsTreeView.Size = new System.Drawing.Size(247, 608);
             this.eventsTreeView.TabIndex = 0;
             // 
             // DispatcherPage
@@ -484,9 +542,84 @@
             this.DispatcherPage.Location = new System.Drawing.Point(4, 29);
             this.DispatcherPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.DispatcherPage.Name = "DispatcherPage";
-            this.DispatcherPage.Size = new System.Drawing.Size(938, 605);
+            this.DispatcherPage.Size = new System.Drawing.Size(938, 608);
             this.DispatcherPage.TabIndex = 2;
             this.DispatcherPage.Text = "Dispatcher";
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.tmaxTextBox);
+            this.groupBox5.Controls.Add(this.timetypeTextBox);
+            this.groupBox5.Controls.Add(this.label8);
+            this.groupBox5.Controls.Add(this.label7);
+            this.groupBox5.Controls.Add(this.timersButton);
+            this.groupBox5.Controls.Add(this.label6);
+            this.groupBox5.Controls.Add(this.timersTextBox);
+            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.groupBox5.Location = new System.Drawing.Point(0, 388);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(938, 220);
+            this.groupBox5.TabIndex = 3;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "TimeScheduler";
+            // 
+            // tmaxTextBox
+            // 
+            this.tmaxTextBox.Location = new System.Drawing.Point(167, 94);
+            this.tmaxTextBox.Name = "tmaxTextBox";
+            this.tmaxTextBox.Size = new System.Drawing.Size(172, 26);
+            this.tmaxTextBox.TabIndex = 6;
+            // 
+            // timetypeTextBox
+            // 
+            this.timetypeTextBox.Location = new System.Drawing.Point(167, 62);
+            this.timetypeTextBox.Name = "timetypeTextBox";
+            this.timetypeTextBox.Size = new System.Drawing.Size(172, 26);
+            this.timetypeTextBox.TabIndex = 5;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(6, 97);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(50, 20);
+            this.label8.TabIndex = 4;
+            this.label8.Text = "Tmax";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(6, 65);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(123, 20);
+            this.label7.TabIndex = 3;
+            this.label7.Text = "Time SMV type";
+            // 
+            // timersButton
+            // 
+            this.timersButton.Location = new System.Drawing.Point(354, 56);
+            this.timersButton.Name = "timersButton";
+            this.timersButton.Size = new System.Drawing.Size(75, 39);
+            this.timersButton.TabIndex = 2;
+            this.timersButton.Text = "Apply";
+            this.timersButton.UseVisualStyleBackColor = true;
+            this.timersButton.Click += new System.EventHandler(this.timersButton_Click);
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 33);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(139, 20);
+            this.label6.TabIndex = 1;
+            this.label6.Text = "Number of timers";
+            // 
+            // timersTextBox
+            // 
+            this.timersTextBox.Location = new System.Drawing.Point(167, 30);
+            this.timersTextBox.Name = "timersTextBox";
+            this.timersTextBox.Size = new System.Drawing.Size(172, 26);
+            this.timersTextBox.TabIndex = 0;
             // 
             // groupBox2
             // 
@@ -555,7 +688,7 @@
             this.cyclicDispatcherRadioButton.Location = new System.Drawing.Point(9, 29);
             this.cyclicDispatcherRadioButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cyclicDispatcherRadioButton.Name = "cyclicDispatcherRadioButton";
-            this.cyclicDispatcherRadioButton.Size = new System.Drawing.Size(152, 24);
+            this.cyclicDispatcherRadioButton.Size = new System.Drawing.Size(159, 24);
             this.cyclicDispatcherRadioButton.TabIndex = 3;
             this.cyclicDispatcherRadioButton.TabStop = true;
             this.cyclicDispatcherRadioButton.Text = "Cyclic dispatcher";
@@ -569,7 +702,7 @@
             this.smvCodePage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.smvCodePage.Name = "smvCodePage";
             this.smvCodePage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.smvCodePage.Size = new System.Drawing.Size(1634, 650);
+            this.smvCodePage.Size = new System.Drawing.Size(938, 608);
             this.smvCodePage.TabIndex = 1;
             this.smvCodePage.Text = "SMV Code";
             // 
@@ -579,7 +712,7 @@
             this.smvCodeRichTextBox.Location = new System.Drawing.Point(4, 5);
             this.smvCodeRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.smvCodeRichTextBox.Name = "smvCodeRichTextBox";
-            this.smvCodeRichTextBox.Size = new System.Drawing.Size(1626, 640);
+            this.smvCodeRichTextBox.Size = new System.Drawing.Size(930, 598);
             this.smvCodeRichTextBox.TabIndex = 0;
             this.smvCodeRichTextBox.Text = "";
             // 
@@ -590,7 +723,7 @@
             this.mainModuleTab.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.mainModuleTab.Name = "mainModuleTab";
             this.mainModuleTab.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.mainModuleTab.Size = new System.Drawing.Size(1634, 650);
+            this.mainModuleTab.Size = new System.Drawing.Size(938, 608);
             this.mainModuleTab.TabIndex = 4;
             this.mainModuleTab.Text = "Main";
             this.mainModuleTab.UseVisualStyleBackColor = true;
@@ -601,7 +734,7 @@
             this.mainModuleRichTextBox.Location = new System.Drawing.Point(4, 5);
             this.mainModuleRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.mainModuleRichTextBox.Name = "mainModuleRichTextBox";
-            this.mainModuleRichTextBox.Size = new System.Drawing.Size(1626, 640);
+            this.mainModuleRichTextBox.Size = new System.Drawing.Size(930, 598);
             this.mainModuleRichTextBox.TabIndex = 0;
             this.mainModuleRichTextBox.Text = "";
             // 
@@ -619,7 +752,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(1151, 638);
+            this.splitContainer1.Size = new System.Drawing.Size(1151, 641);
             this.splitContainer1.SplitterDistance = 199;
             this.splitContainer1.SplitterWidth = 6;
             this.splitContainer1.TabIndex = 4;
@@ -635,7 +768,7 @@
             // splitContainer3
             // 
             this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer3.Location = new System.Drawing.Point(0, 35);
+            this.splitContainer3.Location = new System.Drawing.Point(0, 30);
             this.splitContainer3.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitContainer3.Name = "splitContainer3";
             this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
@@ -647,8 +780,8 @@
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.messagesRichTextBox);
-            this.splitContainer3.Size = new System.Drawing.Size(1151, 865);
-            this.splitContainer3.SplitterDistance = 638;
+            this.splitContainer3.Size = new System.Drawing.Size(1151, 870);
+            this.splitContainer3.SplitterDistance = 641;
             this.splitContainer3.SplitterWidth = 6;
             this.splitContainer3.TabIndex = 5;
             // 
@@ -658,84 +791,9 @@
             this.messagesRichTextBox.Location = new System.Drawing.Point(0, 0);
             this.messagesRichTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.messagesRichTextBox.Name = "messagesRichTextBox";
-            this.messagesRichTextBox.Size = new System.Drawing.Size(1151, 221);
+            this.messagesRichTextBox.Size = new System.Drawing.Size(1151, 223);
             this.messagesRichTextBox.TabIndex = 0;
             this.messagesRichTextBox.Text = "";
-            // 
-            // groupBox5
-            // 
-            this.groupBox5.Controls.Add(this.tmaxTextBox);
-            this.groupBox5.Controls.Add(this.timetypeTextBox);
-            this.groupBox5.Controls.Add(this.label8);
-            this.groupBox5.Controls.Add(this.label7);
-            this.groupBox5.Controls.Add(this.timersButton);
-            this.groupBox5.Controls.Add(this.label6);
-            this.groupBox5.Controls.Add(this.timersTextBox);
-            this.groupBox5.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.groupBox5.Location = new System.Drawing.Point(0, 385);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(938, 220);
-            this.groupBox5.TabIndex = 3;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "TimeScheduler";
-            // 
-            // timersTextBox
-            // 
-            this.timersTextBox.Location = new System.Drawing.Point(167, 30);
-            this.timersTextBox.Name = "timersTextBox";
-            this.timersTextBox.Size = new System.Drawing.Size(172, 26);
-            this.timersTextBox.TabIndex = 0;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 33);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(130, 20);
-            this.label6.TabIndex = 1;
-            this.label6.Text = "Number of timers";
-            // 
-            // timersButton
-            // 
-            this.timersButton.Location = new System.Drawing.Point(354, 56);
-            this.timersButton.Name = "timersButton";
-            this.timersButton.Size = new System.Drawing.Size(75, 39);
-            this.timersButton.TabIndex = 2;
-            this.timersButton.Text = "Apply";
-            this.timersButton.UseVisualStyleBackColor = true;
-            this.timersButton.Click += new System.EventHandler(this.timersButton_Click);
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 65);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(116, 20);
-            this.label7.TabIndex = 3;
-            this.label7.Text = "Time SMV type";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(6, 97);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(47, 20);
-            this.label8.TabIndex = 4;
-            this.label8.Text = "Tmax";
-            // 
-            // timetypeTextBox
-            // 
-            this.timetypeTextBox.Location = new System.Drawing.Point(167, 62);
-            this.timetypeTextBox.Name = "timetypeTextBox";
-            this.timetypeTextBox.Size = new System.Drawing.Size(172, 26);
-            this.timetypeTextBox.TabIndex = 5;
-            // 
-            // tmaxTextBox
-            // 
-            this.tmaxTextBox.Location = new System.Drawing.Point(167, 94);
-            this.tmaxTextBox.Name = "tmaxTextBox";
-            this.tmaxTextBox.Size = new System.Drawing.Size(172, 26);
-            this.tmaxTextBox.TabIndex = 6;
             // 
             // Form1
             // 
@@ -761,6 +819,8 @@
             this.eventsPage.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
             this.DispatcherPage.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
@@ -774,8 +834,6 @@
             this.splitContainer3.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer3)).EndInit();
             this.splitContainer3.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -841,6 +899,11 @@
         private System.Windows.Forms.TextBox timetypeTextBox;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.TextBox lowerLimitTextBox;
+        private System.Windows.Forms.TextBox upperLimitTextBox;
+        private System.Windows.Forms.Label lowerLimitLabel;
+        private System.Windows.Forms.Label upperLimitLabel;
+        private System.Windows.Forms.Button updateButton;
     }
 }
 

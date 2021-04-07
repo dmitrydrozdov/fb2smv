@@ -59,9 +59,10 @@ namespace FB2SMV
                 return rule;
             }
 
-            public static string DefineExistsInputEvent(IEnumerable<Event> events)
-            {
+            public static string DefineExistsInputEvent(IEnumerable<Event> events, bool NDT=false)
+            {                 
                 string inputEvents = events.Where(ev => ev.Direction == Direction.Input).Aggregate("", (current, ev) => current + (Smv.ModuleParameters.Event(ev.Name) + " | "));
+                if (NDT) inputEvents += "NDT" + " | ";
                 if (inputEvents == "") inputEvents = Smv.False;
                 return String.Format(Smv.DefineBlock, Smv.ExistsInputEvent, inputEvents.Trim(Smv.OrTrimChars));
             }
