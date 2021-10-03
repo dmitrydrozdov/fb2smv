@@ -34,28 +34,6 @@ namespace GUI
         }*/
     }
 
-    class ConnectionNode
-    {
-        public readonly string FbType;
-        public readonly string InstanceName;
-        public readonly string Variable;
-
-        public ConnectionNode(string fbType, string instName, string variable)
-        {
-            FbType = fbType;
-            InstanceName = instName;
-            Variable = variable;
-        }
-
-        public ConnectionNode(string fbType, string connectionNodeName)
-        {
-            string[] nameSplit = connectionNodeName.Split('.');
-            FbType = fbType;
-            InstanceName = nameSplit[0];
-            Variable = nameSplit[1];
-        }
-    }
-
     class VisualizableStringTree : TypesTree
     {
         public TreeNode TreeViewRoot()

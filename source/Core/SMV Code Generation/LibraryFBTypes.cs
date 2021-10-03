@@ -10,20 +10,37 @@ namespace FB2SMV
     {
         static class LibraryFBTypes
         {
-            private static string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string rule)
+            private static string _timeDelayModule(Storage storage, Settings settings, string fbTypeName, string setDoDi)
             {
                 string smvModule = "";
                 var events = storage.Events.Where(ev => ev.FBType == fbTypeName);
                 var variables = storage.Variables.Where(v => v.FBType == fbTypeName);
+                var start = new EventInstance(events.First(ev => ev.Name == "START"), null);
+                var stop = new EventInstance(events.First(ev => ev.Name == "STOP"), null);
+                var timedModule = start.Event.Timed || stop.Event.Timed;
 
                 smvModule += FbSmvCommon.SmvModuleDeclaration(events, variables, fbTypeName);
+                if (timedModule) smvModule += String.Format(Smv.VarDeclarationBlock, "INVOKEDBY", EventInstance.SmvType("FALSE", TimeScheduler.TGlobal));
                 smvModule += Smv.Assign;
 
                 smvModule += String.Format(Smv.VarInitializationBlock, "Do_", "-1");
+                
+                string rule = $"\n\talpha & {start.Value()} : Dt_;" +
+                              $"\n\talpha & {stop.Value()} : -1;" +
+                              $"\n\talpha & Di_ = 0 : {setDoDi};" +
+                              "\n\tDi_ >= 0 : Di_;" +
+                              "\n\tTRUE: Do_; ";
                 smvModule += String.Format(Smv.NextCaseBlock, "Do_", rule);
-
+                if (timedModule)
+                {
+                    smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.value", start.Value());
+                    smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_last", "systemclock");
+                    smvModule += String.Format(Smv.NextVarAssignment, "INVOKEDBY.ts_born", 
+                        LibraryTypes.E_CYCLE == fbTypeName ? "systemclock" : start.TSBorn());
+                }
+                smvModule += String.Format(Smv.DefineBlock, "systemclock", "TGlobal");
                 smvModule += String.Format(Smv.DefineBlock, "event_START_reset", Smv.Alpha);
-                smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", "(alpha & (event_START))");
+                smvModule += String.Format(Smv.DefineBlock, "event_STOP_reset", $"(alpha & ({start.Value()}))");
                 smvModule += String.Format(Smv.DefineBlock, "event_EO_set", "(alpha & Di_=0)");
 
                 smvModule += String.Format(Smv.DefineBlock, "alpha_reset", Smv.Alpha);
@@ -35,14 +52,12 @@ namespace FB2SMV
 
             public static string EDelayFBModule(Storage storage, Settings settings)
             {
-                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : -1;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
-                return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, rule);
+                return _timeDelayModule(storage, settings, LibraryTypes.E_DELAY, "-1 ");
             }
 
             public static string ECycleFBModule(Storage storage, Settings settings)
             {
-                string rule = "\n\talpha & event_START : Dt_;\n\talpha & event_STOP : -1;\n\talpha & Di_ = 0 : Dt_;\n\tDi_ >= 0 : Di_;\n\tTRUE: Do_; ";
-                return _timeDelayModule(storage, settings, LibraryTypes.E_CYCLE, rule);
+                return _timeDelayModule(storage, settings, LibraryTypes.E_CYCLE, "Dt_");
             }
 
 

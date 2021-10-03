@@ -1,0 +1,4 @@
+read_model -i TimeTest-reference.smv
+go_bmc
+check_ltlspec_bmc_onepb -k 350 -l *
+quit

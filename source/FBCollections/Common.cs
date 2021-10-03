@@ -43,7 +43,34 @@ namespace FB2SMV
             public string Name;
             public string Comment;
             public string FBType;
+
+
+
+            protected bool Equals(FBPart other)
+            {
+                return string.Equals(Name, other.Name) && string.Equals(Comment, other.Comment) && string.Equals(FBType, other.FBType);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((FBPart) obj);
+            }
+
+            public override int GetHashCode()
+            {
+                unchecked
+                {
+                    var hashCode = (Name != null ? Name.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (Comment != null ? Comment.GetHashCode() : 0);
+                    hashCode = (hashCode * 397) ^ (FBType != null ? FBType.GetHashCode() : 0);
+                    return hashCode;
+                }
+            }
         }
+        
         [Serializable]
         public class FBInterface : FBPart
         {
@@ -79,13 +106,15 @@ namespace FB2SMV
         [Serializable]
         public class Event : FBInterface
         {
-            public Event(string name, string comment, string fbType, Direction direction)
+            public bool Timed;
+            public Event(string name, string comment, string fbType, Direction direction, bool timed = false)
             {
                 if (direction == Direction.Internal) throw new Exception("Event cannot be internal.");
                 Name = name;
                 Comment = comment;
                 FBType = fbType;
                 Direction = direction;
+                Timed = timed;
             }
 
             public Event()

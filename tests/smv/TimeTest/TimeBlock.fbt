@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE FBType SYSTEM "../LibraryElement.dtd">
+<FBType GUID="86D0A635AFF56A93" Name="TimeBlock" Comment="Basic Function Block Type" Namespace="Main">
+  <Attribute Name="Configuration.FB.IDCounter" Value="0" />
+  <Identification Standard="61499-2" />
+  <VersionInfo Organization="nxtControl GmbH" Version="0.0" Author="vshatrov" Date="3/2/2019" Remarks="Template" />
+  <InterfaceList>
+    <EventInputs>
+      <Event Name="INIT" Comment="Initialization Request">
+        <With Var="CNT" />
+        <With Var="Tmax" />
+      </Event>
+      <Event Name="REQ" Comment="Normal Execution Request">
+        <With Var="CNT" />
+      </Event>
+    </EventInputs>
+    <EventOutputs>
+      <Event Name="COMPLETE" Comment="Initialization Confirm">
+        <With Var="CNT_O" />
+      </Event>
+      <Event Name="CNF" Comment="Execution Confirmation">
+        <With Var="CNT_O" />
+      </Event>
+    </EventOutputs>
+    <InputVars>
+      <VarDeclaration Name="CNT" Type="DINT" Comment="Input event qualifier" />
+      <VarDeclaration Name="Tmax" Type="DINT" InitialValue="20" />
+    </InputVars>
+    <OutputVars>
+      <VarDeclaration Name="CNT_O" Type="DINT" Comment="Output event qualifier" />
+    </OutputVars>
+  </InterfaceList>
+  <BasicFB>
+    <Attribute Name="FBType.Basic.Algorithm.Order" Value="INIT,REQ" />
+    <InternalVars>
+      <VarDeclaration Name="stop" Type="BOOL" />
+    </InternalVars>
+    <ECC>
+      <ECState Name="START" Comment="Initial State" x="880.9412" y="701.4117" />
+      <ECState Name="INIT" Comment="Initialization" x="923.5294" y="141.1765">
+        <ECAction Algorithm="INIT" />
+      </ECState>
+      <ECState Name="REQ" Comment="Normal execution" x="2013.647" y="732.9412">
+        <ECAction Algorithm="REQ" />
+      </ECState>
+      <ECState Name="COMPLETE" x="1052" y="1704">
+        <ECAction Output="COMPLETE" />
+      </ECState>
+      <ECState Name="CNF" x="1220" y="1064">
+        <ECAction Output="CNF" />
+      </ECState>
+      <ECTransition Source="START" Destination="INIT" Condition="INIT" x="886.621" y="496.8123">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="219.2278,149.5143,222.2679,111.4783" />
+      </ECTransition>
+      <ECTransition Source="INIT" Destination="START" Condition="1" x="983.4562" y="422.9363">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="251.8286,86.85442,249.2402,124.8874" />
+      </ECTransition>
+      <ECTransition Source="START" Destination="REQ" Condition="REQ" x="1327.705" y="661.5469">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="284.7356,162.5595,356.7166,162.2605" />
+      </ECTransition>
+      <ECTransition Source="REQ" Destination="CNF" Condition="NOT stop" x="1770.156" y="790.6202">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="477.3394,182.558,433.5426,199.2088" />
+      </ECTransition>
+      <ECTransition Source="REQ" Destination="COMPLETE" Condition="stop" x="1564.251" y="1260.536">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="428.3111,282.5875,356.676,354.6913" />
+      </ECTransition>
+      <ECTransition Source="COMPLETE" Destination="START" Condition="1" x="965.598" y="1345.006">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="248.5622,385.8986,235.1673,310.3211" />
+      </ECTransition>
+      <ECTransition Source="CNF" Destination="START" Condition="1" x="978.0647" y="939.6794">
+        <Attribute Name="Configuration.Transaction.BezierPoints" Value="251.2265,249.6093,232.7558,227.8976" />
+      </ECTransition>
+    </ECC>
+    <Algorithm Name="INIT" Comment="Initialization algorithm">
+      <ST Text=";&#xD;&#xA;stop := FALSE;" />
+    </Algorithm>
+    <Algorithm Name="REQ" Comment="Normally executed algorithm">
+      <ST Text=";&#xD;&#xA;&#xD;&#xA;CNT_O := CNT + 1;&#xD;&#xA;IF (INVOKEDBY.ts_last - INVOKEDBY.ts_born &gt; Tmax) THEN &#xD;&#xA;	stop := TRUE;&#xD;&#xA;END_IF;&#xD;&#xA;	" />
+    </Algorithm>
+  </BasicFB>
+</FBType>

@@ -1,0 +1,756 @@
+MODULE Event(valueI, timestamp)
+VAR value: boolean;
+VAR ts_last: 0..1000; 
+VAR ts_born: 0..1000;
+ASSIGN
+init(value) := valueI;
+init(ts_last) := timestamp;
+init(ts_born) := timestamp;
+
+
+MODULE integEC(event_INIT, event_C_CYCLE, event_OP_UPD, event_INITO, event_CHG, pv1_, pv2_, cycleTime_, maxValue_, minValue_, useLimits_, out_, error_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+VAR pv1 : -1000..1000;
+VAR pv2 : -1000..1000;
+DEFINE tBase1:= 4;
+DEFINE tBase2:= 4;
+VAR cycleTime : 0..1000;
+VAR maxValue : 0..1000;
+VAR minValue : 0..1000;
+VAR useLimits : boolean;
+VAR out : 0..1000;
+VAR error : boolean;
+VAR prev_out : 0..1000;
+VAR changed : boolean;
+VAR S_smv : {s0_osm, s1_osm, s2_osm};
+VAR Q_smv : {START_ecc, INIT_ecc, execIntegration_ecc, change_ecc};
+
+VAR NA: 0..1;
+VAR NI: 0..5;
+
+VAR LIMIT1: 0..1000;
+
+ASSIGN
+init(Q_smv):= START_ecc;
+init(S_smv):= s0_osm;
+-- _moduleVariablesInitBlock
+init(pv1):= 0;
+init(pv2):= 0;
+init(cycleTime):= 100;
+init(maxValue):= 1000;
+init(minValue):= 0;
+init(useLimits):= FALSE;
+init(out):= 0;
+init(error):= FALSE;
+init(prev_out):= 0;
+init(changed):= FALSE;
+
+init(NA):= 0;
+init(NI):= 0;
+
+next(Q_smv):= case
+	Q_smv=START_ecc & S_smv=s1_osm & event_INIT.value  : INIT_ecc;
+	Q_smv=INIT_ecc & S_smv=s1_osm : START_ecc;
+	Q_smv=START_ecc & S_smv=s1_osm & event_C_CYCLE.value   &    ! error  : execIntegration_ecc;
+	Q_smv=execIntegration_ecc & S_smv=s1_osm &  ! changed : START_ecc;
+	Q_smv=execIntegration_ecc & S_smv=s1_osm & changed : change_ecc;
+	Q_smv=change_ecc & S_smv=s1_osm : START_ecc;
+	TRUE : Q_smv;
+esac;
+
+next(S_smv):= case
+	alpha & S_smv=s0_osm & ExistsInputEvent: s1_osm;
+	S_smv=s1_osm & ExistsEnabledECTran: s2_osm;
+	S_smv=s2_osm & NA=0 : s1_osm;
+	S_smv=s1_osm & (!ExistsEnabledECTran): s0_osm;
+	TRUE : S_smv;
+esac;
+
+next(NA):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA < 1) | (Q_smv=INIT_ecc & NA < 1) | (Q_smv=execIntegration_ecc & NA < 1) | (Q_smv=change_ecc & NA < 1)): (NA + 1) mod 2;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA = 1) | (Q_smv=INIT_ecc & NA = 1) | (Q_smv=execIntegration_ecc & NA = 1) | (Q_smv=change_ecc & NA = 1)):  0 ;
+	TRUE : NA;
+esac;
+
+next(NI):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI < 1) | (Q_smv=INIT_ecc & NA = 1 & NI < 2) | (Q_smv=execIntegration_ecc & NA = 1 & NI < 5) | (Q_smv=change_ecc & NA = 1 & NI < 1)):(NI + 1) mod 6;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI = 1) | (Q_smv=INIT_ecc & NA = 1 & NI = 2) | (Q_smv=execIntegration_ecc & NA = 1 & NI = 5) | (Q_smv=change_ecc & NA = 1 & NI = 1)): 0 ;
+	TRUE : NI;
+esac;
+
+next(INVOKEDBY.value):= case
+	event_INIT.value : event_INIT.value;
+	event_C_CYCLE.value : event_C_CYCLE.value;
+	event_OP_UPD.value : event_OP_UPD.value;
+	event_INITO.value : event_INITO.value;
+	event_CHG.value : event_CHG.value;
+	TRUE : INVOKEDBY.value;
+esac;
+next(INVOKEDBY.ts_last):= case
+	event_INIT.value : event_INIT.ts_last;
+	event_C_CYCLE.value : event_C_CYCLE.ts_last;
+	event_OP_UPD.value : event_OP_UPD.ts_last;
+	event_INITO.value : event_INITO.ts_last;
+	event_CHG.value : event_CHG.ts_last;
+	TRUE : INVOKEDBY.ts_last;
+esac;
+next(INVOKEDBY.ts_born):= case
+	event_INIT.value : event_INIT.ts_born;
+	event_C_CYCLE.value : event_C_CYCLE.ts_born;
+	event_OP_UPD.value : event_OP_UPD.ts_born;
+	event_INITO.value : event_INITO.ts_born;
+	event_CHG.value : event_CHG.ts_born;
+	TRUE : INVOKEDBY.ts_born;
+esac;
+
+next(pv1):= case
+	alpha & S_smv=s0_osm & (event_C_CYCLE.value) : pv1_ ;
+	TRUE : pv1;
+esac;
+next(pv2):= case
+	alpha & S_smv=s0_osm & (event_C_CYCLE.value) : pv2_ ;
+	TRUE : pv2;
+esac;
+next(cycleTime):= case
+	alpha & S_smv=s0_osm & (event_INIT.value) : cycleTime_ ;
+	TRUE : cycleTime;
+esac;
+next(maxValue):= case
+	alpha & S_smv=s0_osm & (event_INIT.value | event_OP_UPD.value) : maxValue_ ;
+	TRUE : maxValue;
+esac;
+next(minValue):= case
+	alpha & S_smv=s0_osm & (event_INIT.value | event_OP_UPD.value) : minValue_ ;
+	TRUE : minValue;
+esac;
+next(useLimits):= case
+	alpha & S_smv=s0_osm & (event_INIT.value | event_OP_UPD.value) : useLimits_ ;
+	TRUE : useLimits;
+esac;
+
+LIMIT1:=case
+	out < maxValue & out > minValue : out;
+	out <= minValue : minValue;
+	out >= maxValue : maxValue;
+	TRUE: out;
+esac;
+
+next(out):= case
+	S_smv=s2_osm & Q_smv=INIT_ecc & NA=1 & NI=1 : (((0 - 500) mod 501) + 500);
+	S_smv=s2_osm & Q_smv=execIntegration_ecc & NA=1 & NI=3 : (((out + cycleTime * (pv1/tBase1) / 1000 - 500) mod 501) + 500);
+	S_smv=s2_osm & Q_smv=execIntegration_ecc & NA=1 & NI=4 : (((LIMIT1 - 500) mod 501) + 500);
+	TRUE : out;
+esac;
+next(error):= case
+	S_smv=s2_osm & Q_smv=INIT_ecc & NA=1 & NI=2 : ((tBase1 <= 0)   |   (tBase2 <= 0)   |   (cycleTime <= 0));
+	TRUE : error;
+esac;
+next(prev_out):= case
+	S_smv=s2_osm & Q_smv=execIntegration_ecc & NA=1 & NI=2 : (((out - 500) mod 501) + 500);
+	TRUE : prev_out;
+esac;
+next(changed):= case
+	S_smv=s2_osm & Q_smv=execIntegration_ecc & NA=1 & NI=1 : (FALSE);
+	S_smv=s2_osm & Q_smv=execIntegration_ecc & NA=1 & NI=5 & ((prev_out != out)) : (TRUE);
+	TRUE : changed;
+esac;
+
+next(out_):= case
+S_smv=s2_osm & NI=0 & ((Q_smv=INIT_ecc & NA=1) | (Q_smv=change_ecc & NA=1)) : out;
+	TRUE : out_;
+esac;
+next(error_):= case
+S_smv=s2_osm & NI=0 & ((Q_smv=INIT_ecc & NA=1)) : error;
+	TRUE : error_;
+esac;
+
+DEFINE alpha_reset:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+DEFINE beta_set:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+
+DEFINE event_INIT_reset:= 	S_smv=s1_osm;
+DEFINE event_C_CYCLE_reset:= 	(alpha & (event_INIT.value)) | (S_smv=s1_osm);
+DEFINE event_OP_UPD_reset:= 	(alpha & (event_INIT.value | event_C_CYCLE.value)) | (S_smv=s1_osm);
+
+DEFINE event_INITO_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=INIT_ecc & NA=1));
+DEFINE event_CHG_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=change_ecc & NA=1));
+
+DEFINE ExistsInputEvent:= event_INIT.value | event_C_CYCLE.value | event_OP_UPD.value;
+DEFINE ExistsEnabledECTran:= (Q_smv=START_ecc  & ((event_INIT.value ) | (event_C_CYCLE.value   &    ! error ))) | (Q_smv=INIT_ecc) | (Q_smv=execIntegration_ecc  & (( ! changed) | (changed))) | (Q_smv=change_ecc);
+
+
+DEFINE systemclock:= TGlobal;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE PID_t(event_REQ, event_CNF, SP_, PV_, X0_, OUT_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+DEFINE KP := 1;
+DEFINE TR := 1;
+DEFINE TD:= 1;
+VAR SP : 0..1000;
+VAR PV : 0..1000;
+VAR X0 : 0..1000;
+VAR OUT : -1000..1000;
+VAR ERROR : -1000..1000;
+VAR X1 : 0..1000;
+VAR X2 : 0..1000;
+VAR X3 : 0..1000;
+VAR FIRSTTIME : boolean;
+VAR ITERM : 0..1000;
+VAR DTERM : 0..1000;
+VAR DLT : 0..1000;
+VAR S_smv : {s0_osm, s1_osm, s2_osm};
+VAR Q_smv : {START_ecc, REQ_ecc};
+
+VAR NA: 0..1;
+VAR NI: 0..11;
+
+VAR LIMIT2: -1000..1000;
+
+--CONSTANTS
+--DLT : integer;
+
+ASSIGN
+init(Q_smv):= START_ecc;
+init(S_smv):= s0_osm;
+-- _moduleVariablesInitBlock
+init(SP):= 0;
+init(PV):= 0;
+init(X0):= 0;
+init(OUT):= -1000;
+init(ERROR):= -1000;
+init(X1):= 0;
+init(X2):= 0;
+init(X3):= 0;
+init(FIRSTTIME):= TRUE;
+init(ITERM):= 0;
+init(DTERM):= 0;
+init(DLT):= 1;
+
+init(NA):= 0;
+init(NI):= 0;
+
+
+next(INVOKEDBY.value):= case
+	event_REQ.value : TRUE;
+	event_CNF.value : TRUE;
+	TRUE: FALSE;
+esac;
+
+next(INVOKEDBY.ts_born) := case
+	event_REQ.value : event_REQ.ts_born;
+	event_CNF.value : event_CNF.ts_born;
+	TRUE: INVOKEDBY.ts_born;
+esac;
+
+
+next(INVOKEDBY.ts_last) := case
+	event_REQ.value : event_REQ.ts_last;
+	event_CNF.value : event_CNF.ts_last;
+	TRUE: INVOKEDBY.ts_last;
+esac;
+
+next(Q_smv):= case
+	Q_smv=START_ecc & S_smv=s1_osm & event_REQ.value : REQ_ecc;
+	Q_smv=REQ_ecc & S_smv=s1_osm : START_ecc;
+	TRUE : Q_smv;
+esac;
+
+next(S_smv):= case
+	alpha & S_smv=s0_osm & ExistsInputEvent: s1_osm;
+	S_smv=s1_osm & ExistsEnabledECTran: s2_osm;
+	S_smv=s2_osm & NA=0 : s1_osm;
+	S_smv=s1_osm & (!ExistsEnabledECTran): s0_osm;
+	TRUE : S_smv;
+esac;
+
+next(NA):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA < 1) | (Q_smv=REQ_ecc & NA < 1)): (NA + 1) mod 2;
+	S_smv=s2_osm & NI=0 & ((Q_smv=START_ecc & NA = 1) | (Q_smv=REQ_ecc & NA = 1)):  0 ;
+	TRUE : NA;
+esac;
+
+next(NI):= case
+	S_smv=s1_osm: 1;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI < 1) | (Q_smv=REQ_ecc & NA = 1 & NI < 13)):(NI + 1) mod 12;
+	S_smv=s2_osm & ((Q_smv=START_ecc & NA = 1 & NI = 1) | (Q_smv=REQ_ecc & NA = 1 & NI = 13)): 0 ;
+	TRUE : NI;
+esac;
+
+next(SP):= case
+	alpha & S_smv=s0_osm & (event_REQ.value) : SP_ ;
+	TRUE : SP;
+esac;
+next(PV):= case
+	alpha & S_smv=s0_osm & (event_REQ.value) : PV_ ;
+	TRUE : PV;
+esac;
+next(X0):= case
+	alpha & S_smv=s0_osm & (event_REQ.value) : X0_ ;
+	TRUE : X0;
+esac;
+
+
+LIMIT2:=case
+	OUT < 1000 & OUT > -1000 : OUT;
+	OUT <= -1000 : -1000;
+	OUT >= 1000 : 1000;
+	TRUE: OUT;
+esac;
+
+next(OUT):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=5 : (((- KP * ERROR - ITERM - DTERM - 0) mod 1001) + 0);
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=10 : (((LIMIT2 - 0) mod 1001) + 0);
+	TRUE : OUT;
+esac;
+next(ERROR):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=1 : (((PV - SP - 0) mod 1001) + 0);
+	TRUE : ERROR;
+esac;
+next(X1):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=8 : (((PV - 500) mod 501) + 500);
+	TRUE : X1;
+esac;
+next(X2):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=7 : (((X1 - 500) mod 501) + 500);
+	TRUE : X2;
+esac;
+next(X3):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=6 : (((X2 - 500) mod 501) + 500);
+	TRUE : X3;
+esac;
+next(FIRSTTIME):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=11 : (FALSE);
+	TRUE : FIRSTTIME;
+esac;
+next(ITERM):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=3 & ((FIRSTTIME)) : ((((ERROR - X0)/KP - 500) mod 501) + 500);
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=3 & ((!(FIRSTTIME))) : (((ITERM + ERROR*DLT/TR - 500) mod 501) + 500);
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=9 : (((ITERM - ERROR*DLT/TR - 500) mod 501) + 500);
+	TRUE : ITERM;
+esac;
+next(DTERM):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=4 & ((FIRSTTIME)) : (((0 - 500) mod 501) + 500);
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=4 & ((!(FIRSTTIME))) : ((((3*(PV - X3) + X1 - X2)*TD/DLT/10 - 500) mod 501) + 500);
+	TRUE : DTERM;
+esac;
+next(DLT):= case
+	S_smv=s2_osm & Q_smv=REQ_ecc & NA=1 & NI=2 : (((systemclock - INVOKEDBY.ts_born - 500) mod 501) + 500); --INVOKEDBY
+	TRUE : DLT;
+esac;
+
+next(OUT_):= case
+S_smv=s2_osm & NI=0 & ((Q_smv=REQ_ecc & NA=1)) : OUT;
+	TRUE : OUT_;
+esac;
+
+DEFINE alpha_reset:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+DEFINE beta_set:= 	(alpha & S_smv=s0_osm & !ExistsInputEvent | S_smv=s1_osm & (!ExistsEnabledECTran));
+
+DEFINE event_REQ_reset:= 	S_smv=s1_osm;
+
+DEFINE event_CNF_set:= 	S_smv=s2_osm & NI=0 & ((Q_smv=REQ_ecc & NA=1));
+
+DEFINE ExistsInputEvent:= event_REQ.value;
+DEFINE ExistsEnabledECTran:= (Q_smv=START_ecc  & ((event_REQ.value))) | (Q_smv=REQ_ecc);
+
+
+DEFINE systemclock:= TGlobal;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE one_cyl_timestamped(event_INIT, event_REQ, event_INITO, event_IND, pos_, position_, TGlobal, alpha, beta)
+VAR Tick : E_CYCLE (Tick_START, Tick_STOP, Tick_EO, Tick_Dt, Tick_Di, Tick_Do, TGlobal, Tick_alpha, Tick_beta);
+VAR Model : integEC (Model_INIT, Model_C_CYCLE, Model_OP_UPD, Model_INITO, Model_CHG, FB2_OUT, Model_pv2, Model_cycleTime, Model_maxValue, Model_minValue, Model_useLimits, Model_out, Model_error, TGlobal, Model_alpha, Model_beta);
+VAR FB1 : E_DELAY (FB1_START, FB1_STOP, FB1_EO, FB1_Dt, FB1_Di, FB1_Do, TGlobal, FB1_alpha, FB1_beta);
+VAR FB2 : PID_t (FB2_REQ, FB2_CNF, FB2_SP, Model_out, FB2_X0, FB2_OUT, TGlobal, FB2_alpha, FB2_beta);
+
+VAR Tick_START : Event(FALSE, TGlobal);
+VAR Tick_STOP : Event(FALSE, TGlobal);
+VAR Tick_EO : Event(FALSE, TGlobal);
+VAR Tick_Dt : 0..1000;
+VAR Tick_Di : 0..1000;
+VAR Tick_Do : 0..1000;
+VAR Tick_alpha : boolean;
+VAR Tick_beta : boolean;
+
+VAR Model_INIT : Event(FALSE, TGlobal);
+VAR Model_C_CYCLE : Event(FALSE, TGlobal);
+VAR Model_OP_UPD : Event(FALSE, TGlobal);
+VAR Model_INITO : Event(FALSE, TGlobal);
+VAR Model_CHG : Event(FALSE, TGlobal);
+VAR Model_pv2 : -1000..1000;
+VAR Model_cycleTime : 0..1000;
+VAR Model_maxValue : 0..1000;
+VAR Model_minValue : 0..1000;
+VAR Model_useLimits : boolean;
+VAR Model_out : 0..1000;
+VAR Model_error : boolean;
+VAR Model_alpha : boolean;
+VAR Model_beta : boolean;
+
+VAR FB1_START : Event(FALSE, TGlobal);
+VAR FB1_STOP : Event(FALSE, TGlobal);
+VAR FB1_EO : Event(FALSE, TGlobal);
+VAR FB1_Dt : 0..1000;
+VAR FB1_Di : 0..1000;
+VAR FB1_Do : 0..1000;
+VAR FB1_alpha : boolean;
+VAR FB1_beta : boolean;
+
+VAR FB2_REQ : Event(FALSE, TGlobal);
+VAR FB2_CNF : Event(FALSE, TGlobal);
+VAR FB2_SP : 0..1000;
+VAR FB2_X0 : 0..1000;
+VAR FB2_OUT : -1000..1000;
+VAR FB2_alpha : boolean;
+VAR FB2_beta : boolean;
+
+
+
+ASSIGN
+init(Tick_alpha):= FALSE;
+init(Tick_beta):= FALSE;
+
+init(Model_pv2):= 0;
+init(Model_cycleTime):= 100;
+init(Model_maxValue):= 1000;
+init(Model_minValue):= 0;
+init(Model_useLimits):= TRUE;
+init(Model_out):= 0;
+init(Model_error):= FALSE;
+init(Model_alpha):= FALSE;
+init(Model_beta):= FALSE;
+
+init(FB1_alpha):= FALSE;
+init(FB1_beta):= FALSE;
+
+init(FB2_SP):= 0;
+init(FB2_X0):= 0;
+init(FB2_OUT):= -1000;
+init(FB2_alpha):= FALSE;
+init(FB2_beta):= FALSE;
+
+
+next(Tick_STOP.value) := Tick_STOP.value;
+next(Tick_STOP.ts_last) := Tick_STOP.ts_last;
+next(Tick_STOP.ts_born) := Tick_STOP.ts_born;
+next(FB1_STOP.value) := FB1_STOP.value;
+next(FB1_STOP.ts_last) := FB1_STOP.ts_last;
+next(FB1_STOP.ts_born) := FB1_STOP.ts_born;
+next(Model_pv2) := Model_pv2;
+next(Model_cycleTime) := Model_cycleTime;
+next(Model_maxValue) := Model_maxValue;
+next(Model_minValue) := Model_minValue;
+next(Model_useLimits) := Model_useLimits;
+-- _internalDataConnections
+next(position_):= case
+	(Model_INITO.value) | (Model_CHG.value) : Model_out;
+	TRUE : position_;
+esac;
+
+next(FB2_SP):= case
+	alpha & (event_INIT.value | event_REQ.value) : pos_ ;
+	TRUE : FB2_SP;
+esac;
+
+next(FB2_X0):= case
+	alpha & (event_INIT.value | event_REQ.value) : pos_ ;
+	TRUE : FB2_X0;
+esac;
+
+
+-- ComponentEventOutputs
+next(Model_INITO.value):= case
+	Model.event_INITO_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(Model_INITO.ts_last) := case
+	Model.event_INITO_set : systemclock;
+	TRUE : Model_INITO.ts_last;
+esac;
+next(Model_INITO.ts_born) := case
+	Model.event_INITO_set : Model.INVOKEDBY.ts_born;
+	TRUE : Model_INITO.ts_born;
+esac;
+next(Tick_EO.value):= case
+	Tick.event_EO_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(Tick_EO.ts_last):= case
+	Tick.event_EO_set : systemclock;
+	TRUE : Tick_EO.ts_last;
+esac;
+next(Tick_EO.ts_born):= case
+	Tick.event_EO_set : Tick.INVOKEDBY.ts_born;
+	TRUE : Tick_EO.ts_born;
+esac;
+next(FB2_CNF.value):= case
+	FB2.event_CNF_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(Model_CHG.value):= case
+	Model.event_CHG_set : TRUE;
+	TRUE : FALSE;
+esac;
+next(FB1_EO.value):= case
+	FB1.event_EO_set : TRUE;
+	TRUE : FALSE;
+esac;
+
+
+-- ---DISPATCHER--- --
+-- *************** --
+next(Tick_alpha):= case
+	alpha & omega & !ExistsInputEvent : TRUE;
+	Tick.alpha_reset : FALSE;
+	TRUE : Tick_alpha;
+esac;
+next(Tick_beta):= case
+	Tick_beta & omega : FALSE;
+	Tick.beta_set : TRUE;
+	TRUE : Tick_beta;
+esac;
+next(Model_alpha):= case
+	Tick_beta & omega : TRUE;
+	Model.alpha_reset : FALSE;
+	TRUE : Model_alpha;
+esac;
+next(Model_beta):= case
+	Model_beta & omega : FALSE;
+	Model.beta_set : TRUE;
+	TRUE : Model_beta;
+esac;
+next(FB1_alpha):= case
+	Model_beta & omega : TRUE;
+	FB1.alpha_reset : FALSE;
+	TRUE : FB1_alpha;
+esac;
+next(FB1_beta):= case
+	FB1_beta & omega : FALSE;
+	FB1.beta_set : TRUE;
+	TRUE : FB1_beta;
+esac;
+next(FB2_alpha):= case
+	FB1_beta & omega : TRUE;
+	FB2.alpha_reset : FALSE;
+	TRUE : FB2_alpha;
+esac;
+next(FB2_beta):= case
+	FB2_beta & omega : FALSE;
+	FB2.beta_set : TRUE;
+	TRUE : FB2_beta;
+esac;
+DEFINE beta_set:= FB2_beta & omega;
+DEFINE alpha_reset:= alpha & omega & !ExistsInputEvent;
+
+ASSIGN
+
+
+-- _internalEventConnections
+next(Model_INIT.value):= case
+	((event_INIT.value & alpha)) : TRUE;
+	(Model.event_INIT_reset) : FALSE;
+	TRUE : Model_INIT.value;
+esac;
+
+next(Tick_START.value):= case
+	(Model_INITO.value) : TRUE;
+	(Tick.event_START_reset) : FALSE;
+	TRUE : Tick_START.value;
+esac;
+
+next(Model_C_CYCLE.value):= case
+	(Tick_EO.value) : TRUE;
+	(Model.event_C_CYCLE_reset) : FALSE;
+	TRUE : Model_C_CYCLE.value;
+esac;
+
+next(Model_OP_UPD.value):= case
+	(FB2_CNF.value) : TRUE;
+	(Model.event_OP_UPD_reset) : FALSE;
+	TRUE : Model_OP_UPD.value;
+esac;
+
+
+next(FB2_REQ.value):= case
+	((event_REQ.value & alpha) | FB1_EO.value) : TRUE;
+	(FB2.event_REQ_reset) : FALSE;
+	TRUE : FB2_REQ.value;
+esac;
+
+next(FB1_START.value):= case
+	(Model_CHG.value) : TRUE;
+	(FB1.event_START_reset) : FALSE;
+	TRUE : FB1_START.value;
+esac;
+
+DEFINE event_INITO_set:= 	(Model_INITO.value);
+DEFINE event_IND_set:= 	(Model_CHG.value);
+
+DEFINE event_INIT_reset:= alpha;
+DEFINE event_REQ_reset:= alpha;
+DEFINE ExistsInputEvent:= event_INIT.value | event_REQ.value;
+
+DEFINE omega:= !(Model_INITO.value | Tick_EO.value | FB2_CNF.value | Model_CHG.value | FB1_EO.value);
+
+DEFINE phi:= (!ExistsInputEvent) & (!(Tick_START.value | Tick_STOP.value | Tick_EO.value | Model_INIT.value | Model_C_CYCLE.value | Model_OP_UPD.value | Model_INITO.value | Model_CHG.value | FB1_START.value | FB1_STOP.value | FB1_EO.value | FB2_REQ.value | FB2_CNF.value));
+
+DEFINE systemclock:= TGlobal;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE E_CYCLE(event_START, event_STOP, event_EO, Dt_, Di_, Do_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+ASSIGN
+init(Do_):= -1;
+next(Do_):= case
+
+	alpha & event_START.value : Dt_;
+	alpha & event_STOP.value : -1;
+	alpha & Di_ = 0 : Dt_;
+	Di_ >= 0 : Di_;
+	TRUE: Do_; 	TRUE : Do_;
+esac;
+next(INVOKEDBY.ts_born):= systemclock;
+next(INVOKEDBY.ts_last):= systemclock;
+DEFINE systemclock := TGlobal;
+DEFINE event_START_reset:= alpha;
+DEFINE event_STOP_reset:= (alpha & (event_START.value));
+DEFINE event_EO_set:= (alpha & Di_=0);
+DEFINE alpha_reset:= alpha;
+DEFINE beta_set:= alpha;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE E_DELAY(event_START, event_STOP, event_EO, Dt_, Di_, Do_, TGlobal, alpha, beta)
+VAR INVOKEDBY : Event(FALSE, TGlobal);
+ASSIGN
+init(Do_):= -1;
+next(Do_):= case
+
+	alpha & event_START.value : Dt_;
+	alpha & event_STOP.value : -1;
+	alpha & Di_ = 0 : -1;
+	Di_ >= 0 : Di_;
+	TRUE: Do_; 	TRUE : Do_;
+esac;
+next(INVOKEDBY.ts_born):= systemclock;
+next(INVOKEDBY.ts_last):= systemclock;
+DEFINE systemclock := TGlobal;
+DEFINE event_START_reset:= alpha;
+DEFINE event_STOP_reset:= (alpha & (event_START.value));
+DEFINE event_EO_set:= (alpha & Di_=0);
+DEFINE alpha_reset:= alpha;
+DEFINE beta_set:= alpha;
+FAIRNESS (alpha)
+FAIRNESS (beta)
+
+
+MODULE TimeScheduler(D1i, D1o, D2i, D2o, beta, gamma)
+VAR V1 : 0..1000;
+VAR V2 : 0..1000;
+VAR DMin: 0..1000;
+VAR TGlobal : 0..1000;
+
+ASSIGN
+
+init(TGlobal):= 0;
+V1:=case
+	D1o >= 0 : D1o;
+	TRUE: 100;
+esac;
+V2:=case
+	D2o >= 0 : D2o;
+	TRUE: 100;
+esac;
+DMin:=case
+	(V1<=V2) : V1;
+	(V2<=V1) : V2;
+
+	TRUE: 0;esac;
+D1i:= case
+	(TGlobal < Tmax) & beta & gamma & D1o > 0 : D1o - DMin;
+	TRUE: D1o;
+esac;
+D2i:= case
+	(TGlobal < Tmax) & beta & gamma & D2o > 0 : D2o - DMin;
+	TRUE: D2o;
+esac;
+next(TGlobal):= case
+	(TGlobal < Tmax) & beta & gamma & (D1o > 0 | D2o > 0) : TGlobal + DMin;
+	TRUE : TGlobal;
+esac;
+DEFINE Tmax:= 100;
+
+MODULE main()
+VAR TimeSched : TimeScheduler (one_cyl_inst.Tick_Di, one_cyl_inst.Tick_Do, one_cyl_inst.FB1_Di, one_cyl_inst.FB1_Do, one_cyl_inst_beta, gamma);
+VAR one_cyl_inst : one_cyl_timestamped (one_cyl_inst_INIT, one_cyl_inst_REQ, one_cyl_inst_INITO, one_cyl_inst_IND, one_cyl_inst_pos, one_cyl_inst_position,  TimeSched.TGlobal, one_cyl_inst_alpha, one_cyl_inst_beta);
+
+
+VAR one_cyl_inst_INIT : Event(FALSE, TGlobal);
+VAR one_cyl_inst_REQ : Event(FALSE, TGlobal);
+VAR one_cyl_inst_INITO : Event(FALSE, TGlobal);
+VAR one_cyl_inst_IND : Event(FALSE, TGlobal);
+VAR one_cyl_inst_pos : 0..1000;
+VAR one_cyl_inst_position : 0..1000;
+VAR one_cyl_inst_alpha : boolean;
+VAR one_cyl_inst_beta : boolean;
+
+
+VAR false_var : boolean;
+DEFINE TGlobal:= TimeSched.TGlobal;
+
+ASSIGN
+init(false_var):= TRUE;
+next(false_var) := FALSE;
+init(one_cyl_inst_pos):= 0;
+init(one_cyl_inst_position):= 0;
+
+
+init(one_cyl_inst_alpha):= TRUE;
+init(one_cyl_inst_beta):= FALSE;
+next(one_cyl_inst_pos) := case
+	TimeSched.TGlobal > 10 : 10;
+	TRUE: one_cyl_inst_pos;
+esac;
+next(one_cyl_inst_INIT.value):= case
+	one_cyl_inst.event_INIT_reset : FALSE;
+	TRUE : one_cyl_inst_INIT.value;
+esac;
+next(one_cyl_inst_REQ.value):= case
+	one_cyl_inst.event_REQ_reset : FALSE;
+	one_cyl_inst_INITO.value : TRUE;
+	TimeSched.TGlobal >= 100 & one_cyl_inst_beta : TRUE;
+	TRUE : one_cyl_inst_REQ.value;
+esac;
+next(one_cyl_inst_INITO.value):= case
+	one_cyl_inst.event_INITO_set : TRUE;
+	one_cyl_inst_INITO.value : FALSE;
+	TRUE : one_cyl_inst_INITO.value;
+esac;
+next(one_cyl_inst_IND.value):= case
+	one_cyl_inst.event_IND_set : TRUE;
+	TRUE : one_cyl_inst_IND.value;
+esac;
+next(one_cyl_inst_alpha):= case
+	one_cyl_inst_beta : TRUE;
+	one_cyl_inst.alpha_reset : FALSE;
+	TRUE : one_cyl_inst_alpha;
+esac;
+next(one_cyl_inst_beta):= case
+	one_cyl_inst_beta : FALSE;
+	one_cyl_inst.beta_set : TRUE;
+	TRUE : one_cyl_inst_beta;
+esac;
+
+DEFINE gamma:= one_cyl_inst_beta & (!one_cyl_inst.ExistsInputEvent) & (one_cyl_inst.omega);
+
+LTLSPEC G false_var=TRUE

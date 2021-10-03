@@ -1,4 +1,4 @@
-﻿using FB2SMV.FBCollections;
+using FB2SMV.FBCollections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +8,14 @@ namespace FB2SMV.Core
 { 
     public class TimeScheduler
     {
-        private int _inputs;
+        private int _inputsCount;
+        private IEnumerable<FBInstance> _inputs;
         private string _timeVariableType;
         private int _maxLocalTime;
 
-        public TimeScheduler(int inputs, string timeVariableType, int maxLocalTime)
+        public TimeScheduler(IEnumerable<FBInstance> inputs, string timeVariableType, int maxLocalTime)
         {
+            _inputsCount = inputs.Count();
             _inputs = inputs;
             _timeVariableType = timeVariableType;
             _maxLocalTime = maxLocalTime;
@@ -22,7 +24,7 @@ namespace FB2SMV.Core
         private string _forAll(Func<int, string> aggregateFunc)
         {
             string aggregateString = "";
-            for (int i = 1; i <= _inputs; i++)
+            for (int i = 1; i <= _inputsCount; i++)
             {
                 aggregateString += aggregateFunc(i);
             }
@@ -36,26 +38,32 @@ namespace FB2SMV.Core
 
         private string _DiRule(int i)
         {
-            return String.Format("D{0}i:= case\n\t(TGlobal < Tmax) & beta & gamma & D{0}o > 0 : D{0}o - DMin;\n\tTRUE: D{0}o;\nesac;\n", i);
+            return String.Format("D{0}i:= case\n\t({1} < Tmax) & beta & gamma & D{0}o > 0 : D{0}o - DMin;\n\tTRUE: D{0}o;\nesac;\n", i, TGlobal);
         }
 
         private string _GetDMin()
         {
-            string dMinRules = "";
-            for(int i = 1; i <= _inputs; i++)
+            if (_inputsCount > 1)
             {
-                string currentV = "V" + i.ToString();
-                string ruleLine = "";
-                for(int j = 1; j <= _inputs; j++)
+                string dMinRules = "";
+                for(int i = 1; i <= _inputsCount; i++)
                 {
-                    if (j == i) continue;
-                    string comparedV = "V" + j.ToString();
-                    ruleLine += String.Format("({0}<={1}){2}", currentV, comparedV, Smv.And);
+                    string currentV = "V" + i;
+                    string ruleLine = "";
+                    for(int j = 1; j <= _inputsCount; j++)
+                    {
+                        if (j == i) continue;
+                        string comparedV = "V" + j;
+                        ruleLine += String.Format("({0}<={1}){2}", currentV, comparedV, Smv.And);
 
+                    }
+                    dMinRules += String.Format("\t{0} : {1};\n", ruleLine.Trim(Smv.AndTrimChars), currentV);
                 }
-                dMinRules += String.Format("\t{0} : {1};\n", ruleLine.Trim(Smv.AndTrimChars), currentV);
+                return String.Format("DMin:=case\n{0}\n\tTRUE: {1};esac;\n", dMinRules, 0);
             }
-            return String.Format("DMin:=case\n{0}\n\tTRUE: {1};esac;\n", dMinRules, 0);
+
+            return "DMin:= V1;";
+
         }
 
         private string _TGlobal()
@@ -75,14 +83,15 @@ namespace FB2SMV.Core
             string moduleIOs = "";
 
             moduleIOs += _forAll( (int i) => String.Format("D{0}i, D{0}o, ", i) ); //generate module parameters: D1i, D1o, D2i, ...
-            moduleIOs += String.Format("DMin, {0}, {1}", Smv.Beta, "gamma");
+            moduleIOs += String.Format("{0}, {1}", Smv.Beta, "gamma");
 
             smvCode += String.Format(Smv.ModuleDef, "TimeScheduler", moduleIOs);
             smvCode += _forAll((int i) => String.Format(Smv.VarDeclarationBlock, "V" + i.ToString(), _timeVariableType) );
+            smvCode += String.Format(Smv.VarDeclarationBlock, "DMin", _timeVariableType);
             smvCode += String.Format(Smv.VarDeclarationBlock, "TGlobal", _timeVariableType);
 
             smvCode += Smv.Assign + Environment.NewLine;
-            smvCode += String.Format(Smv.VarInitializationBlock, "TGlobal", 0);
+            smvCode += String.Format(Smv.VarInitializationBlock, TGlobal, 0);
             smvCode += _forAll((int i) => _vDefBlock(i) );
             smvCode += _GetDMin();
             smvCode += _forAll((int i)=> _DiRule(i));
@@ -91,5 +100,8 @@ namespace FB2SMV.Core
 
             return smvCode;
         }
+
+        public static string TGlobal => "TGlobal";
+
     }
 }

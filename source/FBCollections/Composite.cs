@@ -55,7 +55,7 @@ namespace FB2SMV
         [Serializable]
         public class Connection
         {
-            public Connection(string source, string destination, ConnectionType type, string fbType)
+            public Connection(ConnectionNode source, ConnectionNode destination, ConnectionType type, string fbType)
             {
                 Source = source;
                 Destination = destination;
@@ -63,14 +63,58 @@ namespace FB2SMV
                 FBType = fbType;
             }
 
-            public readonly string Source; //TODO: string -> ConnectionNode
-            public readonly string Destination;
+            public readonly ConnectionNode Source;
+            public readonly ConnectionNode Destination;
             public readonly string FBType;
             public readonly ConnectionType Type;
 
             public override string ToString()
             {
                 return String.Format("{0}->{1}/{2}", Source, Destination, FBType);
+            }
+        }
+        
+        [Serializable]
+        public class ConnectionNode
+        {
+            public readonly string FbType;
+            public readonly string InstanceName;
+            public readonly string Variable;
+
+            public ConnectionNode(string fbType, string instName, string variable)
+            {
+                FbType = fbType;
+                InstanceName = instName;
+                Variable = variable;
+            }
+
+            public static Tuple<string, string> splitConnectionName(string connectionNodeName)
+            {
+                var nameSplit = connectionNodeName.Split('.');
+                switch (nameSplit.Length)
+                {
+                    case 1:
+                        return Tuple.Create("", nameSplit[0]);
+                    case 2:
+                        return Tuple.Create(nameSplit[0], nameSplit[1]);
+                        
+                    default:
+                        throw new FormatException();
+                }
+            }
+
+            public override string ToString()
+            {
+                var res = "";
+                if (InstanceName != "") res += InstanceName + ".";
+
+                res += Variable;
+                return res;
+            }
+
+            public bool IsComponentVar()
+            {
+                return InstanceName != "";
             }
         }
     }

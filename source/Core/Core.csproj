@@ -40,6 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SMV Code Generation\LibraryFunctions.cs" />
+    <Compile Include="TimeEventChains.cs" />
+    <Compile Include="Intermediate model\ShowMessageDelegate.cs" />
     <Compile Include="SMV Code Generation\BasicFbSmv.cs" />
     <Compile Include="CmSmvPattern.cs" />
     <Compile Include="Comparisions.cs" />
@@ -48,6 +51,7 @@
     <Compile Include="FbSmvCommon.cs" />
     <Compile Include="IEC61499.cs" />
     <Compile Include="ISmvPattern.cs" />
+    <Compile Include="SMV Code Generation\Event.cs" />
     <Compile Include="SMV Code Generation\LibraryFBTypes.cs" />
     <Compile Include="PriorityContainer.cs" />
     <Compile Include="Settings.cs" />

@@ -16,6 +16,7 @@ namespace FB2SMV
                 public static string UINT = "UINT";
                 public static string DINT = "DINT";
                 public static string TIME = "TIME";
+                public static string DATE_AND_TIME = "DATE_AND_TIME";
                 public static string STRING = "STRING";
                 public static string REAL = "REAL";
             }

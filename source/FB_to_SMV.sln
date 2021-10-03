@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModuleVariablesTest", "..\tests\ModuleVariablesTest\ModuleVariablesTest.csproj", "{C59E7E26-6AE2-41C9-84F2-804E3BA8B34A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApplication1", "ConsoleApplication1\ConsoleApplication1.csproj", "{C2A365EF-A6D7-40A8-B469-52A037319BBD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,18 +85,6 @@ Global
 		{C59E7E26-6AE2-41C9-84F2-804E3BA8B34A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{C59E7E26-6AE2-41C9-84F2-804E3BA8B34A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C59E7E26-6AE2-41C9-84F2-804E3BA8B34A}.Release|x86.ActiveCfg = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Debug|x86.Build.0 = Debug|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|x86.ActiveCfg = Release|Any CPU
-		{C2A365EF-A6D7-40A8-B469-52A037319BBD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
